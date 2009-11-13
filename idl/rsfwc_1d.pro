@@ -14,7 +14,7 @@ pro rsfwc_1d
 
 ;	Setup Grid
 
-	nR	= 200
+	nR	= 100
 	rMin	= 1.0
 	rMax	= 1.2
 	dR	= ( rMax - rMin ) / ( nR - 1 )
@@ -75,7 +75,7 @@ pro rsfwc_1d
 	w	= complex ( 30d6 * 2d0 * !dpi, 0 )
 	nPhi	= 20 
 	kPar	= nPhi / r
-	kz		= 0
+	kz		= 2 
 	nPar	= kPar * c / w
 
 	stixR	= 1d0 - total ( specData.wp^2 / ( w * ( w + specData.wc ) ), 2 )
@@ -247,7 +247,7 @@ pro rsfwc_1d
 					
 				;	r component
 				aMat[3*i,3*i]	= kz^2 + nPhi^2 / r[i]^2 - w^2 * epsilon[0,0,i] / c^2
-				aMat[3*i-1,3*i]	= 9 * II * kz / ( 2 * dr ) 
+				aMat[3*i-1,3*i]	= -9 * II * kz / ( 2 * dr ) 
 				aMat[3*i-1,3*i]	= -7 * II * nPhi / ( 2 * r[i] * dr ) 
 				aMat[3*i-1,3*i]	= 0 
 				aMat[3*i-1,3*i]	= -II * kz / ( 2 * dr ) 
@@ -257,7 +257,31 @@ pro rsfwc_1d
 
 	endfor
 
-	rhs[3*180+2]	= 1.0
+	;	over determine the matrix by adding two extra equations to each end such that
+	;	the boundary conditions are enforced on the phi and z components on the full 
+	;	(not half) end grid points. This will then require SVD to get a least squares
+	;	solution. 
+
+	ePhiLeftBry	= complexArr ( nAll )
+	ezLeftBry	= complexArr ( nAll )
+
+	ePhiLeftBry[0]	= -II * nPhi * ( 3 * r[0] + 2 * dr ) / ( 2 * r[0]^2 * dr ) - w^2 * epsilon[0,1,0] / ( c^2 )
+	ePhiLeftBry[1]	= ( 24 - 7 * dr / r[0] ) / ( 2 * dr^2 )
+	ePhiLeftBry[2]	= 0
+	ePhiLeftBry[3]	= 2 * II * nPhi / ( r[0] * dr )
+	ePhiLeftBry[4]	= ( -8 * r[0] + dr ) / ( 2 * r[0] * dr^2 )
+	ePhiLeftBry[5]	= 0
+	ePhiLeftBry[6]	= -II * nPhi / ( 2 * r[0] * dr )
+
+	ezLeftBry[0]	= II * kz / r[0] - 3 * II * kz / ( 2 * dr ) - w^2 * epsilon[0,2,0] / c^2  
+	ezLeftBry[1]	= 0 
+	ezLeftBry[2]	= ( 24 - 7 * dr / r[0] ) / ( 2 * dr^2 ) 
+	ezLeftBry[3]	= 2 * II * kz / dr 
+	ezLeftBry[4]	= 0 
+	ezLeftBry[5]	= ( -8 * r[0] + dr ) / ( 2 * r[0] * dr^2 )
+	ezLeftBry[6]	= -II * kz / ( 2 * dr ) 
+
+	rhs[3*80+2]	= complex ( 0, 1 )
 
 ;	Solve matrix
 
@@ -272,11 +296,28 @@ pro rsfwc_1d
 	eField	= temporary ( eFieldTmp )
 
 	ii_eR	= indGen(nR)*3
-	eR	= eField[ii_eR]
 	ii_ePhi	= indGen(nR-1)*3+1
-	ePhi	= eField[ii_ePhi]
 	ii_ez	= indGen(nR-1)*3+2
+	eR	= eField[ii_eR]
+	ePhi	= eField[ii_ePhi]
 	ez	= eField[ii_ez]
+
+	;	try using the least square over determined system
+
+	OD_aMat	= [ [ePhiLeftBry], [ezLeftBry], [aMat] ]
+	OD_rhs	= [ 0, 0, rhs ]
+	OD_eField	= la_least_squares ( OD_aMat, OD_rhs, $
+			status = OD_stat, $
+		   	method = 0, $
+		   	/double )
+	print, 'OD lapack status: ', OD_stat
+
+	ii_eR	= indGen(nR)*3+2
+	ii_ePhi	= indGen(nR-1)*3+3
+	ii_ez	= indGen(nR-1)*3+4
+	OD_eR	= OD_eField[ii_eR]
+	OD_ePhi	= OD_eField[ii_ePhi]
+	OD_ez	= OD_eField[ii_ez]
 
 ;	Visualise solution
 
@@ -290,6 +331,18 @@ pro rsfwc_1d
 	plot, r_, imaginary (ePhi)
 	plot, r_, ez
 	plot, r_, imaginary(ez)
+
+	++winNo
+	window, winNo
+	!p.multi = [0,2,3]
+	!p.charSize = 2
+	plot, r, OD_eR
+	plot, r, imaginary (OD_eR)
+	plot, r_, OD_ePhi
+	plot, r_, imaginary (OD_ePhi)
+	plot, r_, OD_ez
+	plot, r_, imaginary(OD_ez)
+
 
 stop
 end
