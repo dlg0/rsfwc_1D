@@ -1,0 +1,295 @@
+;	Real Space Full Wave Code in 1D
+;	DLG
+
+pro rsfwc_1d
+
+;	Parameters
+
+	e	= 1.60217646d-19
+	me	= 9.10938188d-31
+   	mi	= 1.67262158d-27
+	c	= 299792458d0	
+	e0	=	8.854187817d-12 
+	u0	=	4d0 * !dpi * 10d0^(-7) 
+
+;	Setup Grid
+
+	nR	= 200
+	rMin	= 1.0
+	rMax	= 1.2
+	dR	= ( rMax - rMin ) / ( nR - 1 )
+	r	= fIndGen ( nR ) * dR + rMin
+	;	half grid variables are _
+	r_	= r[1:*] - dR / 2
+
+;	Setup plasma and field profiles
+
+	bMax	= 0.6
+	bPhi	= bMax / r 
+	bPhi_	= bMax / r_
+
+	nSpec	= 2
+	specData	= replicate ( $
+			{ 	q : 0.0, $
+				m : 0.0, $
+				wp : fltArr ( nR ), $
+				wp_ : fltArr ( nR - 1 ), $
+				wc : fltArr ( nR ), $
+				wc_ : fltArr ( nR - 1 ), $
+				n : fltArr ( nR ), $
+				n_ : fltArr ( nR - 1 ) }, nSpec )
+
+	nPeakR	= 1.1
+	nMax	= 1e19
+
+	;	electrons
+
+	specData[0].q 		= -1 * e
+	specData[0].m 		= me
+	specData.n 		= (-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-1.1)^2 * nMax
+	specData.n_		= (-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-1.1)^2 * nMax
+
+	;	dueterium
+
+	specData[1].q 		= 1 * e
+	specData[1].m 		= 2 * mi 
+
+	for i = 0, nSpec - 1 do begin
+
+		specData[i].wp		= sqrt ( specData[i].n * specData[i].q^2 / ( specData[i].m * e0 ) )
+		specData[i].wc		= specData[i].q * bPhi / specData[i].m
+		specData[i].wp_		= sqrt ( specData[i].n_ * specData[i].q^2 / ( specData[i].m * e0 ) )
+		specData[i].wc_		= specData[i].q * bPhi_ / specData[i].m
+
+	endfor
+
+	winNo	= 0
+	window, winNo
+	!p.multi = [0,2,2]
+	plot, r, bPhi
+	plot, r, specData[0].n
+	plot, r, specData[1].n
+
+;	Dispersion analysis
+
+	w	= complex ( 30d6 * 2d0 * !dpi, 0 )
+	nPhi	= 20 
+	kPar	= nPhi / r
+	kz		= 0
+	nPar	= kPar * c / w
+
+	stixR	= 1d0 - total ( specData.wp^2 / ( w * ( w + specData.wc ) ), 2 )
+	stixL	= 1d0 - total ( specData.wp^2 / ( w * ( w - specData.wc ) ), 2 )
+	stixS	= 0.5d0 * ( stixR + stixL )
+	stixD	= 0.5d0 * ( stixR - stixL )
+	stixP	= 1d0 - total ( specData.wp^2 / w^2, 2 )
+
+	stixR_	= 1d0 - total ( specData.wp_^2 / ( w * ( w + specData.wc_ ) ), 2 )
+	stixL_	= 1d0 - total ( specData.wp_^2 / ( w * ( w - specData.wc_ ) ), 2 )
+	stixS_	= 0.5d0 * ( stixR_ + stixL_ )
+	stixD_	= 0.5d0 * ( stixR_ - stixL_ )
+	stixP_	= 1d0 - total ( specData.wp_^2 / w^2, 2 )
+
+
+	AA	= stixS
+	BB	= -1d0 * ( stixR * stixL + stixP * stixS - nPar^2 * ( stixP + stixS ) )
+	CC	= stixP * ( nPar^2 - stixR ) * ( nPar^2 - stixL )
+	B24AC	= BB^2 - 4d0 * AA * CC
+	kPerp1	= sqrt ( ( -BB + sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * w / c
+	kPerp2	= sqrt ( ( -BB - sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * w / c
+
+	++winNo
+	window, winNo
+	!p.multi = [0,2,2]
+	plot, r, real_part ( kPerp1 ), /yLog, yRange = [1, 1e3]
+		oPlot, r, imaginary ( kPerp1 ), $
+			lineStyle = 2
+	plot, r, real_part ( kPerp2 ), /yLog, yRange = [1, 1e3]
+		oPlot, r, imaginary ( kPerp2 ), $
+			lineStyle = 2
+
+	!p.multi = 0
+
+;	Calculate dielectric tensor
+
+	II	= complex ( 0, 1 )
+
+	epsilon		= fltArr ( 3, 3, nR )
+	epsilon_	= fltArr ( 3, 3, nR-1 )
+
+	epsilon[0,0,*]	= stixS
+	epsilon[0,2,*]	= II * stixD
+	epsilon[1,1,*]	= stixP
+	epsilon[0,2,*]	= -II * stixD
+	epsilon[2,2,*]	= stixS
+
+	epsilon_[0,0,*]	= stixS_
+	epsilon_[0,2,*]	= II * stixD_
+	epsilon_[1,1,*]	= stixP_
+	epsilon_[0,2,*]	= -II * stixD_
+	epsilon_[2,2,*]	= stixS_
+
+;	Build matrix
+
+	nAll	= nR + 2 * ( nR - 1 )
+	aMat	= complexArr ( nAll, nAll )
+	rhs		= complexArr ( nAll )
+
+	;	matrix fill
+
+	for i = 0, nR - 1 do begin
+
+		;	forward difference pts
+
+			if i eq 0 then begin
+
+				;	r component
+
+					aMat[3*i,3*i]	= kz^2 + nPhi^2/r[i]^2 - w^2/c^2*epsilon[0,0,i] 
+					aMat[3*i+1,3*i]	= 7 * II * nPhi / ( 2 * r[i] * dr )
+					aMat[3*i+2,3*i]	= 7 * II * kz / ( 2 * dr )
+					aMat[3*i+3,3*i]	= 0
+					aMat[3*i+4,3*i]	= -II * nPHi / ( 2 * r[i] * dr )
+					aMat[3*i+5,3*i]	= -II * kz / ( 2 * dr )
+
+				;	phi component
+
+					aMat[3*i,3*i+1] 	= -II * nPhi * ( 2 * r_[i] + dr ) / ( 2 * r_[i]^2 * dr ) - w^2 * epsilon[0,1,i] / ( 2 * c^2 ) 
+					aMat[3*i+1,3*i+1]	= kz^2 + 1/r_[i]^2 - 2 / dr^2 + 3 / ( 2 * r_[i] * dr ) - w^2 * epsilon_[1,1,i] / c^2
+					aMat[3*i+2,3*i+1]	= -kz * nPhi / r_[i] - w^2 * epsilon_[2,1,i] / c^2
+					aMat[3*i+3,3*i+1]	= -II * nPhi / ( 2 * r_[i]^2 ) + II * nPhi / ( r_[i] * dr ) - w^2 * epsilon[0,1,i+1] / ( 2 * c^2 )
+					aMat[3*i+4,3*i+1]	= ( 5 * r_[i] - 2 * dr ) / ( r_[i] * dr^2 )
+					aMat[3*i+5,3*i+1]	= 0
+				   	aMat[3*i+6,3*i+1]	= 0
+					aMat[3*i+7,3*i+1]	= ( -8 * r_[i] + dr ) / ( 2 * r_[i] * dr^2 )
+					aMat[3*i+8,3*i+1]	= 0
+				   	aMat[3*i+9,3*i+1]	= 0
+					aMat[3*i+10,3*i+1]	= 1 / dr^2 
+	
+				;	z component
+
+					aMat[3*i,3*i+2] 	= II * kz / 2 * ( 1 / r_[i] - 2 / dr ) - w^2 * epsilon[0,2,i] / ( 2 * c^2 )  
+					aMat[3*i+1,3*i+2]	= -kz * nPhi / r_[i] - w^2 * epsilon_[1,2,i] / c^2 
+					aMat[3*i+2,3*i+2]	= nPhi^2 / r_[i]^2 - 2 / dr^2 + 3 / ( 2 * r_[i] * dr ) - w^2 * epsilon_[2,2,i] / c^2 
+					aMat[3*i+3,3*i+2]	= II * kz / 2 * ( 1 / r_[i] + 2 / dr ) - w^2 * epsilon[0,2,i] / ( 2 * c^2 ) 
+					aMat[3*i+4,3*i+2]	= 0 
+					aMat[3*i+5,3*i+2]	= ( 5 * r_[i] - 2 * dr ) / ( r_[i] * dr^2 ) 
+				   	aMat[3*i+6,3*i+2]	= 0 
+					aMat[3*i+7,3*i+2]	= 0
+					aMat[3*i+8,3*i+2]	= ( -8 * r_[i] + dr ) / ( 2 * r_[i] * dr^2 ) 
+				   	aMat[3*i+9,3*i+2]	= 0
+					aMat[3*i+10,3*i+2]	= 0 
+					aMat[3*i+11,3*i+2]	= 1 / dr^2
+	
+			endif
+
+		;	r component
+			if i gt 0 and i lt nR-1 then begin
+				aMat[3*i-2,3*i]	= II * nPhi / (2 * r[i]^2) - II * nPhi / ( r[i] * dr ) - w^2/(2*c^2)*epsilon_[1,0,i-1]
+				aMat[3*i-1,3*i]	= -II * kz / dr - w^2 / (2 * c^2) * epsilon_[2,0,i-1]
+				aMat[3*i,3*i]	= nPhi / r[i]^2 + kz^2 - w^2 / c^2 * epsilon[0,0,i]
+				aMat[3*i+1,3*i]	= II * nPhi / ( r[i] * dr ) + II * nPhi / ( 2 * r[i]^2 ) - w^2/(2*c^2)*epsilon_[1,0,i]
+				aMat[3*i+2,3*i]	= II * kz / dr - w^2 / (2*c^2) * epsilon_[2,0,i]
+			endif
+
+		;	phi component
+			if i gt 0 and i lt nR-2 then begin
+				aMat[3*i+1-3,3*i+1] = 1 / ( 2 * r_[i] * dr ) - 1/ dr^2
+				aMat[3*i+1-1,3*i+1]	= -II*nPhi/(r_[i]*dr) -II*nPhi/(2*r_[i]^2)-w^2/(2*c^2)*epsilon[0,1,i]
+				aMat[3*i+1,3*i+1]	= 2 / dr^2 + kz^2 + 1 / r_[i]^2 -w^2/c^2*epsilon_[1,1,i]
+				aMat[3*i+1+1,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon[2,1,i]
+				aMat[3*i+1+2,3*i+1]	= II * nPhi / (r_[i]*dr) - II*nPhi/(2*r_[i]^2) - w^2/(2*c^2)*epsilon[0,1,i]
+				aMat[3*i+1+3,3*i+1]	= -1/dr^2 - 1/(2*r_[i]*dr)
+			endif
+
+		;	z component	
+			if i gt 0 and i lt nR-2 then begin
+				aMat[3*i+2-3,3*i+2] = 1/(2*r_[i]*dr)-1/dr^2
+				aMat[3*i+2-2,3*i+2] = II*kz/(2*r_[i])-II*kz/dr-w^2/(2*c^2)*epsilon[0,2,i]
+				aMat[3*i+2-1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon[1,2,i]
+				aMat[3*i+2,3*i+2] = 2/dr^2 + nPhi^2/r_[i]^2 - w^2/c^2*epsilon[2,2,i]
+				aMat[3*i+2+1,3*i+2] = II * kz / dr + II * kz / (2*r_[i]) -w^2/(2*c^2)*epsilon[0,2,i+1]
+				aMat[3*i+2+3,3*i+2] = -1/dr^2 -1/(2*r_[i]*dr)
+			endif
+
+			if i eq nR-2 then begin
+
+				;	phi component
+				aMat[3*i+3,3*i+1]	= -II * nPhi / ( 2 * r_[i]^2 ) + II * nPhi / ( r_[i] * dr ) - w^2 * epsilon[0,1,i+1] / ( 2 * c^2 ) 
+				aMat[3*i+2,3*i+1]	= -kz * nPhi / r_[i] - w^2 * epsilon_[2,1,i] / c^2
+				aMat[3*i+1,3*i+1]	= kz^2 + 1 / r_[i]^2 - 2 / dr^2 - 3 / ( 2 * r_[i] * dr ) - w^2 * epsilon_[1,1,i] / c^2
+				aMat[3*i+0,3*i+1]	= -II * nPhi * ( 2 * r_[i] + dr ) / ( 2 * r_[i]^2 * dr ) - w^2 * epsilon_[0,1,i] / ( 2 * c^2 ) 
+				aMat[3*i-1,3*i+1]	= 0 
+				aMat[3*i-2,3*i+1]	= ( 5 * r_[i] + 2 * dr ) / ( r_[i] * dr^2 ) 
+				aMat[3*i-3,3*i+1]	= 0
+				aMat[3*i-4,3*i+1]	= 0 
+				aMat[3*i-5,3*i+1]	= -1 * ( 8 + dr / r_[i] ) / ( 2 * dr^2 ) 
+				aMat[3*i-6,3*i+1]	= 0 
+				aMat[3*i-7,3*i+1]	= 0 
+				aMat[3*i-8,3*i+1]	= 1 / dr^2 
+				
+				;	z component
+				aMat[3*i+3,3*i+2]	= II * kz / 2 * ( 1 / r_[i] + 2 / dr ) - w^2 * epsilon[0,2,i+1] / ( 2 * c^2 )  
+				aMat[3*i+2,3*i+2]	= nPhi^2 / r_[i]^2 - 2 / dr^2 - 3 / ( 2 * r_[i] * dr ) - w^2 * epsilon_[2,2,i] / c^2
+				aMat[3*i+1,3*i+2]	= -kz * nPhi / r_[i] - w^2 * epsilon[1,2,i] / c^2 
+				aMat[3*i+0,3*i+2]	= II * kz / 2 * ( 1 / r_[i] - 2 / dr ) - w^2 * epsilon[0,2,i] / ( 2 * c^2 ) 
+				aMat[3*i-1,3*i+2]	= ( 5 * r_[i] + 2 * dr ) / ( r_[i] * dr^2 ) 
+				aMat[3*i-2,3*i+2]	= 0 
+				aMat[3*i-3,3*i+2]	= 0
+				aMat[3*i-4,3*i+2]	= -1 * ( 8 * r_[i] + dr ) / ( 2 * r_[i] * dr^2 ) 
+				aMat[3*i-5,3*i+2]	= 0
+				aMat[3*i-6,3*i+2]	= 0
+				aMat[3*i-7,3*i+2]	= 1 / dr^2 
+
+			endif
+
+			if i eq nR-1 then begin
+					
+				;	r component
+				aMat[3*i,3*i]	= kz^2 + nPhi^2 / r[i]^2 - w^2 * epsilon[0,0,i] / c^2
+				aMat[3*i-1,3*i]	= 9 * II * kz / ( 2 * dr ) 
+				aMat[3*i-1,3*i]	= -7 * II * nPhi / ( 2 * r[i] * dr ) 
+				aMat[3*i-1,3*i]	= 0 
+				aMat[3*i-1,3*i]	= -II * kz / ( 2 * dr ) 
+				aMat[3*i-1,3*i]	= II * nPhi / ( 2 * r[i] * dr ) 
+
+			endif
+
+	endfor
+
+	rhs[3*180+2]	= 1.0
+
+;	Solve matrix
+
+	inner_aMat	= aMat;[0:nAll-5,0:nAll-5]
+	inner_rhs	= rhs;[0:nAll-5]
+	eField	= la_linear_equation ( inner_aMat, inner_rhs, status = stat )
+	print, 'lapack status: ', stat
+
+	eFieldTmp	= complexArr ( nAll )
+	;eFieldTmp[0:nAll-5]	= eField
+	eFieldTmp	= eField
+	eField	= temporary ( eFieldTmp )
+
+	ii_eR	= indGen(nR)*3
+	eR	= eField[ii_eR]
+	ii_ePhi	= indGen(nR-1)*3+1
+	ePhi	= eField[ii_ePhi]
+	ii_ez	= indGen(nR-1)*3+2
+	ez	= eField[ii_ez]
+
+;	Visualise solution
+
+	++winNo
+	window, winNo
+	!p.multi = [0,2,3]
+	!p.charSize = 2
+	plot, r, eR
+	plot, r, imaginary (eR)
+	plot, r_, ePhi
+	plot, r_, imaginary (ePhi)
+	plot, r_, ez
+	plot, r_, imaginary(ez)
+
+stop
+end
