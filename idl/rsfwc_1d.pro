@@ -264,6 +264,8 @@ pro rsfwc_1d
 
 	ePhiLeftBry	= complexArr ( nAll )
 	ezLeftBry	= complexArr ( nAll )
+	ePhiRightBry	= complexArr ( nAll )
+	ezRightBry		= complexArr ( nAll )
 
 	ePhiLeftBry[0]	= -II * nPhi * ( 3 * r[0] + 2 * dr ) / ( 2 * r[0]^2 * dr ) - w^2 * epsilon[0,1,0] / ( c^2 )
 	ePhiLeftBry[1]	= ( 24 - 7 * dr / r[0] ) / ( 2 * dr^2 )
@@ -280,6 +282,23 @@ pro rsfwc_1d
 	ezLeftBry[4]	= 0 
 	ezLeftBry[5]	= ( -8 * r[0] + dr ) / ( 2 * r[0] * dr^2 )
 	ezLeftBry[6]	= -II * kz / ( 2 * dr ) 
+
+	;	Er is NOT the end pt like the left side?
+	ePhiRightBry[nAll-1]	= -II * nPhi / r[nR-1]^2 +  3 * II * nPhi / ( 2 * r[nR-1] * dr ) - w^2 * epsilon[0,1,nR-1] / ( c^2 )
+	ePhiRightBry[nAll-2]	= 0 
+	ePhiRightBry[nAll-3]	= ( 24 + 7 * dr / r[nR-1] ) / ( 2 * dr^2 ) 
+	ePhiRightBry[nAll-4]	= -2 * II * nPhi / ( r[nR-1] * dr )
+	ePhiRightBry[nAll-5]	= 0 
+	ePhiRightBry[nAll-6]	= -1 * ( 8 * r[nR-1] + dr ) / ( 2 * r[nR-1] * dr^2 ) 
+	ePhiRightBry[nAll-7]	= II * nPhi / ( 2 * r[nR-1] * dr )
+
+	ezRightBry[nAll-1]	= II * kz / r[nR-1] - 3 * II * kz / ( 2 * dr ) - w^2 * epsilon[0,2,nR-1] / c^2  
+	ezRightBry[nAll-2]	= II * kz / ( 2 * dr ) 
+	ezRightBry[nAll-3]	= 0 
+	ezRightBry[nAll-4]	= -2 * II * kz / dr 
+	ezRightBry[nAll-5]	= -1 * ( 8 * r[nR-1] + dr ) / ( 2 * r[nR-1] * dr^2 ) 
+	ezRightBry[nAll-6]	= 0
+	ezRightBry[nAll-7]	= II * kz / ( 2 * dr ) 
 
 	rhs[3*80+2]	= complex ( 0, 1 )
 
@@ -304,8 +323,8 @@ pro rsfwc_1d
 
 	;	try using the least square over determined system
 
-	OD_aMat	= [ [ePhiLeftBry], [ezLeftBry], [aMat] ]
-	OD_rhs	= [ 0, 0, rhs ]
+	OD_aMat	= [ [ePhiLeftBry], [ezLeftBry], [aMat], [ePhiRightBry], [ezRightBry] ]
+	OD_rhs	= [ 0, 0, rhs, 0, 0 ]
 	OD_eField	= la_least_squares ( OD_aMat, OD_rhs, $
 			status = OD_stat, $
 		   	method = 0, $
