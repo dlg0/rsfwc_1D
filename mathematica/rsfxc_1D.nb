@@ -1,0 +1,3187 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 7.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[    109426,       3178]
+NotebookOptionsPosition[    106375,       3071]
+NotebookOutlinePosition[    106734,       3087]
+CellTagsIndexPosition[    106691,       3084]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"Needs", "[", "\"\<VectorAnalysis`\>\"", "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"SetCoordinates", "[", "Cylindrical", "]"}], "\[IndentingNewLine]", 
+ RowBox[{"ExpVar", ":=", 
+  RowBox[{"Exp", "[", 
+   RowBox[{"I", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"nPhi", "*", "Ttheta"}], "+", 
+      RowBox[{"kz", "*", "Zz"}]}], ")"}]}], "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"EField", ":=", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Er", "[", "Rr", "]"}], "*", "ExpVar"}], ",", 
+    RowBox[{
+     RowBox[{"Eth", "[", "Rr", "]"}], "*", "ExpVar"}], ",", 
+    RowBox[{
+     RowBox[{"Ez", "[", "Rr", "]"}], "*", "ExpVar"}]}], 
+   "}"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"CurlE", "=", 
+   RowBox[{"Curl", "[", "EField", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"CurlCurlE", "=", 
+   RowBox[{"Curl", "[", "CurlE", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Collect", "[", 
+  RowBox[{
+   RowBox[{"CurlE", "/", "ExpVar"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"Er", "[", "Rr", "]"}], ",", 
+     RowBox[{"Eth", "[", "Rr", "]"}], ",", 
+     RowBox[{"Ez", "[", "Rr", "]"}]}], "}"}], ",", "Simplify"}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"CCE", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"CurlCurlE", "/", "ExpVar"}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"Er", "[", "Rr", "]"}], ",", 
+      RowBox[{"Eth", "[", "Rr", "]"}], ",", 
+      RowBox[{"Ez", "[", "Rr", "]"}], ",", 
+      RowBox[{
+       SubscriptBox["\[PartialD]", "Rr"], 
+       RowBox[{"Er", "[", "Rr", "]"}]}], ",", 
+      RowBox[{
+       SubscriptBox["\[PartialD]", "Rr"], 
+       RowBox[{"Eth", "[", "Rr", "]"}]}], ",", 
+      RowBox[{
+       SubscriptBox["\[PartialD]", "Rr"], 
+       RowBox[{"Ez", "[", "Rr", "]"}]}]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]}], "Input",
+ CellChangeTimes->{{3.467030510801816*^9, 3.467030523420287*^9}, 
+   3.4671126982647467`*^9, {3.467112994722177*^9, 3.4671131146028423`*^9}, {
+   3.467113445088431*^9, 3.4671134621176434`*^9}, {3.4671136474538097`*^9, 
+   3.467113698994087*^9}, {3.467113776583261*^9, 3.4671138482713013`*^9}, {
+   3.467113922482967*^9, 3.467114078108139*^9}, {3.467114860474598*^9, 
+   3.46711486268414*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Cylindrical", "[", 
+  RowBox[{"Rr", ",", "Ttheta", ",", "Zz"}], "]"}]], "Output",
+ CellChangeTimes->{
+  3.467113021062549*^9, {3.4671130537061157`*^9, 3.467113067037006*^9}, 
+   3.4671131158153267`*^9, 3.4671134626713533`*^9, {3.467113656839706*^9, 
+   3.4671137001410027`*^9}, {3.467113785387374*^9, 3.4671138009245653`*^9}, {
+   3.467113834169403*^9, 3.467113851843431*^9}, 3.467113984568883*^9, 
+   3.4671140211200523`*^9, {3.4671140633351593`*^9, 3.4671140790550137`*^9}, 
+   3.467114863244124*^9, 3.467140100018135*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"-", "\[ImaginaryI]"}], " ", "kz", " ", 
+     RowBox[{"Eth", "[", "Rr", "]"}]}], "+", 
+    FractionBox[
+     RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+      RowBox[{"Ez", "[", "Rr", "]"}]}], "Rr"]}], ",", 
+   RowBox[{
+    RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+     RowBox[{"Er", "[", "Rr", "]"}]}], "-", 
+    RowBox[{
+     SuperscriptBox["Ez", "\[Prime]",
+      MultilineFunction->None], "[", "Rr", "]"}]}], ",", 
+   RowBox[{
+    RowBox[{"-", 
+     FractionBox[
+      RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+       RowBox[{"Er", "[", "Rr", "]"}]}], "Rr"]}], "+", 
+    FractionBox[
+     RowBox[{"Eth", "[", "Rr", "]"}], "Rr"], "+", 
+    RowBox[{
+     SuperscriptBox["Eth", "\[Prime]",
+      MultilineFunction->None], "[", "Rr", "]"}]}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.467113021062549*^9, {3.4671130537061157`*^9, 3.467113067037006*^9}, 
+   3.4671131158153267`*^9, 3.4671134626713533`*^9, {3.467113656839706*^9, 
+   3.4671137001410027`*^9}, {3.467113785387374*^9, 3.4671138009245653`*^9}, {
+   3.467113834169403*^9, 3.467113851843431*^9}, 3.467113984568883*^9, 
+   3.4671140211200523`*^9, {3.4671140633351593`*^9, 3.4671140790550137`*^9}, 
+   3.467114863244124*^9, 3.467140100020835*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{
+       SuperscriptBox["kz", "2"], "+", 
+       FractionBox[
+        SuperscriptBox["nPhi", "2"], 
+        SuperscriptBox["Rr", "2"]]}], ")"}], " ", 
+     RowBox[{"Er", "[", "Rr", "]"}]}], "+", 
+    FractionBox[
+     RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+      RowBox[{"Eth", "[", "Rr", "]"}]}], 
+     SuperscriptBox["Rr", "2"]], "+", 
+    FractionBox[
+     RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+      RowBox[{
+       SuperscriptBox["Eth", "\[Prime]",
+        MultilineFunction->None], "[", "Rr", "]"}]}], "Rr"], "+", 
+    RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+     RowBox[{
+      SuperscriptBox["Ez", "\[Prime]",
+       MultilineFunction->None], "[", "Rr", "]"}]}]}], ",", 
+   RowBox[{
+    RowBox[{"-", 
+     FractionBox[
+      RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+       RowBox[{"Er", "[", "Rr", "]"}]}], 
+      SuperscriptBox["Rr", "2"]]}], "+", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{
+       SuperscriptBox["kz", "2"], "+", 
+       FractionBox["1", 
+        SuperscriptBox["Rr", "2"]]}], ")"}], " ", 
+     RowBox[{"Eth", "[", "Rr", "]"}]}], "-", 
+    FractionBox[
+     RowBox[{"kz", " ", "nPhi", " ", 
+      RowBox[{"Ez", "[", "Rr", "]"}]}], "Rr"], "+", 
+    FractionBox[
+     RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+      RowBox[{
+       SuperscriptBox["Er", "\[Prime]",
+        MultilineFunction->None], "[", "Rr", "]"}]}], "Rr"], "-", 
+    FractionBox[
+     RowBox[{
+      SuperscriptBox["Eth", "\[Prime]",
+       MultilineFunction->None], "[", "Rr", "]"}], "Rr"], "-", 
+    RowBox[{
+     SuperscriptBox["Eth", "\[Prime]\[Prime]",
+      MultilineFunction->None], "[", "Rr", "]"}]}], ",", 
+   RowBox[{
+    FractionBox[
+     RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+      RowBox[{"Er", "[", "Rr", "]"}]}], "Rr"], "-", 
+    FractionBox[
+     RowBox[{"kz", " ", "nPhi", " ", 
+      RowBox[{"Eth", "[", "Rr", "]"}]}], "Rr"], "+", 
+    FractionBox[
+     RowBox[{
+      SuperscriptBox["nPhi", "2"], " ", 
+      RowBox[{"Ez", "[", "Rr", "]"}]}], 
+     SuperscriptBox["Rr", "2"]], "+", 
+    RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+     RowBox[{
+      SuperscriptBox["Er", "\[Prime]",
+       MultilineFunction->None], "[", "Rr", "]"}]}], "-", 
+    FractionBox[
+     RowBox[{
+      SuperscriptBox["Ez", "\[Prime]",
+       MultilineFunction->None], "[", "Rr", "]"}], "Rr"], "-", 
+    RowBox[{
+     SuperscriptBox["Ez", "\[Prime]\[Prime]",
+      MultilineFunction->None], "[", "Rr", "]"}]}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.467113021062549*^9, {3.4671130537061157`*^9, 3.467113067037006*^9}, 
+   3.4671131158153267`*^9, 3.4671134626713533`*^9, {3.467113656839706*^9, 
+   3.4671137001410027`*^9}, {3.467113785387374*^9, 3.4671138009245653`*^9}, {
+   3.467113834169403*^9, 3.467113851843431*^9}, 3.467113984568883*^9, 
+   3.4671140211200523`*^9, {3.4671140633351593`*^9, 3.4671140790550137`*^9}, 
+   3.467114863244124*^9, 3.467140100023843*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"centralDiffCCER", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "1", "]"}], "]"}], "/.", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Er", "i"]}], ",", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["Eth", "\"\<i+1/2\>\""], "+", 
+           SubscriptBox["Eth", "\"\<i-1/2\>\""]}], ")"}], "/", "2"}]}], ",", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["Ez", "\"\<i+1/2\>\""], "+", 
+           SubscriptBox["Ez", "\"\<i-1/2\>\""]}], ")"}], "/", "2"}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Er", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Er", "\"\<i-1\>\""]}], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"2", "*", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Eth", "\"\<i-1/2\>\""]}], "+", 
+           SubscriptBox["Eth", "\"\<i+1/2\>\""]}], ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Ez", "\"\<i-1/2\>\""]}], "+", 
+           SubscriptBox["Ez", "\"\<i+1/2\>\""]}], ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}]}], "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.46711486696596*^9, 3.467114959908531*^9}, {
+   3.46711502692426*^9, 3.467115039230502*^9}, {3.467115079855693*^9, 
+   3.467115183938445*^9}, {3.467115217136676*^9, 3.467115344723304*^9}, {
+   3.467115378264489*^9, 3.467115521585041*^9}, {3.467115552982044*^9, 
+   3.467115585083452*^9}, {3.467115733690442*^9, 3.467115810223687*^9}, {
+   3.467115949314406*^9, 3.467115966767949*^9}, {3.467116174392415*^9, 
+   3.467116193584591*^9}, {3.46711624236598*^9, 3.467116273107946*^9}, {
+   3.4671163157900667`*^9, 3.4671164597113743`*^9}, {3.46711649861541*^9, 
+   3.467116501929596*^9}, {3.467116595046652*^9, 3.467116596723604*^9}, {
+   3.467117001681385*^9, 3.467117053140646*^9}, {3.467117229942638*^9, 
+   3.467117237069922*^9}, {3.467117319421308*^9, 3.467117321300304*^9}, 
+   3.4671178373188057`*^9, {3.467120903290702*^9, 3.4671209106576967`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]]}], ")"}], " ", 
+   SubscriptBox["Er", "i"]}], "+", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Eth", "\<\"i-1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"1", "-", 
+      FractionBox[
+       RowBox[{"2", " ", "Rr"}], 
+       SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SuperscriptBox["Rr", "2"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Ez", "\<\"i-1/2\"\>"]}], 
+   SubscriptBox["\[CapitalDelta]", "r"]], "+", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Ez", "\<\"i+1/2\"\>"]}], 
+   SubscriptBox["\[CapitalDelta]", "r"]], "+", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"2", " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SuperscriptBox["Rr", "2"], " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]]}]], "Output",
+ CellChangeTimes->{
+  3.4671162737509623`*^9, {3.4671163278171988`*^9, 3.467116377430644*^9}, 
+   3.467116461325861*^9, 3.467116503350456*^9, 3.467116598361773*^9, {
+   3.467117026602261*^9, 3.467117055072234*^9}, 3.467117243676259*^9, 
+   3.4671173241509857`*^9, 3.467117838477056*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"centralDiffCCETh", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "2", "]"}], "]"}], "/.", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["Er", "i"], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", "2"}]}], ",", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Eth", "\"\<i+1/2\>\""]}], ",", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Ez", "\"\<i+1/2\>\""]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Er", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Er", "i"]}], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Eth", "\"\<i-1/2\>\""]}], "+", 
+           SubscriptBox["Eth", "\"\<i+3/2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"2", " ", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Ez", "\"\<i-1/2\>\""]}], "+", 
+           SubscriptBox["Ez", "\"\<i+3/2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"2", " ", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", 
+          RowBox[{"Rr", ",", "Rr"}]], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["Eth", "\"\<i-1/2\>\""], "-", 
+           RowBox[{"2", " ", 
+            SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "+", 
+           SubscriptBox["Eth", "\"\<i+3/2\>\""]}], ")"}], "/", 
+         RowBox[{
+          SubscriptBox["\[CapitalDelta]", "r"], "^", "2"}]}]}]}], "}"}]}], 
+    ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467117541690158*^9, 3.467117683942123*^9}, {
+  3.46711782075948*^9, 3.4671178269913387`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", 
+   FractionBox[
+    RowBox[{"kz", " ", "nPhi", " ", 
+     SubscriptBox["Ez", "\<\"i+1/2\"\>"]}], "Rr"]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox["1", 
+      SuperscriptBox["Rr", "2"]], "+", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]]}], ")"}]}], "+", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"2", " ", "Rr"}], "-", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SuperscriptBox["Rr", "2"], " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i-1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "2"}], " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "i"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"2", " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SuperscriptBox["Rr", "2"], " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"2", "+", 
+      FractionBox[
+       SubscriptBox["\[CapitalDelta]", "r"], "Rr"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]]}]], "Output",
+ CellChangeTimes->{3.467117628972191*^9, 3.467117684879393*^9, 
+  3.467117828685483*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"centralDiffCCEZ", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "3", "]"}], "]"}], "/.", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["Er", "i"], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", "2"}]}], ",", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Eth", "\"\<i+1/2\>\""]}], ",", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Ez", "\"\<i+1/2\>\""]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Er", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Er", "i"]}], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Eth", "\"\<i-1/2\>\""]}], "+", 
+           SubscriptBox["Eth", "\"\<i+3/2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"2", " ", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Ez", "\"\<i-1/2\>\""]}], "+", 
+           SubscriptBox["Ez", "\"\<i+3/2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"2", " ", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", 
+          RowBox[{"Rr", ",", "Rr"}]], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["Ez", "\"\<i-1/2\>\""], "-", 
+           RowBox[{"2", " ", 
+            SubscriptBox["Ez", "\"\<i+1/2\>\""]}], "+", 
+           SubscriptBox["Ez", "\"\<i+3/2\>\""]}], ")"}], "/", 
+         RowBox[{
+          SubscriptBox["\[CapitalDelta]", "r"], "^", "2"}]}]}]}], "}"}]}], 
+    ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467118235882575*^9, 3.4671182652263193`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", 
+   FractionBox[
+    RowBox[{"kz", " ", "nPhi", " ", 
+     SubscriptBox["Eth", "\<\"i+1/2\"\>"]}], "Rr"]}], "+", 
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]], "+", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox["1", "Rr"], "-", 
+     FractionBox["2", 
+      SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "+", 
+  RowBox[{
+   FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+   SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox["1", "Rr"], "+", 
+     FractionBox["2", 
+      SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i-1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "2"}], " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "-", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"2", "+", 
+      FractionBox[
+       SubscriptBox["\[CapitalDelta]", "r"], "Rr"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]]}]], "Output",
+ CellChangeTimes->{{3.467118243802059*^9, 3.4671182657515583`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsCentralDiffR", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"centralDiffCCER", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "i", "rr"], 
+         SubscriptBox["Er", "i"]}], "+", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "\"\<i-1/2\>\"", "r\[Theta]"], 
+            SubscriptBox["Eth", "\"\<i-1/2\>\""]}], "+", 
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "r\[Theta]"], 
+            SubscriptBox["Eth", "\"\<i+1/2\>\""]}]}], ")"}], "/", "2"}], "+", 
+        
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "\"\<i-1/2\>\"", "rz"], 
+            SubscriptBox["Ez", "\"\<i-1/2\>\""]}], "+", 
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "rz"], 
+            SubscriptBox["Ez", "\"\<i+1/2\>\""]}]}], ")"}], "/", "2"}]}], 
+       ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467118539167849*^9, 3.4671187614832687`*^9}, {
+  3.467118832411359*^9, 3.467118843337426*^9}, {3.467118951486752*^9, 
+  3.4671190871795053`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i-1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"\[ImaginaryI]", " ", "kz"}], 
+       SubscriptBox["\[CapitalDelta]", "r"]]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i-1/2\"\>", "rz"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i-1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         FractionBox[
+          RowBox[{"2", " ", "Rr"}], 
+          SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["Rr", "2"]}]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i-1/2\"\>", "r\[Theta]"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      RowBox[{"\[ImaginaryI]", " ", "kz"}], 
+      SubscriptBox["\[CapitalDelta]", "r"]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "rz"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"2", " ", "Rr"}], "+", 
+         SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["Rr", "2"], " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "r\[Theta]"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "rr"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{3.467118763614427*^9, 3.467118844898011*^9, 
+  3.4671190884653053`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsCentralDiffTh", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"centralDiffCCETh", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "i", "\[Theta]r"], 
+            SubscriptBox["Er", "i"]}], "+", 
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "\"\<i+1\>\"", "\[Theta]r"], 
+            SubscriptBox["Er", "\"\<i+1\>\""]}]}], ")"}], "/", "2"}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "\[Theta]\[Theta]"], 
+         SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "\[Theta]z"], 
+         SubscriptBox["Ez", "\"\<i+1/2\>\""]}]}], ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467119216181141*^9, 3.467119316858678*^9}, {
+  3.4671194143861113`*^9, 3.467119429819611*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i-1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "2"}], " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "-", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"2", "+", 
+      FractionBox[
+       SubscriptBox["\[CapitalDelta]", "r"], "Rr"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  RowBox[{
+   SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"\[ImaginaryI]", " ", "nPhi"}], 
+       RowBox[{"2", " ", 
+        SuperscriptBox["Rr", "2"]}]]}], "+", 
+     FractionBox[
+      RowBox[{"\[ImaginaryI]", " ", "nPhi"}], 
+      RowBox[{"Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1\"\>", "\[Theta]r"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"kz", " ", "nPhi"}], "Rr"]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "\[Theta]z"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox["1", 
+      SuperscriptBox["Rr", "2"]], "+", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "\[Theta]\[Theta]"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"2", " ", "Rr"}], "+", 
+          SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+       RowBox[{"2", " ", 
+        SuperscriptBox["Rr", "2"], " ", 
+        SubscriptBox["\[CapitalDelta]", "r"]}]]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "\[Theta]r"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{3.467119317649967*^9, 3.467119431412118*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsCentralDiffZ", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"centralDiffCCEZ", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "i", "zr"], 
+            SubscriptBox["Er", "i"]}], "+", 
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "\"\<i+1\>\"", "zr"], 
+            SubscriptBox["Er", "\"\<i+1\>\""]}]}], ")"}], "/", "2"}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "z\[Theta]"], 
+         SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "zz"], 
+         SubscriptBox["Ez", "\"\<i+1/2\>\""]}]}], ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.4671198836143427`*^9, 3.467119912702475*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i-1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "2"}], " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "-", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"2", "+", 
+      FractionBox[
+       SubscriptBox["\[CapitalDelta]", "r"], "Rr"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  RowBox[{
+   SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{
+      FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+      RowBox[{"(", 
+       RowBox[{
+        FractionBox["1", "Rr"], "+", 
+        FractionBox["2", 
+         SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1\"\>", "zr"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]], "+", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "zz"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"kz", " ", "nPhi"}], "Rr"]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "z\[Theta]"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{
+      FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+      RowBox[{"(", 
+       RowBox[{
+        FractionBox["1", "Rr"], "-", 
+        FractionBox["2", 
+         SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "zr"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{{3.4671198916896963`*^9, 3.4671199134456387`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"forwardDiffCCER", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "1", "]"}], "]"}], "/.", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Er", "i"]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", "0"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", "0"}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "3"}], 
+            SubscriptBox["Eth", "i"], "*", "0"}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "-", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{
+              SubscriptBox["Eth", "\"\<i+1/2\>\""], "+", 
+              SubscriptBox["Eth", "\"\<i+3/2\>\""]}], ")"}], "/", "2"}]}], 
+          ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "3"}], 
+            SubscriptBox["Ez", "i"], "*", "0"}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Ez", "\"\<i+1/2\>\""]}], "-", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{
+              SubscriptBox["Ez", "\"\<i+1/2\>\""], "+", 
+              SubscriptBox["Ez", "\"\<i+3/2\>\""]}], ")"}], "/", "2"}]}], 
+          ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}]}], "}"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.46712092554318*^9, 3.467120959806765*^9}, 
+   3.467120989942895*^9, {3.467121026828197*^9, 3.467121123490306*^9}, {
+   3.4671212334888144`*^9, 3.4671212681753483`*^9}, {3.467130395092301*^9, 
+   3.4671304062851*^9}, {3.4671305322267857`*^9, 3.4671305325197563`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]]}], ")"}], " ", 
+   SubscriptBox["Er", "i"]}], "+", 
+  FractionBox[
+   RowBox[{"7", " ", "\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Eth", "\<\"i+1/2\"\>"]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Eth", "\<\"i+3/2\"\>"]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{"7", " ", "\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Ez", "\<\"i+1/2\"\>"]}], 
+   RowBox[{"2", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Ez", "\<\"i+3/2\"\>"]}], 
+   RowBox[{"2", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]]}]], "Output",
+ CellChangeTimes->{{3.4671209321828213`*^9, 3.467120960598419*^9}, 
+   3.467120991253046*^9, 3.467121125283483*^9, 3.467121268781879*^9, 
+   3.467130533299623*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"forwardDiffCCEThB", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "2", "]"}], "]"}], "/.", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Er", "i"]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", "0"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", "0"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Er", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "3"}], 
+            SubscriptBox["Er", "i"]}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Er", "\"\<i+1\>\""]}], "-", 
+           SubscriptBox["Er", "\"\<i+2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"2", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "3"}], 
+            SubscriptBox["Eth", "i"], "*", "0"}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "-", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{
+              SubscriptBox["Eth", "\"\<i+1/2\>\""], "+", 
+              SubscriptBox["Eth", "\"\<i+3/2\>\""]}], ")"}], "/", "2"}]}], 
+          ")"}], "/", " ", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", 
+          RowBox[{"Rr", ",", "Rr"}]], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"2", 
+            SubscriptBox["Eth", "i"], "*", "0"}], "-", 
+           RowBox[{"5", " ", 
+            SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "+", 
+           RowBox[{"4", 
+            RowBox[{
+             RowBox[{"(", 
+              RowBox[{
+               SubscriptBox["Eth", "\"\<i+1/2\>\""], "+", 
+               SubscriptBox["Eth", "\"\<i+3/2\>\""]}], ")"}], "/", "2"}]}], 
+           "-", 
+           SubscriptBox["Eth", "\"\<i+3/2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{
+             SubscriptBox["\[CapitalDelta]", "r"], "/", "2"}], ")"}], "^", 
+           "2"}], ")"}]}]}]}], "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467121626923188*^9, 3.4671216712588797`*^9}, {
+   3.467121722606091*^9, 3.467121790220256*^9}, {3.4671218400057917`*^9, 
+   3.467121937909718*^9}, {3.4671219946811047`*^9, 3.467122013863697*^9}, {
+   3.467122046069212*^9, 3.46712211661957*^9}, {3.4671231110363607`*^9, 
+   3.4671231112164497`*^9}, 3.467127992482522*^9, {3.467130572966669*^9, 
+   3.467130590187583*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   RowBox[{"2", " ", "\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "\<\"i+1\"\>"]}], 
+   RowBox[{"Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "\<\"i+2\"\>"]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "8"}], " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "i"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"3", " ", "Rr"}], "+", 
+      RowBox[{"2", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SuperscriptBox["Rr", "2"], " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"24", "-", 
+      FractionBox[
+       RowBox[{"7", " ", 
+        SubscriptBox["\[CapitalDelta]", "r"]}], "Rr"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]]}]], "Output",
+ CellChangeTimes->{{3.467121631274913*^9, 3.467121671801921*^9}, 
+   3.467121723787715*^9, {3.4671218723848467`*^9, 3.4671219075323133`*^9}, 
+   3.467121941461226*^9, 3.467122015650145*^9, 3.467122049512948*^9, {
+   3.46712211205774*^9, 3.467122117554337*^9}, 3.467123111899165*^9, 
+   3.467127995842539*^9, 3.4671305930902863`*^9, 3.467138694817461*^9, 
+   3.467140116405477*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"forwardDiffCCEZB", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "3", "]"}], "]"}], "/.", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Er", "i"]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", "0"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", "0"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Er", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "3"}], 
+            SubscriptBox["Er", "i"]}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Er", "\"\<i+1\>\""]}], "-", 
+           SubscriptBox["Er", "\"\<i+2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"2", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "3"}], 
+            SubscriptBox["Ez", "i"], "*", "0"}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Ez", "\"\<i+1/2\>\""]}], "-", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{
+              SubscriptBox["Ez", "\"\<i+1/2\>\""], "+", 
+              SubscriptBox["Ez", "\"\<i+3/2\>\""]}], ")"}], "/", "2"}]}], 
+          ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", 
+          RowBox[{"Rr", ",", "Rr"}]], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"2", 
+            SubscriptBox["Ez", "i"], "*", "0"}], "-", 
+           RowBox[{"5", 
+            SubscriptBox["Ez", "\"\<i+1/2\>\""]}], "+", 
+           RowBox[{"4", 
+            RowBox[{
+             RowBox[{"(", " ", 
+              RowBox[{
+               SubscriptBox["Ez", "\"\<i+1/2\>\""], "+", 
+               SubscriptBox["Ez", "\"\<i+3/2\>\""]}], ")"}], "/", "2"}]}], 
+           "-", 
+           SubscriptBox["Ez", "\"\<i+3/2\>\""]}], ")"}], "/", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            SubscriptBox["\[CapitalDelta]", "r"], "/", "2"}], ")"}], "^", 
+          "2"}]}]}]}], "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Er", "\"\<i+2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.4671222507006073`*^9, 3.467122283248406*^9}, {
+   3.46712235078962*^9, 3.467122374201294*^9}, {3.467122410970413*^9, 
+   3.467122609735561*^9}, {3.467122701230378*^9, 3.467122708497486*^9}, 
+   3.4671285596532183`*^9, {3.467130596718939*^9, 3.467130607869158*^9}, {
+   3.467130822108036*^9, 3.467130822520479*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox["2", "Rr"], "-", 
+     FractionBox["3", 
+      SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "+", 
+  FractionBox[
+   RowBox[{"2", " ", "\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Er", "\<\"i+1\"\>"]}], 
+   SubscriptBox["\[CapitalDelta]", "r"]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Er", "\<\"i+2\"\>"]}], 
+   RowBox[{"2", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "8"}], " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"24", "-", 
+      FractionBox[
+       RowBox[{"7", " ", 
+        SubscriptBox["\[CapitalDelta]", "r"]}], "Rr"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]]}]], "Output",
+ CellChangeTimes->{{3.467122256395174*^9, 3.467122283857655*^9}, 
+   3.467122405456542*^9, 3.4671224559407673`*^9, 3.467122527423361*^9, 
+   3.467122611920767*^9, 3.4671227093631573`*^9, 3.467128562234849*^9, 
+   3.467130611767555*^9, 3.467130830173387*^9, 3.467138983055255*^9, 
+   3.46714012211762*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsForwardDiffR", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"forwardDiffCCER", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "i", "rr"], 
+         SubscriptBox["Er", "i"]}], "+", 
+        RowBox[{
+         SubscriptBox["Eth", "i"], "*", "0"}], "+", 
+        RowBox[{
+         SubscriptBox["Ez", "i"], "*", "0"}]}], ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467122823498157*^9, 3.467122826920107*^9}, {
+  3.4671228834295673`*^9, 3.4671229094072437`*^9}, {3.467122955079473*^9, 
+  3.46712295795221*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   RowBox[{"7", " ", "\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Eth", "\<\"i+1/2\"\>"]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Eth", "\<\"i+3/2\"\>"]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{"7", " ", "\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Ez", "\<\"i+1/2\"\>"]}], 
+   RowBox[{"2", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Ez", "\<\"i+3/2\"\>"]}], 
+   RowBox[{"2", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "rr"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{3.467122829376876*^9, 3.467122910246443*^9, 
+  3.4671229593186417`*^9, 3.46713042690282*^9, 3.46713053994899*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsForwardDiffThB", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"forwardDiffCCEThB", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "i", "\[Theta]r"], 
+         SubscriptBox["Er", "i"]}], "+", 
+        RowBox[{
+         SubscriptBox["Eth", "i"], "*", "0"}], "+", 
+        RowBox[{
+         SubscriptBox["Ez", "i"], "*", "0"}]}], ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467123047334916*^9, 3.467123057494323*^9}, {
+  3.467123201102316*^9, 3.467123243558998*^9}, {3.4671280020608883`*^9, 
+  3.467128003418392*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   RowBox[{"2", " ", "\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "\<\"i+1\"\>"]}], 
+   RowBox[{"Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "\<\"i+2\"\>"]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "8"}], " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"24", "-", 
+      FractionBox[
+       RowBox[{"7", " ", 
+        SubscriptBox["\[CapitalDelta]", "r"]}], "Rr"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"3", " ", "Rr"}], "+", 
+          RowBox[{"2", " ", 
+           SubscriptBox["\[CapitalDelta]", "r"]}]}], ")"}]}], 
+       RowBox[{"2", " ", 
+        SuperscriptBox["Rr", "2"], " ", 
+        SubscriptBox["\[CapitalDelta]", "r"]}]]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "\[Theta]r"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{3.467123059254613*^9, 3.46712311575961*^9, 
+  3.467123244691629*^9, 3.467128004322277*^9, 3.467130615557563*^9, 
+  3.467138708851452*^9, 3.467140129453472*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsForwardDiffZB", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"forwardDiffCCEZB", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "i", "zr"], 
+         SubscriptBox["Er", "i"]}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "z\[Theta]"], 
+         SubscriptBox["Eth", "\"\<i+1/2\>\""], "*", "0"}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "zz"], 
+         SubscriptBox["Ez", "\"\<i+1/2\>\""], "*", "0"}]}], ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Er", "\"\<i+2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467123357654759*^9, 3.467123379724112*^9}, {
+  3.467128566444023*^9, 3.467128567583799*^9}, {3.467130760085243*^9, 
+  3.467130764898137*^9}, {3.4671390101012573`*^9, 3.467139014760504*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   RowBox[{"2", " ", "\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Er", "\<\"i+1\"\>"]}], 
+   SubscriptBox["\[CapitalDelta]", "r"]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Er", "\<\"i+2\"\>"]}], 
+   RowBox[{"2", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "8"}], " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"24", "-", 
+      FractionBox[
+       RowBox[{"7", " ", 
+        SubscriptBox["\[CapitalDelta]", "r"]}], "Rr"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      RowBox[{"\[ImaginaryI]", " ", "kz"}], "Rr"], "-", 
+     FractionBox[
+      RowBox[{"3", " ", "\[ImaginaryI]", " ", "kz"}], 
+      RowBox[{"2", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "zr"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{{3.4671233680454617`*^9, 3.467123380441832*^9}, 
+   3.467128568482047*^9, 3.467130618096303*^9, 3.4671307655407553`*^9, 
+   3.467130834401061*^9, {3.467138989204126*^9, 3.467139016483869*^9}, 
+   3.4671401350323973`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"forwardDiffCCETh", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "2", "]"}], "]"}], "/.", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["Er", "i"], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", "2"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Eth", "\"\<i+1/2\>\""]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Ez", "\"\<i+1/2\>\""]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Er", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Er", "i"]}], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "3"}], 
+            SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Eth", "\"\<i+3/2\>\""]}], "-", 
+           SubscriptBox["Eth", "\"\<i+5/2\>\""]}], ")"}], "/", " ", 
+         RowBox[{"(", 
+          RowBox[{"2", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", 
+          RowBox[{"Rr", ",", "Rr"}]], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"2", 
+            SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "-", 
+           RowBox[{"5", " ", 
+            SubscriptBox["Eth", "\"\<i+3/2\>\""]}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Eth", "\"\<i+5/2\>\""]}], "-", 
+           SubscriptBox["Eth", "\"\<i+7/2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["\[CapitalDelta]", "r"], "^", "2"}], ")"}]}]}]}], 
+      "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+5/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+7/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467128072362768*^9, 3.467128110954628*^9}, {
+  3.467128166374642*^9, 3.467128178694627*^9}, {3.467128308851215*^9, 
+  3.467128385937302*^9}, {3.4671284369824*^9, 3.467128484388092*^9}, {
+  3.467128704768985*^9, 3.467128718552446*^9}, {3.4671288516165447`*^9, 
+  3.467128880844287*^9}, {3.467130097738212*^9, 3.4671300986646338`*^9}, {
+  3.467130129945713*^9, 3.467130130296011*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", 
+   FractionBox[
+    RowBox[{"kz", " ", "nPhi", " ", 
+     SubscriptBox["Ez", "\<\"i+1/2\"\>"]}], "Rr"]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox["1", 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "+", 
+     FractionBox["3", 
+      RowBox[{"2", " ", "Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]]}], ")"}]}], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"5", " ", "Rr"}], "-", 
+      RowBox[{"2", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]}], ")"}]}], 
+   RowBox[{"Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"2", " ", "Rr"}], "-", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SuperscriptBox["Rr", "2"], " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "i"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"2", " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SuperscriptBox["Rr", "2"], " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    RowBox[{"2", " ", "Rr", " ", 
+     SubscriptBox["Eth", "\<\"i+7/2\"\>"]}], "+", 
+    RowBox[{
+     SubscriptBox["Eth", "\<\"i+5/2\"\>"], " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"-", "8"}], " ", "Rr"}], "+", 
+       SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]]}]], "Output",
+ CellChangeTimes->{
+  3.46712800789612*^9, {3.467128089736055*^9, 3.4671281123007727`*^9}, {
+   3.4671281677670927`*^9, 3.467128184089032*^9}, 3.46712832242666*^9, 
+   3.4671283866265163`*^9, 3.467128485505718*^9, {3.467128705452487*^9, 
+   3.467128719200521*^9}, {3.467128856936949*^9, 3.467128881747652*^9}, 
+   3.467129806595656*^9, 3.467130099358769*^9, 3.46713013083107*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"forwardDiffCCEZ", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "3", "]"}], "]"}], "/.", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["Er", "i"], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", "2"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Eth", "\"\<i+1/2\>\""]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Ez", "\"\<i+1/2\>\""]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Er", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Er", "i"]}], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "3"}], 
+            SubscriptBox["Ez", "\"\<i+1/2\>\""]}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "-", 
+           SubscriptBox["Ez", "\"\<i+5/2\>\""]}], ")"}], "/", " ", 
+         RowBox[{"(", 
+          RowBox[{"2", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", 
+          RowBox[{"Rr", ",", "Rr"}]], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"2", 
+            SubscriptBox["Ez", "\"\<i+1/2\>\""]}], "-", 
+           RowBox[{"5", " ", 
+            SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Ez", "\"\<i+5/2\>\""]}], "-", 
+           SubscriptBox["Ez", "\"\<i+7/2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["\[CapitalDelta]", "r"], "^", "2"}], ")"}]}]}]}], 
+      "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Er", "\"\<i+2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", 
+       RowBox[{"\"\<i+5/2\>\"", ",", 
+        SubscriptBox["Ez", "\"\<i+7/2\>\""]}]]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.4671285789755583`*^9, 3.467128726122414*^9}, {
+  3.467129753730772*^9, 3.4671297655013533`*^9}, {3.467130092621418*^9, 
+  3.467130092928871*^9}, {3.467130123856051*^9, 3.4671301242354393`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", 
+   FractionBox[
+    RowBox[{"kz", " ", "nPhi", " ", 
+     SubscriptBox["Eth", "\<\"i+1/2\"\>"]}], "Rr"]}], "+", 
+  RowBox[{
+   FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox["1", "Rr"], "-", 
+     FractionBox["2", 
+      SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "+", 
+  RowBox[{
+   FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+   SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox["1", "Rr"], "+", 
+     FractionBox["2", 
+      SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "+", 
+     FractionBox["3", 
+      RowBox[{"2", " ", "Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]]}], ")"}]}], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"5", " ", "Rr"}], "-", 
+      RowBox[{"2", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]}], ")"}]}], 
+   RowBox[{"Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    RowBox[{"2", " ", "Rr", " ", 
+     SubscriptBox["Ez", "\<\"i+7/2\"\>"]}], "+", 
+    RowBox[{
+     SubscriptBox["Ez", "\<\"i+5/2\"\>"], " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"-", "8"}], " ", "Rr"}], "+", 
+       SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]]}]], "Output",
+ CellChangeTimes->{
+  3.467128579508546*^9, {3.467128659441821*^9, 3.4671287267341146`*^9}, {
+   3.467129758648752*^9, 3.467129766683848*^9}, {3.467130093878833*^9, 
+   3.467130126820765*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsForwardDiffTh", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"forwardDiffCCETh", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "i", "\[Theta]r"], 
+            SubscriptBox["Er", "i"]}], "+", 
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "\"\<i+1\>\"", "\[Theta]r"], 
+            SubscriptBox["Er", "\"\<i+1\>\""]}]}], ")"}], "/", "2"}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "\[Theta]\[Theta]"], 
+         SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "\[Theta]z"], 
+         SubscriptBox["Ez", "\"\<i+1/2\>\""]}]}], ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+5/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+7/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+5/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+7/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.4671298673533163`*^9, 3.467129894335156*^9}, {
+  3.467129952530354*^9, 3.467129973497611*^9}, {3.467130279977552*^9, 
+  3.467130314094928*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   SubscriptBox["Eth", "\<\"i+7/2\"\>"], 
+   SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"5", " ", "Rr"}], "-", 
+      RowBox[{"2", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]}], ")"}]}], 
+   RowBox[{"Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i+5/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "8"}], " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  RowBox[{
+   SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"\[ImaginaryI]", " ", "nPhi"}], 
+       RowBox[{"2", " ", 
+        SuperscriptBox["Rr", "2"]}]]}], "+", 
+     FractionBox[
+      RowBox[{"\[ImaginaryI]", " ", "nPhi"}], 
+      RowBox[{"Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1\"\>", "\[Theta]r"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"kz", " ", "nPhi"}], "Rr"]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "\[Theta]z"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox["1", 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "+", 
+     FractionBox["3", 
+      RowBox[{"2", " ", "Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "\[Theta]\[Theta]"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"2", " ", "Rr"}], "+", 
+          SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+       RowBox[{"2", " ", 
+        SuperscriptBox["Rr", "2"], " ", 
+        SubscriptBox["\[CapitalDelta]", "r"]}]]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "\[Theta]r"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}]}]], "Output",
+ GeneratedCell->False,
+ CellAutoOverwrite->False,
+ CellChangeTimes->{{3.467129877125142*^9, 3.467129895800413*^9}, 
+   3.467129974235074*^9, 3.467130103468919*^9, 3.467130133544167*^9, {
+   3.467130282067296*^9, 3.467130315010271*^9}, {3.4671433308588343`*^9, 
+   3.467143335272706*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsForwardDiffZ", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"forwardDiffCCEZ", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "i", "zr"], 
+            SubscriptBox["Er", "i"]}], "+", 
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "\"\<i+1\>\"", "zr"], 
+            SubscriptBox["Er", "\"\<i+1\>\""]}]}], ")"}], "/", "2"}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "z\[Theta]"], 
+         SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "zz"], 
+         SubscriptBox["Ez", "\"\<i+1/2\>\""]}]}], ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+5/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+7/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467129931227438*^9, 3.467129940488978*^9}, 
+   3.467129985539524*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   SubscriptBox["Ez", "\<\"i+7/2\"\>"], 
+   SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i+3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"5", " ", "Rr"}], "-", 
+      RowBox[{"2", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]}], ")"}]}], 
+   RowBox[{"Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i+5/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "8"}], " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  RowBox[{
+   SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{
+      FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+      RowBox[{"(", 
+       RowBox[{
+        FractionBox["1", "Rr"], "+", 
+        FractionBox["2", 
+         SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1\"\>", "zr"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "+", 
+     FractionBox["3", 
+      RowBox[{"2", " ", "Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "zz"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"kz", " ", "nPhi"}], "Rr"]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "z\[Theta]"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{
+      FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+      RowBox[{"(", 
+       RowBox[{
+        FractionBox["1", "Rr"], "-", 
+        FractionBox["2", 
+         SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "zr"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{
+  3.467129944048914*^9, 3.4671299861277723`*^9, {3.467130105789238*^9, 
+   3.467130135558035*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"backwardDiffCCER", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "1", "]"}], "]"}], "/.", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Er", "i"]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", "0"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", "0"}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"3", 
+            SubscriptBox["Eth", "i"], "*", "0"}], "-", 
+           RowBox[{"4", 
+            SubscriptBox["Eth", "\"\<i-1/2\>\""]}], "+", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{
+              SubscriptBox["Eth", "\"\<i-1/2\>\""], "+", 
+              SubscriptBox["Eth", "\"\<i-3/2\>\""]}], ")"}], "/", "2"}]}], 
+          ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"3", 
+            SubscriptBox["Ez", "i"], "*", "0"}], "-", 
+           RowBox[{"4", 
+            SubscriptBox["Ez", "\"\<i-1/2\>\""]}], "-", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{
+              SubscriptBox["Ez", "\"\<i-1/2\>\""], "+", 
+              SubscriptBox["Ez", "\"\<i-3/2\>\""]}], ")"}], "/", "2"}]}], 
+          ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}]}], "}"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.4671330409863997`*^9, 3.467133044233219*^9}, {
+  3.467133309045768*^9, 3.467133310951014*^9}, {3.467133358656662*^9, 
+  3.4671334104560328`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]]}], ")"}], " ", 
+   SubscriptBox["Er", "i"]}], "-", 
+  FractionBox[
+   RowBox[{"7", " ", "\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Eth", "\<\"i-1/2\"\>"]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"9", " ", "\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Ez", "\<\"i-1/2\"\>"]}], 
+   RowBox[{"2", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"nPhi", " ", 
+       SubscriptBox["Eth", "\<\"i-3/2\"\>"]}], "-", 
+      RowBox[{"kz", " ", "Rr", " ", 
+       SubscriptBox["Ez", "\<\"i-3/2\"\>"]}]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]]}]], "Output",
+ CellChangeTimes->{
+  3.4671330499818993`*^9, {3.467133391542015*^9, 3.467133412439702*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsBackwardDiffR", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"backwardDiffCCER", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "i", "rr"], 
+         SubscriptBox["Er", "i"]}], "+", 
+        RowBox[{
+         SubscriptBox["Eth", "i"], "*", "0"}], "+", 
+        RowBox[{
+         SubscriptBox["Ez", "i"], "*", "0"}]}], ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.4671334528971443`*^9, 3.467133496471504*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", 
+   FractionBox[
+    RowBox[{"7", " ", "\[ImaginaryI]", " ", "nPhi", " ", 
+     SubscriptBox["Eth", "\<\"i-1/2\"\>"]}], 
+    RowBox[{"2", " ", "Rr", " ", 
+     SubscriptBox["\[CapitalDelta]", "r"]}]]}], "+", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Eth", "\<\"i-3/2\"\>"]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"9", " ", "\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Ez", "\<\"i-1/2\"\>"]}], 
+   RowBox[{"2", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "kz", " ", 
+    SubscriptBox["Ez", "\<\"i-3/2\"\>"]}], 
+   RowBox[{"2", " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "rr"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{3.467133464845953*^9, 3.467133497772313*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"backwardDiffCCETh", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "2", "]"}], "]"}], "/.", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["Er", "i"], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", "2"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Eth", "\"\<i+1/2\>\""]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Ez", "\"\<i+1/2\>\""]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Er", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Er", "i"]}], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"3", 
+            SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "-", 
+           RowBox[{"4", 
+            SubscriptBox["Eth", "\"\<i-1/2\>\""]}], "+", 
+           SubscriptBox["Eth", "\"\<i-3/2\>\""]}], ")"}], "/", " ", 
+         RowBox[{"(", 
+          RowBox[{"2", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", 
+          RowBox[{"Rr", ",", "Rr"}]], 
+         RowBox[{"Eth", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"2", 
+            SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "-", 
+           RowBox[{"5", " ", 
+            SubscriptBox["Eth", "\"\<i-1/2\>\""]}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Eth", "\"\<i-3/2\>\""]}], "-", 
+           SubscriptBox["Eth", "\"\<i-5/2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["\[CapitalDelta]", "r"], "^", "2"}], ")"}]}]}]}], 
+      "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+5/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+7/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.4671343705273438`*^9, 3.467134373496046*^9}, {
+  3.467134418882927*^9, 3.467134434928857*^9}, {3.467134537743643*^9, 
+  3.46713458879793*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", 
+   FractionBox[
+    RowBox[{"kz", " ", "nPhi", " ", 
+     SubscriptBox["Ez", "\<\"i+1/2\"\>"]}], "Rr"]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox["1", 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "-", 
+     FractionBox["3", 
+      RowBox[{"2", " ", "Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]]}], ")"}]}], "+", 
+  FractionBox[
+   SubscriptBox["Eth", "\<\"i-5/2\"\>"], 
+   SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "+", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"2", " ", "Rr"}], "-", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SuperscriptBox["Rr", "2"], " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+  FractionBox[
+   RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+    SubscriptBox["Er", "i"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"2", " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SuperscriptBox["Rr", "2"], " ", 
+    SubscriptBox["\[CapitalDelta]", "r"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i-1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"5", " ", "Rr"}], "+", 
+      RowBox[{"2", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]}], ")"}]}], 
+   RowBox[{"Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "-", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i-3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"8", "+", 
+      FractionBox[
+       SubscriptBox["\[CapitalDelta]", "r"], "Rr"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]]}]], "Output",
+ CellChangeTimes->{
+  3.467134375479273*^9, {3.467134562262381*^9, 3.4671345893935823`*^9}, 
+   3.467141658876927*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsbackwardDiffTh", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"backwardDiffCCETh", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "i", "\[Theta]r"], 
+            SubscriptBox["Er", "i"]}], "+", 
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "\"\<i+1\>\"", "\[Theta]r"], 
+            SubscriptBox["Er", "\"\<i+1\>\""]}]}], ")"}], "/", "2"}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "\[Theta]\[Theta]"], 
+         SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "\[Theta]z"], 
+         SubscriptBox["Ez", "\"\<i+1/2\>\""]}]}], ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+5/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+7/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+5/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+7/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.4671346277518463`*^9, 3.4671346501279173`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   SubscriptBox["Eth", "\<\"i-5/2\"\>"], 
+   SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i-1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"5", " ", "Rr"}], "+", 
+      RowBox[{"2", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]}], ")"}]}], 
+   RowBox[{"Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "-", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Eth", "\<\"i-3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{"8", "+", 
+      FractionBox[
+       SubscriptBox["\[CapitalDelta]", "r"], "Rr"]}], ")"}]}], 
+   RowBox[{"2", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  RowBox[{
+   SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"\[ImaginaryI]", " ", "nPhi"}], 
+       RowBox[{"2", " ", 
+        SuperscriptBox["Rr", "2"]}]]}], "+", 
+     FractionBox[
+      RowBox[{"\[ImaginaryI]", " ", "nPhi"}], 
+      RowBox[{"Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1\"\>", "\[Theta]r"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"kz", " ", "nPhi"}], "Rr"]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "\[Theta]z"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["kz", "2"], "+", 
+     FractionBox["1", 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "-", 
+     FractionBox["3", 
+      RowBox[{"2", " ", "Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "\[Theta]\[Theta]"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"\[ImaginaryI]", " ", "nPhi", " ", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"2", " ", "Rr"}], "+", 
+          SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+       RowBox[{"2", " ", 
+        SuperscriptBox["Rr", "2"], " ", 
+        SubscriptBox["\[CapitalDelta]", "r"]}]]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "\[Theta]r"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{{3.467134637206115*^9, 3.4671346506019382`*^9}, 
+   3.4671417563691607`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"backwardDiffCCEZ", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"CCE", "[", 
+      RowBox[{"[", "3", "]"}], "]"}], "/.", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Er", "[", "Rr", "]"}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["Er", "i"], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", "2"}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Eth", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Eth", "\"\<i+1/2\>\""]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Ez", "[", "Rr", "]"}], "\[Rule]", 
+        SubscriptBox["Ez", "\"\<i+1/2\>\""]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Er", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", 
+            SubscriptBox["Er", "i"]}], "+", 
+           SubscriptBox["Er", "\"\<i+1\>\""]}], ")"}], "/", 
+         SubscriptBox["\[CapitalDelta]", "r"]}]}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", "Rr"], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"3", 
+            SubscriptBox["Ez", "\"\<i+1/2\>\""]}], "-", 
+           RowBox[{"4", 
+            SubscriptBox["Ez", "\"\<i-1/2\>\""]}], "+", 
+           SubscriptBox["Ez", "\"\<i-3/2\>\""]}], ")"}], "/", " ", 
+         RowBox[{"(", 
+          RowBox[{"2", 
+           SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], ",", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[PartialD]", 
+          RowBox[{"Rr", ",", "Rr"}]], 
+         RowBox[{"Ez", "[", "Rr", "]"}]}], "\[Rule]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"2", 
+            SubscriptBox["Ez", "\"\<i+1/2\>\""]}], "-", 
+           RowBox[{"5", " ", 
+            SubscriptBox["Ez", "\"\<i-1/2\>\""]}], "+", 
+           RowBox[{"4", 
+            SubscriptBox["Ez", "\"\<i-3/2\>\""]}], "-", 
+           SubscriptBox["Ez", "\"\<i-5/2\>\""]}], ")"}], "/", 
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["\[CapitalDelta]", "r"], "^", "2"}], ")"}]}]}]}], 
+      "}"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Er", "\"\<i+2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", 
+       RowBox[{"\"\<i+5/2\>\"", ",", 
+        SubscriptBox["Ez", "\"\<i+7/2\>\""]}]], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-3/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467135393183098*^9, 3.4671353962715387`*^9}, {
+  3.4671354528287077`*^9, 3.4671354887434883`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", 
+   FractionBox[
+    RowBox[{"kz", " ", "nPhi", " ", 
+     SubscriptBox["Eth", "\<\"i+1/2\"\>"]}], "Rr"]}], "+", 
+  RowBox[{
+   FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox["1", "Rr"], "-", 
+     FractionBox["2", 
+      SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "+", 
+  RowBox[{
+   FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+   SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox["1", "Rr"], "+", 
+     FractionBox["2", 
+      SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "-", 
+     FractionBox["3", 
+      RowBox[{"2", " ", "Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]]}], ")"}]}], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i-1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"5", " ", "Rr"}], "+", 
+      RowBox[{"2", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]}], ")"}]}], 
+   RowBox[{"Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    RowBox[{"2", " ", "Rr", " ", 
+     SubscriptBox["Ez", "\<\"i-5/2\"\>"]}], "-", 
+    RowBox[{
+     SubscriptBox["Ez", "\<\"i-3/2\"\>"], " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"8", " ", "Rr"}], "+", 
+       SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]]}]], "Output",
+ CellChangeTimes->{3.467135397873271*^9, 3.467135490636345*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"lhsBackwardDiffZ", "=", 
+  RowBox[{"Collect", "[", 
+   RowBox[{
+    RowBox[{"backwardDiffCCEZ", "-", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Omega]", "^", "2"}], "/", 
+       RowBox[{"c", "^", "2"}]}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "i", "zr"], 
+            SubscriptBox["Er", "i"]}], "+", 
+           RowBox[{
+            SubsuperscriptBox["\[Epsilon]", "\"\<i+1\>\"", "zr"], 
+            SubscriptBox["Er", "\"\<i+1\>\""]}]}], ")"}], "/", "2"}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "z\[Theta]"], 
+         SubscriptBox["Eth", "\"\<i+1/2\>\""]}], "+", 
+        RowBox[{
+         SubsuperscriptBox["\[Epsilon]", "\"\<i+1/2\>\"", "zz"], 
+         SubscriptBox["Ez", "\"\<i+1/2\>\""]}]}], ")"}]}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      SubscriptBox["Er", "\"\<i-1\>\""], ",", 
+      SubscriptBox["Er", "i"], ",", 
+      SubscriptBox["Er", "\"\<i+1\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+1/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+5/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i+7/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-1/2\>\""], ",", 
+      SubscriptBox["Eth", "\"\<i-3/2\>\""], ",", 
+      SubscriptBox["Ez", "\"\<i-5/2\>\""]}], "}"}], ",", "Simplify"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.467135625311262*^9, 3.467135679793124*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox[
+   SubscriptBox["Ez", "\<\"i-5/2\"\>"], 
+   SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "-", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i-3/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"8", " ", "Rr"}], "+", 
+      SubscriptBox["\[CapitalDelta]", "r"]}], ")"}]}], 
+   RowBox[{"2", " ", "Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  FractionBox[
+   RowBox[{
+    SubscriptBox["Ez", "\<\"i-1/2\"\>"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"5", " ", "Rr"}], "+", 
+      RowBox[{"2", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]}], ")"}]}], 
+   RowBox[{"Rr", " ", 
+    SubsuperscriptBox["\[CapitalDelta]", "r", "2"]}]], "+", 
+  RowBox[{
+   SubscriptBox["Er", "\<\"i+1\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{
+      FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+      RowBox[{"(", 
+       RowBox[{
+        FractionBox["1", "Rr"], "+", 
+        FractionBox["2", 
+         SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1\"\>", "zr"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Ez", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     FractionBox[
+      SuperscriptBox["nPhi", "2"], 
+      SuperscriptBox["Rr", "2"]], "-", 
+     FractionBox["2", 
+      SubsuperscriptBox["\[CapitalDelta]", "r", "2"]], "-", 
+     FractionBox["3", 
+      RowBox[{"2", " ", "Rr", " ", 
+       SubscriptBox["\[CapitalDelta]", "r"]}]], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "zz"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Eth", "\<\"i+1/2\"\>"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"kz", " ", "nPhi"}], "Rr"]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "\<\"i+1/2\"\>", "z\[Theta]"]}], 
+      SuperscriptBox["c", "2"]]}], ")"}]}], "+", 
+  RowBox[{
+   SubscriptBox["Er", "i"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{
+      FractionBox["1", "2"], " ", "\[ImaginaryI]", " ", "kz", " ", 
+      RowBox[{"(", 
+       RowBox[{
+        FractionBox["1", "Rr"], "-", 
+        FractionBox["2", 
+         SubscriptBox["\[CapitalDelta]", "r"]]}], ")"}]}], "-", 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["\[Omega]", "2"], " ", 
+       SubsuperscriptBox["\[Epsilon]", "i", "zr"]}], 
+      RowBox[{"2", " ", 
+       SuperscriptBox["c", "2"]}]]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{{3.4671356383651333`*^9, 3.4671356810296307`*^9}}]
+}, Open  ]]
+},
+WindowSize->{984, 805},
+WindowMargins->{{27, Automatic}, {Automatic, 0}},
+Magnification->1.5,
+FrontEndVersion->"7.0 for Mac OS X x86 (32-bit) (November 10, 2008)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[567, 22, 2267, 61, 225, "Input"],
+Cell[2837, 85, 548, 9, 40, "Output"],
+Cell[3388, 96, 1286, 32, 113, "Output"],
+Cell[4677, 130, 2984, 82, 229, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[7698, 217, 3464, 84, 185, "Input"],
+Cell[11165, 303, 1510, 42, 146, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[12712, 350, 3147, 87, 224, "Input"],
+Cell[15862, 439, 1808, 55, 141, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[17707, 499, 3094, 86, 224, "Input"],
+Cell[20804, 587, 1632, 50, 144, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[22473, 642, 1849, 48, 206, "Input"],
+Cell[24325, 692, 2648, 81, 231, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[27010, 778, 1564, 39, 153, "Input"],
+Cell[28577, 819, 2819, 86, 210, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[31433, 910, 1485, 38, 176, "Input"],
+Cell[32921, 950, 2624, 81, 210, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[35582, 1036, 2736, 71, 206, "Input"],
+Cell[38321, 1109, 1168, 32, 74, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[39526, 1146, 3671, 97, 272, "Input"],
+Cell[43200, 1245, 1779, 48, 141, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[45016, 1298, 3610, 96, 248, "Input"],
+Cell[48629, 1396, 1559, 43, 137, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[50225, 1444, 1210, 32, 101, "Input"],
+Cell[51438, 1478, 1309, 36, 130, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[52784, 1519, 1220, 32, 124, "Input"],
+Cell[54007, 1553, 1868, 54, 141, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[55912, 1612, 1467, 35, 153, "Input"],
+Cell[57382, 1649, 1719, 49, 140, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[59138, 1703, 3433, 88, 248, "Input"],
+Cell[62574, 1793, 2348, 66, 130, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[64959, 1864, 3355, 88, 281, "Input"],
+Cell[68317, 1954, 2005, 60, 129, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[70359, 2019, 1811, 44, 153, "Input"],
+Cell[72173, 2065, 3301, 98, 198, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[75511, 2168, 1607, 41, 176, "Input"],
+Cell[77121, 2211, 2930, 90, 198, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[80088, 2306, 2560, 68, 206, "Input"],
+Cell[82651, 2376, 1070, 31, 74, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[83758, 2412, 1213, 32, 101, "Input"],
+Cell[84974, 2446, 1263, 36, 130, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[86274, 2487, 3266, 86, 248, "Input"],
+Cell[89543, 2575, 2061, 62, 199, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[91641, 2642, 1817, 44, 177, "Input"],
+Cell[93461, 2688, 3074, 93, 210, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[96572, 2786, 3302, 87, 281, "Input"],
+Cell[99877, 2875, 1852, 56, 129, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[101766, 2936, 1732, 43, 153, "Input"],
+Cell[103501, 2981, 2858, 87, 198, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
