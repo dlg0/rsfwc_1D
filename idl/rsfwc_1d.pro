@@ -14,7 +14,7 @@ pro rsfwc_1d
 
 ;	Setup Grid
 
-	nR	= 100
+	nR		= 128 
 	rMin	= 1.0
 	rMax	= 1.2
 	dR	= ( rMax - rMin ) / ( nR - 1 )
@@ -24,9 +24,9 @@ pro rsfwc_1d
 
 ;	Setup plasma and field profiles
 
-	bMax	= 0.6
-	bPhi	= bMax / r 
-	bPhi_	= bMax / r_
+	bMax	= 0.5
+	bPhi	= fltArr(nR)+bMax; / (r*0+1) 
+	bPhi_	= fltArr(nR-1)+bMax; / (r_*0+1)
 
 	nSpec	= 2
 	specData	= replicate ( $
@@ -40,14 +40,14 @@ pro rsfwc_1d
 				n_ : fltArr ( nR - 1 ) }, nSpec )
 
 	nPeakR	= 1.1
-	nMax	= 1e19
+	nMax	= 1e18
 
 	;	electrons
 
 	specData[0].q 		= -1 * e
 	specData[0].m 		= me
-	specData.n 		= (-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-1.1)^2 * nMax
-	specData.n_		= (-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-1.1)^2 * nMax
+	specData.n 		= nMax;(-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-1.1)^2 * nMax
+	specData.n_		= nMax;(-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-1.1)^2 * nMax
 
 	;	dueterium
 
@@ -73,9 +73,9 @@ pro rsfwc_1d
 ;	Dispersion analysis
 
 	w	= complex ( 30d6 * 2d0 * !dpi, 0 )
-	nPhi	= 20 
+	nPhi	= 10 
 	kPar	= nPhi / r
-	kz		= 2 
+	kz		= 10 
 	nPar	= kPar * c / w
 
 	stixR	= 1d0 - total ( specData.wp^2 / ( w * ( w + specData.wc ) ), 2 )
@@ -248,10 +248,10 @@ pro rsfwc_1d
 				;	r component
 				aMat[3*i,3*i]	= kz^2 + nPhi^2 / r[i]^2 - w^2 * epsilon[0,0,i] / c^2
 				aMat[3*i-1,3*i]	= -9 * II * kz / ( 2 * dr ) 
-				aMat[3*i-1,3*i]	= -7 * II * nPhi / ( 2 * r[i] * dr ) 
-				aMat[3*i-1,3*i]	= 0 
-				aMat[3*i-1,3*i]	= -II * kz / ( 2 * dr ) 
-				aMat[3*i-1,3*i]	= II * nPhi / ( 2 * r[i] * dr ) 
+				aMat[3*i-2,3*i]	= -7 * II * nPhi / ( 2 * r[i] * dr ) 
+				aMat[3*i-3,3*i]	= 0 
+				aMat[3*i-4,3*i]	= -II * kz / ( 2 * dr ) 
+				aMat[3*i-5,3*i]	= II * nPhi / ( 2 * r[i] * dr ) 
 
 			endif
 
@@ -283,7 +283,6 @@ pro rsfwc_1d
 	ezLeftBry[5]	= ( -8 * r[0] + dr ) / ( 2 * r[0] * dr^2 )
 	ezLeftBry[6]	= -II * kz / ( 2 * dr ) 
 
-	;	Er is NOT the end pt like the left side?
 	ePhiRightBry[nAll-1]	= -II * nPhi / r[nR-1]^2 +  3 * II * nPhi / ( 2 * r[nR-1] * dr ) - w^2 * epsilon[0,1,nR-1] / ( c^2 )
 	ePhiRightBry[nAll-2]	= 0 
 	ePhiRightBry[nAll-3]	= ( 24 + 7 * dr / r[nR-1] ) / ( 2 * dr^2 ) 
@@ -300,7 +299,7 @@ pro rsfwc_1d
 	ezRightBry[nAll-6]	= 0
 	ezRightBry[nAll-7]	= II * kz / ( 2 * dr ) 
 
-	rhs[3*80+2]	= complex ( 0, 1 )
+	rhs[3*nR*0.5+2]	= complex ( 0, 1 )
 
 ;	Solve matrix
 
@@ -327,13 +326,12 @@ pro rsfwc_1d
 	OD_rhs	= [ 0, 0, rhs, 0, 0 ]
 	OD_eField	= la_least_squares ( OD_aMat, OD_rhs, $
 			status = OD_stat, $
-		   	method = 0, $
-		   	/double )
+		   	method = 0 )
 	print, 'OD lapack status: ', OD_stat
 
-	ii_eR	= indGen(nR)*3+2
-	ii_ePhi	= indGen(nR-1)*3+3
-	ii_ez	= indGen(nR-1)*3+4
+	ii_eR	= indGen(nR)*3+0
+	ii_ePhi	= indGen(nR-1)*3+1
+	ii_ez	= indGen(nR-1)*3+2
 	OD_eR	= OD_eField[ii_eR]
 	OD_ePhi	= OD_eField[ii_ePhi]
 	OD_ez	= OD_eField[ii_ez]
@@ -343,7 +341,7 @@ pro rsfwc_1d
 	++winNo
 	window, winNo
 	!p.multi = [0,2,3]
-	!p.charSize = 2
+	!p.charSize = 3
 	plot, r, eR
 	plot, r, imaginary (eR)
 	plot, r_, ePhi
@@ -352,9 +350,9 @@ pro rsfwc_1d
 	plot, r_, imaginary(ez)
 
 	++winNo
-	window, winNo
+	window, winNo, ySize = 800
 	!p.multi = [0,2,3]
-	!p.charSize = 2
+	!p.charSize = 3
 	plot, r, OD_eR
 	plot, r, imaginary (OD_eR)
 	plot, r_, OD_ePhi
