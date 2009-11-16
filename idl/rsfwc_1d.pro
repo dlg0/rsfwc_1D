@@ -14,7 +14,7 @@ pro rsfwc_1d
 
 ;	Setup Grid
 
-	nR		= 64 
+	nR		= 256 
 	rMin	= 1.0
 	rMax	= 1.2
 	dR	= ( rMax - rMin ) / ( nR - 1 )
@@ -64,11 +64,15 @@ pro rsfwc_1d
 	endfor
 
 	winNo	= 0
-	window, winNo
-	!p.multi = [0,2,2]
-	plot, r, bPhi
-	plot, r, specData[0].n
-	plot, r, specData[1].n
+	;window, winNo
+	;!p.multi = [0,2,2]
+    
+	iPlot, r, bPhi, $
+        view_grid = [3,1]
+	iPlot, r, specData[0].n, $
+        /view_next
+	iPlot, r, specData[1].n, $
+        /view_next
 
 ;	Dispersion analysis
 
@@ -98,15 +102,23 @@ pro rsfwc_1d
 	kPerp1	= sqrt ( ( -BB + sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * w / c
 	kPerp2	= sqrt ( ( -BB - sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * w / c
 
-	++winNo
-	window, winNo
-	!p.multi = [0,2,2]
-	plot, r, real_part ( kPerp1 ), /yLog, yRange = [1, 1e3]
-		oPlot, r, imaginary ( kPerp1 ), $
-			lineStyle = 2
-	plot, r, real_part ( kPerp2 ), /yLog, yRange = [1, 1e3]
-		oPlot, r, imaginary ( kPerp2 ), $
-			lineStyle = 2
+	;++winNo
+	;window, winNo
+	;!p.multi = [0,2,2]
+	iPlot, r, real_part ( kPerp1 ), $
+        /yLog, $
+        yRange = [1, 1e3], $
+        view_grid = [2,1]
+	iPlot, r, imaginary ( kPerp1 ), $
+		lineStyle = 2, $
+        /over
+	iPlot, r, real_part ( kPerp2 ), $
+        /yLog, $
+        yRange = [1, 1e3], $
+        /view_next
+	iPlot, r, imaginary ( kPerp2 ), $
+		lineStyle = 2, $
+        /over
 
 	!p.multi = 0
 
@@ -152,12 +164,12 @@ pro rsfwc_1d
 				;	aMat[3*i+4,3*i]	= -II * nPHi / ( 2 * r[i] * dr )
 				;	aMat[3*i+5,3*i]	= -II * kz / ( 2 * dr )
 
-					aMat[3*i,3*i]	= kz^2 + nPhi^2/r[i]^2 - w^2/c^2*epsilon[0,0,i] 
-					aMat[3*i+1,3*i]	= II * nPhi * ( 2 * r[i] + dr ) / ( 2 * r[i]^2 + dr ) - w^2 * epsilon_[1,0,i] / ( 2 * c^2 )
-					aMat[3*i+2,3*i]	= II * kz / dr - w^2 * epsilon_[2,0,i] / ( 2 * c^2 )
-					aMat[3*i+3,3*i]	= 0
-					aMat[3*i+4,3*i]	= 0 
-					aMat[3*i+5,3*i]	= 0 
+					;aMat[3*i,3*i]	= kz^2 + nPhi^2/r[i]^2 - w^2/c^2*epsilon[0,0,i] 
+					;aMat[3*i+1,3*i]	= II * nPhi * ( 2 * r[i] + dr ) / ( 2 * r[i]^2 + dr ) - w^2 * epsilon_[1,0,i] / ( 2 * c^2 )
+					;aMat[3*i+2,3*i]	= II * kz / dr - w^2 * epsilon_[2,0,i] / ( 2 * c^2 )
+					;aMat[3*i+3,3*i]	= 0
+					;aMat[3*i+4,3*i]	= 0 
+					;aMat[3*i+5,3*i]	= 0 
 
 
 			;	;	phi component
@@ -174,12 +186,12 @@ pro rsfwc_1d
 			;	   	aMat[3*i+9,3*i+1]	= 0
 			;		aMat[3*i+10,3*i+1]	= 1 / dr^2 
 
-					;aMat[3*i+1-3,3*i+1] = 1 / ( 2 * r_[i] * dr ) - 1/ dr^2
-					aMat[3*i,3*i+1]	= -II*nPhi/(r_[i]*dr) -II*nPhi/(2*r_[i]^2)-w^2/(2*c^2)*epsilon[0,1,i]
-					aMat[3*i+1,3*i+1]	= 2 / dr^2 + kz^2 + 1 / r_[i]^2 -w^2/c^2*epsilon_[1,1,i]
-					aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon[2,1,i]
-					aMat[3*i+3,3*i+1]	= II * nPhi / (r_[i]*dr) - II*nPhi/(2*r_[i]^2) - w^2/(2*c^2)*epsilon[0,1,i]
-					aMat[3*i+4,3*i+1]	= -1/dr^2 - 1/(2*r_[i]*dr)
+					;;aMat[3*i+1-3,3*i+1] = 1 / ( 2 * r_[i] * dr ) - 1/ dr^2
+					;aMat[3*i,3*i+1]	= -II*nPhi/(r_[i]*dr) -II*nPhi/(2*r_[i]^2)-w^2/(2*c^2)*epsilon[0,1,i]
+					;aMat[3*i+1,3*i+1]	= 2 / dr^2 + kz^2 + 1 / r_[i]^2 -w^2/c^2*epsilon_[1,1,i]
+					;aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon[2,1,i]
+					;aMat[3*i+3,3*i+1]	= II * nPhi / (r_[i]*dr) - II*nPhi/(2*r_[i]^2) - w^2/(2*c^2)*epsilon[0,1,i]
+					;aMat[3*i+4,3*i+1]	= -1/dr^2 - 1/(2*r_[i]*dr)
 	
 			;	;	z component
 
@@ -196,44 +208,48 @@ pro rsfwc_1d
 			;		aMat[3*i+10,3*i+2]	= 0 
 			;		aMat[3*i+11,3*i+2]	= 1 / dr^2
 
-					;aMat[3*i-1,3*i+2] = 1/(2*r_[i]*dr)-1/dr^2
-					aMat[3*i,3*i+2] = II*kz/(2*r_[i])-II*kz/dr-w^2/(2*c^2)*epsilon[0,2,i]
-					aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon[1,2,i]
-					aMat[3*i+2,3*i+2] = 2/dr^2 + nPhi^2/r_[i]^2 - w^2/c^2*epsilon[2,2,i]
-					aMat[3*i+3,3*i+2] = II * kz / dr + II * kz / (2*r_[i]) -w^2/(2*c^2)*epsilon[0,2,i+1]
-					aMat[3*i+5,3*i+2] = -1/dr^2 -1/(2*r_[i]*dr)
+					;;aMat[3*i-1,3*i+2] = 1/(2*r_[i]*dr)-1/dr^2
+					;aMat[3*i,3*i+2] = II*kz/(2*r_[i])-II*kz/dr-w^2/(2*c^2)*epsilon[0,2,i]
+					;aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon[1,2,i]
+					;aMat[3*i+2,3*i+2] = 2/dr^2 + nPhi^2/r_[i]^2 - w^2/c^2*epsilon[2,2,i]
+					;aMat[3*i+3,3*i+2] = II * kz / dr + II * kz / (2*r_[i]) -w^2/(2*c^2)*epsilon[0,2,i+1]
+					;aMat[3*i+5,3*i+2] = -1/dr^2 -1/(2*r_[i]*dr)
 	
 			endif
 
 		;	r component
-			if i gt 0 and i lt nR-1 then begin
+            if i gt 0 then begin
 				aMat[3*i-2,3*i]	= II * nPhi / (2 * r[i]^2) - II * nPhi / ( r[i] * dr ) - w^2/(2*c^2)*epsilon_[1,0,i-1]
 				aMat[3*i-1,3*i]	= -II * kz / dr - w^2 / (2 * c^2) * epsilon_[2,0,i-1]
+            endif
 				aMat[3*i,3*i]	= nPhi / r[i]^2 + kz^2 - w^2 / c^2 * epsilon[0,0,i]
+            if i lt nR-1 then begin
 				aMat[3*i+1,3*i]	= II * nPhi / ( r[i] * dr ) + II * nPhi / ( 2 * r[i]^2 ) - w^2/(2*c^2)*epsilon_[1,0,i]
 				aMat[3*i+2,3*i]	= II * kz / dr - w^2 / (2*c^2) * epsilon_[2,0,i]
-			endif
+            endif
 
 		;	phi component
-			if i gt 0 and i lt nR-1 then begin
-				aMat[3*i+1-3,3*i+1] = 1 / ( 2 * r_[i] * dr ) - 1/ dr^2
-				aMat[3*i+1-1,3*i+1]	= -II*nPhi/(r_[i]*dr) -II*nPhi/(2*r_[i]^2)-w^2/(2*c^2)*epsilon[0,1,i]
+			if i lt nR-1 then begin
+                if i gt 0 then $
+				aMat[3*i-2,3*i+1] = 1 / ( 2 * r_[i] * dr ) - 1/ dr^2
+				aMat[3*i,3*i+1]	= -II*nPhi/(r_[i]*dr) -II*nPhi/(2*r_[i]^2)-w^2/(2*c^2)*epsilon[0,1,i]
 				aMat[3*i+1,3*i+1]	= 2 / dr^2 + kz^2 + 1 / r_[i]^2 -w^2/c^2*epsilon_[1,1,i]
-				aMat[3*i+1+1,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon[2,1,i]
-				aMat[3*i+1+2,3*i+1]	= II * nPhi / (r_[i]*dr) - II*nPhi/(2*r_[i]^2) - w^2/(2*c^2)*epsilon[0,1,i]
+				aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon[2,1,i]
+				aMat[3*i+3,3*i+1]	= II * nPhi / (r_[i]*dr) - II*nPhi/(2*r_[i]^2) - w^2/(2*c^2)*epsilon[0,1,i]
 				if i lt nR-2 then $
-				aMat[3*i+1+3,3*i+1]	= -1/dr^2 - 1/(2*r_[i]*dr)
+				aMat[3*i+4,3*i+1]	= -1/dr^2 - 1/(2*r_[i]*dr)
 			endif
 
 		;	z component	
-			if i gt 0 and i lt nR-1 then begin
-				aMat[3*i+2-3,3*i+2] = 1/(2*r_[i]*dr)-1/dr^2
-				aMat[3*i+2-2,3*i+2] = II*kz/(2*r_[i])-II*kz/dr-w^2/(2*c^2)*epsilon[0,2,i]
-				aMat[3*i+2-1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon[1,2,i]
+			if i lt nR-1 then begin
+                if i gt 0 then $
+				aMat[3*i-1,3*i+2] = 1/(2*r_[i]*dr)-1/dr^2
+				aMat[3*i,3*i+2] = II*kz/(2*r_[i])-II*kz/dr-w^2/(2*c^2)*epsilon[0,2,i]
+				aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon[1,2,i]
 				aMat[3*i+2,3*i+2] = 2/dr^2 + nPhi^2/r_[i]^2 - w^2/c^2*epsilon[2,2,i]
-				aMat[3*i+2+1,3*i+2] = II * kz / dr + II * kz / (2*r_[i]) -w^2/(2*c^2)*epsilon[0,2,i+1]
+				aMat[3*i+3,3*i+2] = II * kz / dr + II * kz / (2*r_[i]) -w^2/(2*c^2)*epsilon[0,2,i+1]
 				if i lt nR-2 then $
-				aMat[3*i+2+3,3*i+2] = -1/dr^2 -1/(2*r_[i]*dr)
+				aMat[3*i+5,3*i+2] = -1/dr^2 -1/(2*r_[i]*dr)
 			endif
 
 			if i eq nR-2 then begin
@@ -277,12 +293,12 @@ pro rsfwc_1d
 				;aMat[3*i-4,3*i]	= -II * kz / ( 2 * dr ) 
 				;aMat[3*i-5,3*i]	= II * nPhi / ( 2 * r[i] * dr ) 
 
-				aMat[3*i,3*i]	= kz^2 + nPhi^2 / r[i]^2 - w^2 * epsilon[0,0,i] / c^2
-				aMat[3*i-1,3*i]	= -II * kz / dr - w^2 * epsilon_[2,0,i-1] / ( 2 * c^2 ) 
-				aMat[3*i-2,3*i]	= II * nPhi * ( 1 - 2 * r[i] / dr ) / ( 2 * r[i]^2 ) - w^2 * epsilon_[1,0,i-1] / ( 2 * c^2 ) 
-				aMat[3*i-3,3*i]	= 0 
-				aMat[3*i-4,3*i]	= 0 
-				aMat[3*i-5,3*i]	= 0 
+				;aMat[3*i,3*i]	= kz^2 + nPhi^2 / r[i]^2 - w^2 * epsilon[0,0,i] / c^2
+				;aMat[3*i-1,3*i]	= -II * kz / dr - w^2 * epsilon_[2,0,i-1] / ( 2 * c^2 ) 
+				;aMat[3*i-2,3*i]	= II * nPhi * ( 1 - 2 * r[i] / dr ) / ( 2 * r[i]^2 ) - w^2 * epsilon_[1,0,i-1] / ( 2 * c^2 ) 
+				;aMat[3*i-3,3*i]	= 0 
+				;aMat[3*i-4,3*i]	= 0 
+				;aMat[3*i-5,3*i]	= 0 
 
 
 			endif
@@ -371,27 +387,32 @@ pro rsfwc_1d
 ;	Visualise solution
 
 	++winNo
-	window, winNo, ySize = 800
-	!p.multi = [0,2,3]
+    device, decomposed = 0
+    loadct, 12, /sil
 	!p.charSize = 3
-	plot, r, eR, psym = -4
-	plot, r, imaginary (eR)
-	plot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ePhi,0], psym = -4
-	plot, [r_[0]-dr,r_,r_[nR-2]+dr], imaginary([0,ePhi,0]), psym = -4
-	plot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ez,0], psym = -4
-	plot, r_, imaginary(ez)
 
-	++winNo
-	window, winNo, ySize = 800
-	!p.multi = [0,2,3]
-	!p.charSize = 3
-	plot, r, OD_eR
-	plot, r, imaginary (OD_eR)
-	plot, r_, OD_ePhi
-	plot, r_, imaginary (OD_ePhi)
-	plot, r_, OD_ez
-	plot, r_, imaginary(OD_ez)
+    iPlot, r, eR, $
+        view_grid = [2,3]
+    iPlot, r, imaginary ( eR ), $
+        /view_next
+	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ePhi,0], $
+        psym = -4, /view_next
+	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], imaginary([0,ePhi,0]), $
+        psym = -4, /view_next
+	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ez,0], $
+        psym = -4, /view_next
+	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], imaginary([0,ez,0]), $
+        psym = -4, /view_next
 
+	;++winNo
+	;window, winNo, ySize = 800
+	;!p.multi = [0,2,3]
+	;!p.charSize = 3
+	;plot, r, OD_eR
+	;plot, r, imaginary (OD_eR)
+	;plot, r_, OD_ePhi
+	;plot, r_, imaginary (OD_ePhi)
+	;plot, r_, OD_ez
+	;plot, r_, imaginary(OD_ez)
 
-stop
 end
