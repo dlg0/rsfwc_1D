@@ -40,14 +40,14 @@ pro rsfwc_1d
 				n_ : fltArr ( nR - 1 ) }, nSpec )
 
 	nPeakR	= 1.1
-	nMax	= 0.6e19
+	nMax	= 1.6e19
 
 	;	electrons
 
 	specData[0].q 		= -1 * e
 	specData[0].m 		= me
-	specData.n 		= (-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-1.1)^2 * nMax
-	specData.n_		= (-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-1.1)^2 * nMax
+	specData.n 		= nMax;(-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-1.1)^2 * nMax
+	specData.n_		= nMax;(-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-1.1)^2 * nMax
 
 	;	dueterium
 
@@ -77,11 +77,11 @@ pro rsfwc_1d
 ;	Dispersion analysis
 
 	wReal	= 30d6 * 2d0 * !dpi
-	w	= complex ( wReal, wReal * 0.1 )
+	w	= complex ( wReal, wReal * 0.02 )
 
-	nPhi	= 15 
-	kPar	= nPhi; / r
-	kz		= 15 
+	nPhi	= 5 
+	kPar	= nPhi / r
+	kz		= 0 
 	nPar	= kPar * c / wReal
 
 	stixR	= 1d0 - total ( specData.wp^2 / ( wReal * ( wReal + specData.wc ) ), 2 )
@@ -104,9 +104,13 @@ pro rsfwc_1d
 	kPerp1	= sqrt ( ( -BB + sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * wReal / c
 	kPerp2	= sqrt ( ( -BB - sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * wReal / c
 
-	;++winNo
-	;window, winNo
-	;!p.multi = [0,2,2]
+    kR1  = sqrt ( kPerp1^2 - kz^2 )
+    kR2  = sqrt ( kPerp2^2 - kz^2 )
+
+
+    loadct, 12, /sil, rgb_table = ct12
+    device, decomposed = 0
+
 	iPlot, r, real_part ( kPerp1 ), $
         /yLog, $
         yRange = [1, 1e3], $
@@ -114,6 +118,15 @@ pro rsfwc_1d
 	iPlot, r, imaginary ( kPerp1 ), $
 		lineStyle = 1, $
         /over
+	iPlot, r, real_part ( kR1 ), $
+        /over, $
+        color = transpose ( ct12[8*16-1,*] )
+	iPlot, r, imaginary ( kR1 ), $
+		lineStyle = 1, $
+        /over, $
+        color = transpose ( ct12[8*16-1,*] )
+
+
 	iPlot, r, real_part ( kPerp2 ), $
         /yLog, $
         yRange = [1, 1e3], $
@@ -121,6 +134,15 @@ pro rsfwc_1d
 	iPlot, r, imaginary ( kPerp2 ), $
 		lineStyle = 1, $
         /over
+	iPlot, r, real_part ( kR2 ), $
+        /over, $
+        color = transpose ( ct12[8*16-1,*] )
+	iPlot, r, imaginary ( kR2 ), $
+		lineStyle = 1, $
+        /over, $
+        color = transpose ( ct12[8*16-1,*] )
+
+
 
 	!p.multi = 0
 
@@ -128,19 +150,19 @@ pro rsfwc_1d
 
 	II	= complex ( 0, 1 )
 
-	epsilon		= fltArr ( 3, 3, nR )
-	epsilon_	= fltArr ( 3, 3, nR-1 )
+	epsilon		= complexArr ( 3, 3, nR )
+	epsilon_	= complexArr ( 3, 3, nR-1 )
 
 	epsilon[0,0,*]	= stixS
 	epsilon[0,2,*]	= II * stixD
 	epsilon[1,1,*]	= stixP
-	epsilon[0,2,*]	= -II * stixD
+	epsilon[2,0,*]	= -II * stixD
 	epsilon[2,2,*]	= stixS
 
 	epsilon_[0,0,*]	= stixS_
 	epsilon_[0,2,*]	= II * stixD_
 	epsilon_[1,1,*]	= stixP_
-	epsilon_[0,2,*]	= -II * stixD_
+	epsilon_[2,0,*]	= -II * stixD_
 	epsilon_[2,2,*]	= stixS_
 
 ;	Build matrix
@@ -153,72 +175,6 @@ pro rsfwc_1d
 
     print, '*** filling matrix'
 	for i = 0, nR - 1 do begin
-
-		;	forward difference pts
-
-			if i eq 0 then begin
-
-				;	r component
-
-				;	aMat[3*i,3*i]	= kz^2 + nPhi^2/r[i]^2 - w^2/c^2*epsilon[0,0,i] 
-				;	aMat[3*i+1,3*i]	= 7 * II * nPhi / ( 2 * r[i] * dr )
-				;	aMat[3*i+2,3*i]	= 7 * II * kz / ( 2 * dr )
-				;	aMat[3*i+3,3*i]	= 0
-				;	aMat[3*i+4,3*i]	= -II * nPHi / ( 2 * r[i] * dr )
-				;	aMat[3*i+5,3*i]	= -II * kz / ( 2 * dr )
-
-					;aMat[3*i,3*i]	= kz^2 + nPhi^2/r[i]^2 - w^2/c^2*epsilon[0,0,i] 
-					;aMat[3*i+1,3*i]	= II * nPhi * ( 2 * r[i] + dr ) / ( 2 * r[i]^2 + dr ) - w^2 * epsilon_[1,0,i] / ( 2 * c^2 )
-					;aMat[3*i+2,3*i]	= II * kz / dr - w^2 * epsilon_[2,0,i] / ( 2 * c^2 )
-					;aMat[3*i+3,3*i]	= 0
-					;aMat[3*i+4,3*i]	= 0 
-					;aMat[3*i+5,3*i]	= 0 
-
-
-			;	;	phi component
-
-			;		aMat[3*i,3*i+1] 	= -II * nPhi * ( 2 * r_[i] + dr ) / ( 2 * r_[i]^2 * dr ) - w^2 * epsilon[0,1,i] / ( 2 * c^2 ) 
-			;		aMat[3*i+1,3*i+1]	= kz^2 + 1/r_[i]^2 - 2 / dr^2 + 3 / ( 2 * r_[i] * dr ) - w^2 * epsilon_[1,1,i] / c^2
-			;		aMat[3*i+2,3*i+1]	= -kz * nPhi / r_[i] - w^2 * epsilon_[2,1,i] / c^2
-			;		aMat[3*i+3,3*i+1]	= -II * nPhi / ( 2 * r_[i]^2 ) + II * nPhi / ( r_[i] * dr ) - w^2 * epsilon[0,1,i+1] / ( 2 * c^2 )
-			;		aMat[3*i+4,3*i+1]	= ( 5 * r_[i] - 2 * dr ) / ( r_[i] * dr^2 )
-			;		aMat[3*i+5,3*i+1]	= 0
-			;	   	aMat[3*i+6,3*i+1]	= 0
-			;		aMat[3*i+7,3*i+1]	= ( -8 * r_[i] + dr ) / ( 2 * r_[i] * dr^2 )
-			;		aMat[3*i+8,3*i+1]	= 0
-			;	   	aMat[3*i+9,3*i+1]	= 0
-			;		aMat[3*i+10,3*i+1]	= 1 / dr^2 
-
-					;;aMat[3*i+1-3,3*i+1] = 1 / ( 2 * r_[i] * dr ) - 1/ dr^2
-					;aMat[3*i,3*i+1]	= -II*nPhi/(r_[i]*dr) -II*nPhi/(2*r_[i]^2)-w^2/(2*c^2)*epsilon[0,1,i]
-					;aMat[3*i+1,3*i+1]	= 2 / dr^2 + kz^2 + 1 / r_[i]^2 -w^2/c^2*epsilon_[1,1,i]
-					;aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon[2,1,i]
-					;aMat[3*i+3,3*i+1]	= II * nPhi / (r_[i]*dr) - II*nPhi/(2*r_[i]^2) - w^2/(2*c^2)*epsilon[0,1,i]
-					;aMat[3*i+4,3*i+1]	= -1/dr^2 - 1/(2*r_[i]*dr)
-	
-			;	;	z component
-
-			;		aMat[3*i,3*i+2] 	= II * kz / 2 * ( 1 / r_[i] - 2 / dr ) - w^2 * epsilon[0,2,i] / ( 2 * c^2 )  
-			;		aMat[3*i+1,3*i+2]	= -kz * nPhi / r_[i] - w^2 * epsilon_[1,2,i] / c^2 
-			;		aMat[3*i+2,3*i+2]	= nPhi^2 / r_[i]^2 - 2 / dr^2 + 3 / ( 2 * r_[i] * dr ) - w^2 * epsilon_[2,2,i] / c^2 
-			;		aMat[3*i+3,3*i+2]	= II * kz / 2 * ( 1 / r_[i] + 2 / dr ) - w^2 * epsilon[0,2,i] / ( 2 * c^2 ) 
-			;		aMat[3*i+4,3*i+2]	= 0 
-			;		aMat[3*i+5,3*i+2]	= ( 5 * r_[i] - 2 * dr ) / ( r_[i] * dr^2 ) 
-			;	   	aMat[3*i+6,3*i+2]	= 0 
-			;		aMat[3*i+7,3*i+2]	= 0
-			;		aMat[3*i+8,3*i+2]	= ( -8 * r_[i] + dr ) / ( 2 * r_[i] * dr^2 ) 
-			;	   	aMat[3*i+9,3*i+2]	= 0
-			;		aMat[3*i+10,3*i+2]	= 0 
-			;		aMat[3*i+11,3*i+2]	= 1 / dr^2
-
-					;;aMat[3*i-1,3*i+2] = 1/(2*r_[i]*dr)-1/dr^2
-					;aMat[3*i,3*i+2] = II*kz/(2*r_[i])-II*kz/dr-w^2/(2*c^2)*epsilon[0,2,i]
-					;aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon[1,2,i]
-					;aMat[3*i+2,3*i+2] = 2/dr^2 + nPhi^2/r_[i]^2 - w^2/c^2*epsilon[2,2,i]
-					;aMat[3*i+3,3*i+2] = II * kz / dr + II * kz / (2*r_[i]) -w^2/(2*c^2)*epsilon[0,2,i+1]
-					;aMat[3*i+5,3*i+2] = -1/dr^2 -1/(2*r_[i]*dr)
-	
-			endif
 
 		;	r component
             if i gt 0 then begin
@@ -255,113 +211,17 @@ pro rsfwc_1d
 				aMat[3*i+5,3*i+2] = -1/dr^2 -1/(2*r_[i]*dr)
 			endif
 
-			if i eq nR-2 then begin
-
-				;;	phi component
-				;aMat[3*i+3,3*i+1]	= -II * nPhi / ( 2 * r_[i]^2 ) + II * nPhi / ( r_[i] * dr ) - w^2 * epsilon[0,1,i+1] / ( 2 * c^2 ) 
-				;aMat[3*i+2,3*i+1]	= -kz * nPhi / r_[i] - w^2 * epsilon_[2,1,i] / c^2
-				;aMat[3*i+1,3*i+1]	= kz^2 + 1 / r_[i]^2 - 2 / dr^2 - 3 / ( 2 * r_[i] * dr ) - w^2 * epsilon_[1,1,i] / c^2
-				;aMat[3*i+0,3*i+1]	= -II * nPhi * ( 2 * r_[i] + dr ) / ( 2 * r_[i]^2 * dr ) - w^2 * epsilon_[0,1,i] / ( 2 * c^2 ) 
-				;aMat[3*i-1,3*i+1]	= 0 
-				;aMat[3*i-2,3*i+1]	= ( 5 * r_[i] + 2 * dr ) / ( r_[i] * dr^2 ) 
-				;aMat[3*i-3,3*i+1]	= 0
-				;aMat[3*i-4,3*i+1]	= 0 
-				;aMat[3*i-5,3*i+1]	= -1 * ( 8 + dr / r_[i] ) / ( 2 * dr^2 ) 
-				;aMat[3*i-6,3*i+1]	= 0 
-				;aMat[3*i-7,3*i+1]	= 0 
-				;aMat[3*i-8,3*i+1]	= 1 / dr^2 
-				
-				;;	z component
-				;aMat[3*i+3,3*i+2]	= II * kz / 2 * ( 1 / r_[i] + 2 / dr ) - w^2 * epsilon[0,2,i+1] / ( 2 * c^2 )  
-				;aMat[3*i+2,3*i+2]	= nPhi^2 / r_[i]^2 - 2 / dr^2 - 3 / ( 2 * r_[i] * dr ) - w^2 * epsilon_[2,2,i] / c^2
-				;aMat[3*i+1,3*i+2]	= -kz * nPhi / r_[i] - w^2 * epsilon[1,2,i] / c^2 
-				;aMat[3*i+0,3*i+2]	= II * kz / 2 * ( 1 / r_[i] - 2 / dr ) - w^2 * epsilon[0,2,i] / ( 2 * c^2 ) 
-				;aMat[3*i-1,3*i+2]	= ( 5 * r_[i] + 2 * dr ) / ( r_[i] * dr^2 ) 
-				;aMat[3*i-2,3*i+2]	= 0 
-				;aMat[3*i-3,3*i+2]	= 0
-				;aMat[3*i-4,3*i+2]	= -1 * ( 8 * r_[i] + dr ) / ( 2 * r_[i] * dr^2 ) 
-				;aMat[3*i-5,3*i+2]	= 0
-				;aMat[3*i-6,3*i+2]	= 0
-				;aMat[3*i-7,3*i+2]	= 1 / dr^2 
-
-			endif
-
-			if i eq nR-1 then begin
-					
-				;	r component
-				;aMat[3*i,3*i]	= kz^2 + nPhi^2 / r[i]^2 - w^2 * epsilon[0,0,i] / c^2
-				;aMat[3*i-1,3*i]	= -9 * II * kz / ( 2 * dr ) 
-				;aMat[3*i-2,3*i]	= -7 * II * nPhi / ( 2 * r[i] * dr ) 
-				;aMat[3*i-3,3*i]	= 0 
-				;aMat[3*i-4,3*i]	= -II * kz / ( 2 * dr ) 
-				;aMat[3*i-5,3*i]	= II * nPhi / ( 2 * r[i] * dr ) 
-
-				;aMat[3*i,3*i]	= kz^2 + nPhi^2 / r[i]^2 - w^2 * epsilon[0,0,i] / c^2
-				;aMat[3*i-1,3*i]	= -II * kz / dr - w^2 * epsilon_[2,0,i-1] / ( 2 * c^2 ) 
-				;aMat[3*i-2,3*i]	= II * nPhi * ( 1 - 2 * r[i] / dr ) / ( 2 * r[i]^2 ) - w^2 * epsilon_[1,0,i-1] / ( 2 * c^2 ) 
-				;aMat[3*i-3,3*i]	= 0 
-				;aMat[3*i-4,3*i]	= 0 
-				;aMat[3*i-5,3*i]	= 0 
-
-
-			endif
-
 	endfor
 
-	;;	over determine the matrix by adding two extra equations to each end such that
-	;;	the boundary conditions are enforced on the phi and z components on the full 
-	;;	(not half) end grid points. This will then require SVD to get a least squares
-	;;	solution. 
-
-	;ePhiLeftBry	= complexArr ( nAll )
-	;ezLeftBry	= complexArr ( nAll )
-	;ePhiRightBry	= complexArr ( nAll )
-	;ezRightBry		= complexArr ( nAll )
-
-	;ePhiLeftBry[0]	= -II * nPhi * ( 3 * r[0] + 2 * dr ) / ( 2 * r[0]^2 * dr ) - w^2 * epsilon[0,1,0] / ( c^2 )
-	;ePhiLeftBry[1]	= ( 24 - 7 * dr / r[0] ) / ( 2 * dr^2 )
-	;ePhiLeftBry[2]	= 0
-	;ePhiLeftBry[3]	= 2 * II * nPhi / ( r[0] * dr )
-	;ePhiLeftBry[4]	= ( -8 * r[0] + dr ) / ( 2 * r[0] * dr^2 )
-	;ePhiLeftBry[5]	= 0
-	;ePhiLeftBry[6]	= -II * nPhi / ( 2 * r[0] * dr )
-
-	;ezLeftBry[0]	= II * kz / r[0] - 3 * II * kz / ( 2 * dr ) - w^2 * epsilon[0,2,0] / c^2  
-	;ezLeftBry[1]	= 0 
-	;ezLeftBry[2]	= ( 24 - 7 * dr / r[0] ) / ( 2 * dr^2 ) 
-	;ezLeftBry[3]	= 2 * II * kz / dr 
-	;ezLeftBry[4]	= 0 
-	;ezLeftBry[5]	= ( -8 * r[0] + dr ) / ( 2 * r[0] * dr^2 )
-	;ezLeftBry[6]	= -II * kz / ( 2 * dr ) 
-
-	;ePhiRightBry[nAll-1]	= -II * nPhi / r[nR-1]^2 +  3 * II * nPhi / ( 2 * r[nR-1] * dr ) - w^2 * epsilon[0,1,nR-1] / ( c^2 )
-	;ePhiRightBry[nAll-2]	= 0 
-	;ePhiRightBry[nAll-3]	= ( 24 + 7 * dr / r[nR-1] ) / ( 2 * dr^2 ) 
-	;ePhiRightBry[nAll-4]	= -2 * II * nPhi / ( r[nR-1] * dr )
-	;ePhiRightBry[nAll-5]	= 0 
-	;ePhiRightBry[nAll-6]	= -1 * ( 8 * r[nR-1] + dr ) / ( 2 * r[nR-1] * dr^2 ) 
-	;ePhiRightBry[nAll-7]	= II * nPhi / ( 2 * r[nR-1] * dr )
-
-	;ezRightBry[nAll-1]	= II * kz / r[nR-1] - 3 * II * kz / ( 2 * dr ) - w^2 * epsilon[0,2,nR-1] / c^2  
-	;ezRightBry[nAll-2]	= II * kz / ( 2 * dr ) 
-	;ezRightBry[nAll-3]	= 0 
-	;ezRightBry[nAll-4]	= -2 * II * kz / dr 
-	;ezRightBry[nAll-5]	= -1 * ( 8 * r[nR-1] + dr ) / ( 2 * r[nR-1] * dr^2 ) 
-	;ezRightBry[nAll-6]	= 0
-	;ezRightBry[nAll-7]	= II * kz / ( 2 * dr ) 
-
-	rhs[3*nR*0.6+2]	= II * w * u0 * 1.0 
+	rhs[3*(nR-2)+2]	= II * w * u0 * r_[nR-2] * dr * 1.0 
 
 ;	Solve matrix
 
     print, '*** solving linear system', (nAll*2.0)^2*8.0/(1024.0^2)
-	;inner_aMat	= aMat;[0:nAll-5,0:nAll-5]
-	;inner_rhs	= rhs;[0:nAll-5]
 	eField	= la_linear_equation ( aMat, rhs, status = stat )
 	print, 'lapack status: ', stat
 
 	eFieldTmp	= complexArr ( nAll )
-	;eFieldTmp[0:nAll-5]	= eField
 	eFieldTmp	= eField
 	eField	= temporary ( eFieldTmp )
 
@@ -371,23 +231,6 @@ pro rsfwc_1d
 	eR	= eField[ii_eR]
 	ePhi	= eField[ii_ePhi]
 	ez	= eField[ii_ez]
-
-	;;	try using the least square over determined system
-
-	;OD_aMat	= [ [ePhiLeftBry], [ezLeftBry], [aMat], [ePhiRightBry], [ezRightBry] ]
-	;OD_rhs	= [ 0, 0, rhs, 0, 0 ]
-	;OD_eField	= la_least_squares ( OD_aMat, OD_rhs, $
-	;		status = OD_stat, $
-	;	   	method = 0 )
-	;print, 'OD lapack status: ', OD_stat
-
-	;ii_eR	= indGen(nR)*3+0
-	;ii_ePhi	= indGen(nR-1)*3+1
-	;ii_ez	= indGen(nR-1)*3+2
-	;OD_eR	= OD_eField[ii_eR]
-	;OD_ePhi	= OD_eField[ii_ePhi]
-	;OD_ez	= OD_eField[ii_ez]
-
 
 ;   Calculate the Div of D @ the z,phi grid pts
 ;   but first we need to invert epsilon to get D & D_
@@ -478,8 +321,16 @@ pro rsfwc_1d
                         + D[i,0] / ( 2 * dr )
     endfor
 
-    loadct, 12, /sil, rgb_table = ct12
-    device, decomposed = 0
+    divE_   = complexArr ( nR - 1 )
+    for i=0,nR-2 do begin
+        divE_[i]    = II * nPhi * ePhi[i] / r_[i] $
+                        + II * kz * ez[i] $
+                        + eR[i+1] * ( 0.5 + r_[i] / dr ) / r_[i] $
+                        + eR[i] * ( 0.5 - r_[i] / dr ) / r_[i] 
+    endfor
+
+    rho_ = e0 * divE_
+
 
     iPlot, r_, divD_
     iPlot, r, divD, $
@@ -492,6 +343,9 @@ pro rsfwc_1d
         /over, $
         color = transpose ( ct12[12*16-1,*] ), $
         lineStyle = 1
+    iPlot, r_, rho_, $
+        color = transpose ( ct12[8*16-1,*] ), $
+        /over
 
 ;	Visualise solution
 
@@ -500,7 +354,8 @@ pro rsfwc_1d
 	!p.charSize = 3
 
     iPlot, r, eR, $
-        view_grid = [3,1]
+        view_grid = [3,1], $
+        yTickFont_size = 30 
     iPlot, r, imaginary ( eR ), $
         /over, $
         color = transpose ( ct12[8*16-1,*] )
