@@ -25,8 +25,8 @@ pro rsfwc_1d
 ;	Setup plasma and field profiles
 
 	bMax	= 0.6
-	bPhi	= fltArr(nR)+bMax / r 
-	bPhi_	= fltArr(nR-1)+bMax / r_
+	bPhi	= fltArr(nR)+bMax; / r 
+	bPhi_	= fltArr(nR-1)+bMax; / r_
 
 	nSpec	= 2
 	specData	= replicate ( $
@@ -40,7 +40,7 @@ pro rsfwc_1d
 				n_ : fltArr ( nR - 1 ) }, nSpec )
 
 	nPeakR	= 1.1
-	nMax	= 0.1e19
+	nMax	= 0.6e19
 
 	;	electrons
 
@@ -76,31 +76,33 @@ pro rsfwc_1d
 
 ;	Dispersion analysis
 
-	w	= complex ( 30d6 * 2d0 * !dpi, 0 )
-	nPhi	= 5 
-	kPar	= nPhi / r
-	kz		= 5 
-	nPar	= kPar * c / w
+	wReal	= 30d6 * 2d0 * !dpi
+	w	= complex ( wReal, wReal * 0.1 )
 
-	stixR	= 1d0 - total ( specData.wp^2 / ( w * ( w + specData.wc ) ), 2 )
-	stixL	= 1d0 - total ( specData.wp^2 / ( w * ( w - specData.wc ) ), 2 )
+	nPhi	= 15 
+	kPar	= nPhi; / r
+	kz		= 15 
+	nPar	= kPar * c / wReal
+
+	stixR	= 1d0 - total ( specData.wp^2 / ( wReal * ( wReal + specData.wc ) ), 2 )
+	stixL	= 1d0 - total ( specData.wp^2 / ( wReal * ( wReal - specData.wc ) ), 2 )
 	stixS	= 0.5d0 * ( stixR + stixL )
 	stixD	= 0.5d0 * ( stixR - stixL )
-	stixP	= 1d0 - total ( specData.wp^2 / w^2, 2 )
+	stixP	= 1d0 - total ( specData.wp^2 / wReal^2, 2 )
 
-	stixR_	= 1d0 - total ( specData.wp_^2 / ( w * ( w + specData.wc_ ) ), 2 )
-	stixL_	= 1d0 - total ( specData.wp_^2 / ( w * ( w - specData.wc_ ) ), 2 )
+	stixR_	= 1d0 - total ( specData.wp_^2 / ( wReal * ( wReal + specData.wc_ ) ), 2 )
+	stixL_	= 1d0 - total ( specData.wp_^2 / ( wReal * ( wReal - specData.wc_ ) ), 2 )
 	stixS_	= 0.5d0 * ( stixR_ + stixL_ )
 	stixD_	= 0.5d0 * ( stixR_ - stixL_ )
-	stixP_	= 1d0 - total ( specData.wp_^2 / w^2, 2 )
+	stixP_	= 1d0 - total ( specData.wp_^2 / wReal^2, 2 )
 
 
 	AA	= stixS
 	BB	= -1d0 * ( stixR * stixL + stixP * stixS - nPar^2 * ( stixP + stixS ) )
 	CC	= stixP * ( nPar^2 - stixR ) * ( nPar^2 - stixL )
 	B24AC	= BB^2 - 4d0 * AA * CC
-	kPerp1	= sqrt ( ( -BB + sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * w / c
-	kPerp2	= sqrt ( ( -BB - sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * w / c
+	kPerp1	= sqrt ( ( -BB + sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * wReal / c
+	kPerp2	= sqrt ( ( -BB - sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * wReal / c
 
 	;++winNo
 	;window, winNo
@@ -110,14 +112,14 @@ pro rsfwc_1d
         yRange = [1, 1e3], $
         view_grid = [2,1]
 	iPlot, r, imaginary ( kPerp1 ), $
-		lineStyle = 2, $
+		lineStyle = 1, $
         /over
 	iPlot, r, real_part ( kPerp2 ), $
         /yLog, $
         yRange = [1, 1e3], $
         /view_next
 	iPlot, r, imaginary ( kPerp2 ), $
-		lineStyle = 2, $
+		lineStyle = 1, $
         /over
 
 	!p.multi = 0
@@ -347,7 +349,7 @@ pro rsfwc_1d
 	ezRightBry[nAll-6]	= 0
 	ezRightBry[nAll-7]	= II * kz / ( 2 * dr ) 
 
-	rhs[3*nR*0.9+2]	= II * w * u0 * 1 
+	rhs[3*nR*0.6+2]	= II * w * u0 * 1 
 
 ;	Solve matrix
 
@@ -384,25 +386,100 @@ pro rsfwc_1d
 	OD_ePhi	= OD_eField[ii_ePhi]
 	OD_ez	= OD_eField[ii_ez]
 
+
+;   Calculate the Div of D @ the z,phi grid pts
+;   but first we need to invert epsilon to get D & D_
+
+    D   = complexArr ( nR, 3 )
+    D_  = complexArr ( nR-1, 3 )
+
+    for i=1,nR-3 do begin
+        
+        D[i,0]   = epsilon[0,0,i] * eR[i] $
+                    + ( epsilon_[1,0,i-1] * ePhi[i-1] + epsilon_[1,0,i] * ePhi[i] ) / 2 $
+                    + ( epsilon_[2,0,i-1] * ez[i-1] + epsilon_[2,0,i] * ez[i] ) / 2
+        D[i,1]   = epsilon[0,1,i] * eR[i] $
+                    + ( epsilon_[1,1,i-1] * ePhi[i-1] + epsilon_[1,1,i] * ePhi[i] ) / 2 $
+                    + ( epsilon_[2,1,i-1] * ez[i-1] + epsilon_[2,1,i] * ez[i] ) / 2
+        D[i,2]   = epsilon[0,2,i] * eR[i] $
+                    + ( epsilon_[1,2,i-1] * ePhi[i-1] + epsilon_[1,2,i] * ePhi[i] ) / 2 $
+                    + ( epsilon_[2,2,i-1] * ez[i-1] + epsilon_[2,2,i] * ez[i] ) / 2
+ 
+        D_[i,0]   = ( epsilon[0,0,i] * eR[i] + epsilon[0,0,i+1] * eR[i+1] ) / 2 $
+                    + epsilon_[1,0,i] * ePhi[i] $
+                    + epsilon_[2,0,i] * ez[i]  
+        D_[i,1]   = ( epsilon[0,1,i] * eR[i] + epsilon[0,1,i+1] * eR[i+1] ) / 2 $
+                    + epsilon_[1,1,i] * ePhi[i] $
+                    + epsilon_[2,1,i] * ez[i]  
+        D_[i,2]   = ( epsilon[0,2,i] * eR[i] + epsilon[0,2,i+1] * eR[i+1] ) / 2 $
+                    + epsilon_[1,2,i] * ePhi[i] $
+                    + epsilon_[2,2,i] * ez[i]  
+ 
+    endfor
+
+    D   = e0 * D
+    D_  = e0 * D_
+
+    divD_   = complexArr ( nR - 1 )
+
+    for i=1,nR-3 do begin 
+        divD_[i]    = D_[i,0] / r_[i] $
+                        + II * nPhi * D_[i,1] / r_[i] $
+                        + II * kz * D_[i,2] $
+                        + D[i+1,0] / dr $
+                        - D[i,0] / dr
+    endfor
+
+    ;   and @ the r grid pts
+
+    divD    = complexArr ( nR )
+
+    for i=1,nR-2 do begin 
+        divD[i]    = D[i,0] / r[i] $
+                        + II * nPhi * D[i,1] / r[i] $
+                        + II * kz * D[i,2] $
+                        - D[i-1,0] / ( 2 * dr ) $
+                        + D[i,0] / ( 2 * dr )
+    endfor
+
+    loadct, 12, /sil, rgb_table = ct12
+    device, decomposed = 0
+
+    iPlot, r_, divD_
+    iPlot, r, divD, $
+        /over, $
+        color = transpose ( ct12[12*16-1,*] )
+    iPlot, r_, imaginary ( divD_ ), $
+        /over, $
+        lineStyle = 1
+    iPlot, r, imaginary ( divD ), $
+        /over, $
+        color = transpose ( ct12[12*16-1,*] ), $
+        lineStyle = 1
+
 ;	Visualise solution
 
 	++winNo
-    device, decomposed = 0
     loadct, 12, /sil
 	!p.charSize = 3
 
     iPlot, r, eR, $
-        view_grid = [2,3]
+        view_grid = [3,1]
     iPlot, r, imaginary ( eR ), $
-        /view_next
+        /over, $
+        color = transpose ( ct12[8*16-1,*] )
 	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ePhi,0], $
         psym = -4, /view_next
 	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], imaginary([0,ePhi,0]), $
-        psym = -4, /view_next
+        psym = -4, $
+        /over, $
+        color = transpose ( ct12[8*16-1,*] )
 	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ez,0], $
         psym = -4, /view_next
 	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], imaginary([0,ez,0]), $
-        psym = -4, /view_next
+        psym = -4, $
+        /over, $
+        color = transpose ( ct12[8*16-1,*] )
 
 	;++winNo
 	;window, winNo, ySize = 800
@@ -414,5 +491,5 @@ pro rsfwc_1d
 	;plot, r_, imaginary (OD_ePhi)
 	;plot, r_, OD_ez
 	;plot, r_, imaginary(OD_ez)
-
+stop
 end
