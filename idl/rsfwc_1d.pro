@@ -14,7 +14,7 @@ pro rsfwc_1d
 
 ;	Setup Grid
 
-	nR		= 256 
+	nR		= 1024 
 	rMin	= 1.0
 	rMax	= 1.2
 	dR	= ( rMax - rMin ) / ( nR - 1 )
@@ -151,6 +151,7 @@ pro rsfwc_1d
 
 	;	matrix fill
 
+    print, '*** filling matrix'
 	for i = 0, nR - 1 do begin
 
 		;	forward difference pts
@@ -307,55 +308,56 @@ pro rsfwc_1d
 
 	endfor
 
-	;	over determine the matrix by adding two extra equations to each end such that
-	;	the boundary conditions are enforced on the phi and z components on the full 
-	;	(not half) end grid points. This will then require SVD to get a least squares
-	;	solution. 
+	;;	over determine the matrix by adding two extra equations to each end such that
+	;;	the boundary conditions are enforced on the phi and z components on the full 
+	;;	(not half) end grid points. This will then require SVD to get a least squares
+	;;	solution. 
 
-	ePhiLeftBry	= complexArr ( nAll )
-	ezLeftBry	= complexArr ( nAll )
-	ePhiRightBry	= complexArr ( nAll )
-	ezRightBry		= complexArr ( nAll )
+	;ePhiLeftBry	= complexArr ( nAll )
+	;ezLeftBry	= complexArr ( nAll )
+	;ePhiRightBry	= complexArr ( nAll )
+	;ezRightBry		= complexArr ( nAll )
 
-	ePhiLeftBry[0]	= -II * nPhi * ( 3 * r[0] + 2 * dr ) / ( 2 * r[0]^2 * dr ) - w^2 * epsilon[0,1,0] / ( c^2 )
-	ePhiLeftBry[1]	= ( 24 - 7 * dr / r[0] ) / ( 2 * dr^2 )
-	ePhiLeftBry[2]	= 0
-	ePhiLeftBry[3]	= 2 * II * nPhi / ( r[0] * dr )
-	ePhiLeftBry[4]	= ( -8 * r[0] + dr ) / ( 2 * r[0] * dr^2 )
-	ePhiLeftBry[5]	= 0
-	ePhiLeftBry[6]	= -II * nPhi / ( 2 * r[0] * dr )
+	;ePhiLeftBry[0]	= -II * nPhi * ( 3 * r[0] + 2 * dr ) / ( 2 * r[0]^2 * dr ) - w^2 * epsilon[0,1,0] / ( c^2 )
+	;ePhiLeftBry[1]	= ( 24 - 7 * dr / r[0] ) / ( 2 * dr^2 )
+	;ePhiLeftBry[2]	= 0
+	;ePhiLeftBry[3]	= 2 * II * nPhi / ( r[0] * dr )
+	;ePhiLeftBry[4]	= ( -8 * r[0] + dr ) / ( 2 * r[0] * dr^2 )
+	;ePhiLeftBry[5]	= 0
+	;ePhiLeftBry[6]	= -II * nPhi / ( 2 * r[0] * dr )
 
-	ezLeftBry[0]	= II * kz / r[0] - 3 * II * kz / ( 2 * dr ) - w^2 * epsilon[0,2,0] / c^2  
-	ezLeftBry[1]	= 0 
-	ezLeftBry[2]	= ( 24 - 7 * dr / r[0] ) / ( 2 * dr^2 ) 
-	ezLeftBry[3]	= 2 * II * kz / dr 
-	ezLeftBry[4]	= 0 
-	ezLeftBry[5]	= ( -8 * r[0] + dr ) / ( 2 * r[0] * dr^2 )
-	ezLeftBry[6]	= -II * kz / ( 2 * dr ) 
+	;ezLeftBry[0]	= II * kz / r[0] - 3 * II * kz / ( 2 * dr ) - w^2 * epsilon[0,2,0] / c^2  
+	;ezLeftBry[1]	= 0 
+	;ezLeftBry[2]	= ( 24 - 7 * dr / r[0] ) / ( 2 * dr^2 ) 
+	;ezLeftBry[3]	= 2 * II * kz / dr 
+	;ezLeftBry[4]	= 0 
+	;ezLeftBry[5]	= ( -8 * r[0] + dr ) / ( 2 * r[0] * dr^2 )
+	;ezLeftBry[6]	= -II * kz / ( 2 * dr ) 
 
-	ePhiRightBry[nAll-1]	= -II * nPhi / r[nR-1]^2 +  3 * II * nPhi / ( 2 * r[nR-1] * dr ) - w^2 * epsilon[0,1,nR-1] / ( c^2 )
-	ePhiRightBry[nAll-2]	= 0 
-	ePhiRightBry[nAll-3]	= ( 24 + 7 * dr / r[nR-1] ) / ( 2 * dr^2 ) 
-	ePhiRightBry[nAll-4]	= -2 * II * nPhi / ( r[nR-1] * dr )
-	ePhiRightBry[nAll-5]	= 0 
-	ePhiRightBry[nAll-6]	= -1 * ( 8 * r[nR-1] + dr ) / ( 2 * r[nR-1] * dr^2 ) 
-	ePhiRightBry[nAll-7]	= II * nPhi / ( 2 * r[nR-1] * dr )
+	;ePhiRightBry[nAll-1]	= -II * nPhi / r[nR-1]^2 +  3 * II * nPhi / ( 2 * r[nR-1] * dr ) - w^2 * epsilon[0,1,nR-1] / ( c^2 )
+	;ePhiRightBry[nAll-2]	= 0 
+	;ePhiRightBry[nAll-3]	= ( 24 + 7 * dr / r[nR-1] ) / ( 2 * dr^2 ) 
+	;ePhiRightBry[nAll-4]	= -2 * II * nPhi / ( r[nR-1] * dr )
+	;ePhiRightBry[nAll-5]	= 0 
+	;ePhiRightBry[nAll-6]	= -1 * ( 8 * r[nR-1] + dr ) / ( 2 * r[nR-1] * dr^2 ) 
+	;ePhiRightBry[nAll-7]	= II * nPhi / ( 2 * r[nR-1] * dr )
 
-	ezRightBry[nAll-1]	= II * kz / r[nR-1] - 3 * II * kz / ( 2 * dr ) - w^2 * epsilon[0,2,nR-1] / c^2  
-	ezRightBry[nAll-2]	= II * kz / ( 2 * dr ) 
-	ezRightBry[nAll-3]	= 0 
-	ezRightBry[nAll-4]	= -2 * II * kz / dr 
-	ezRightBry[nAll-5]	= -1 * ( 8 * r[nR-1] + dr ) / ( 2 * r[nR-1] * dr^2 ) 
-	ezRightBry[nAll-6]	= 0
-	ezRightBry[nAll-7]	= II * kz / ( 2 * dr ) 
+	;ezRightBry[nAll-1]	= II * kz / r[nR-1] - 3 * II * kz / ( 2 * dr ) - w^2 * epsilon[0,2,nR-1] / c^2  
+	;ezRightBry[nAll-2]	= II * kz / ( 2 * dr ) 
+	;ezRightBry[nAll-3]	= 0 
+	;ezRightBry[nAll-4]	= -2 * II * kz / dr 
+	;ezRightBry[nAll-5]	= -1 * ( 8 * r[nR-1] + dr ) / ( 2 * r[nR-1] * dr^2 ) 
+	;ezRightBry[nAll-6]	= 0
+	;ezRightBry[nAll-7]	= II * kz / ( 2 * dr ) 
 
-	rhs[3*nR*0.6+2]	= II * w * u0 * 1 
+	rhs[3*nR*0.6+2]	= II * w * u0 * 1.0 
 
 ;	Solve matrix
 
-	inner_aMat	= aMat;[0:nAll-5,0:nAll-5]
-	inner_rhs	= rhs;[0:nAll-5]
-	eField	= la_linear_equation ( inner_aMat, inner_rhs, status = stat )
+    print, '*** solving linear system', (nAll*2.0)^2*8.0/(1024.0^2)
+	;inner_aMat	= aMat;[0:nAll-5,0:nAll-5]
+	;inner_rhs	= rhs;[0:nAll-5]
+	eField	= la_linear_equation ( aMat, rhs, status = stat )
 	print, 'lapack status: ', stat
 
 	eFieldTmp	= complexArr ( nAll )
@@ -370,21 +372,21 @@ pro rsfwc_1d
 	ePhi	= eField[ii_ePhi]
 	ez	= eField[ii_ez]
 
-	;	try using the least square over determined system
+	;;	try using the least square over determined system
 
-	OD_aMat	= [ [ePhiLeftBry], [ezLeftBry], [aMat], [ePhiRightBry], [ezRightBry] ]
-	OD_rhs	= [ 0, 0, rhs, 0, 0 ]
-	OD_eField	= la_least_squares ( OD_aMat, OD_rhs, $
-			status = OD_stat, $
-		   	method = 0 )
-	print, 'OD lapack status: ', OD_stat
+	;OD_aMat	= [ [ePhiLeftBry], [ezLeftBry], [aMat], [ePhiRightBry], [ezRightBry] ]
+	;OD_rhs	= [ 0, 0, rhs, 0, 0 ]
+	;OD_eField	= la_least_squares ( OD_aMat, OD_rhs, $
+	;		status = OD_stat, $
+	;	   	method = 0 )
+	;print, 'OD lapack status: ', OD_stat
 
-	ii_eR	= indGen(nR)*3+0
-	ii_ePhi	= indGen(nR-1)*3+1
-	ii_ez	= indGen(nR-1)*3+2
-	OD_eR	= OD_eField[ii_eR]
-	OD_ePhi	= OD_eField[ii_ePhi]
-	OD_ez	= OD_eField[ii_ez]
+	;ii_eR	= indGen(nR)*3+0
+	;ii_ePhi	= indGen(nR-1)*3+1
+	;ii_ez	= indGen(nR-1)*3+2
+	;OD_eR	= OD_eField[ii_eR]
+	;OD_ePhi	= OD_eField[ii_ePhi]
+	;OD_ez	= OD_eField[ii_ez]
 
 
 ;   Calculate the Div of D @ the z,phi grid pts
@@ -393,27 +395,60 @@ pro rsfwc_1d
     D   = complexArr ( nR, 3 )
     D_  = complexArr ( nR-1, 3 )
 
-    for i=1,nR-3 do begin
-        
-        D[i,0]   = epsilon[0,0,i] * eR[i] $
-                    + ( epsilon_[1,0,i-1] * ePhi[i-1] + epsilon_[1,0,i] * ePhi[i] ) / 2 $
-                    + ( epsilon_[2,0,i-1] * ez[i-1] + epsilon_[2,0,i] * ez[i] ) / 2
-        D[i,1]   = epsilon[0,1,i] * eR[i] $
-                    + ( epsilon_[1,1,i-1] * ePhi[i-1] + epsilon_[1,1,i] * ePhi[i] ) / 2 $
-                    + ( epsilon_[2,1,i-1] * ez[i-1] + epsilon_[2,1,i] * ez[i] ) / 2
-        D[i,2]   = epsilon[0,2,i] * eR[i] $
-                    + ( epsilon_[1,2,i-1] * ePhi[i-1] + epsilon_[1,2,i] * ePhi[i] ) / 2 $
-                    + ( epsilon_[2,2,i-1] * ez[i-1] + epsilon_[2,2,i] * ez[i] ) / 2
+    print, '*** calculating D'
+    for i=0,nR-1 do begin
+       
+        if i eq 0 then begin
+
+            D[i,0]   = epsilon[0,0,i] * eR[i] $
+                        + ( epsilon_[1,0,i] * ePhi[i] ) / 2 $
+                        + ( epsilon_[2,0,i] * ez[i] ) / 2
+            D[i,1]   = epsilon[0,1,i] * eR[i] $
+                        + ( epsilon_[1,1,i] * ePhi[i] ) / 2 $
+                        + ( epsilon_[2,1,i] * ez[i] ) / 2
+            D[i,2]   = epsilon[0,2,i] * eR[i] $
+                        + ( epsilon_[1,2,i] * ePhi[i] ) / 2 $
+                        + ( epsilon_[2,2,i] * ez[i] ) / 2
+
+        endif else if i eq nR-1 then begin
+
+            D[i,0]   = epsilon[0,0,i] * eR[i] $
+                        + ( epsilon_[1,0,i-1] * ePhi[i-1] ) / 2 $
+                        + ( epsilon_[2,0,i-1] * ez[i-1] ) / 2
+            D[i,1]   = epsilon[0,1,i] * eR[i] $
+                        + ( epsilon_[1,1,i-1] * ePhi[i-1] ) / 2 $
+                        + ( epsilon_[2,1,i-1] * ez[i-1] ) / 2
+            D[i,2]   = epsilon[0,2,i] * eR[i] $
+                        + ( epsilon_[1,2,i-1] * ePhi[i-1] ) / 2 $
+                        + ( epsilon_[2,2,i-1] * ez[i-1] ) / 2
+
+        endif else begin
+    
+            D[i,0]   = epsilon[0,0,i] * eR[i] $
+                        + ( epsilon_[1,0,i-1] * ePhi[i-1] + epsilon_[1,0,i] * ePhi[i] ) / 2 $
+                        + ( epsilon_[2,0,i-1] * ez[i-1] + epsilon_[2,0,i] * ez[i] ) / 2
+            D[i,1]   = epsilon[0,1,i] * eR[i] $
+                        + ( epsilon_[1,1,i-1] * ePhi[i-1] + epsilon_[1,1,i] * ePhi[i] ) / 2 $
+                        + ( epsilon_[2,1,i-1] * ez[i-1] + epsilon_[2,1,i] * ez[i] ) / 2
+            D[i,2]   = epsilon[0,2,i] * eR[i] $
+                        + ( epsilon_[1,2,i-1] * ePhi[i-1] + epsilon_[1,2,i] * ePhi[i] ) / 2 $
+                        + ( epsilon_[2,2,i-1] * ez[i-1] + epsilon_[2,2,i] * ez[i] ) / 2
+
+        endelse
+
+        if i lt nR-1 then begin
  
-        D_[i,0]   = ( epsilon[0,0,i] * eR[i] + epsilon[0,0,i+1] * eR[i+1] ) / 2 $
-                    + epsilon_[1,0,i] * ePhi[i] $
-                    + epsilon_[2,0,i] * ez[i]  
-        D_[i,1]   = ( epsilon[0,1,i] * eR[i] + epsilon[0,1,i+1] * eR[i+1] ) / 2 $
-                    + epsilon_[1,1,i] * ePhi[i] $
-                    + epsilon_[2,1,i] * ez[i]  
-        D_[i,2]   = ( epsilon[0,2,i] * eR[i] + epsilon[0,2,i+1] * eR[i+1] ) / 2 $
-                    + epsilon_[1,2,i] * ePhi[i] $
-                    + epsilon_[2,2,i] * ez[i]  
+            D_[i,0]   = ( epsilon[0,0,i] * eR[i] + epsilon[0,0,i+1] * eR[i+1] ) / 2 $
+                        + epsilon_[1,0,i] * ePhi[i] $
+                        + epsilon_[2,0,i] * ez[i]  
+            D_[i,1]   = ( epsilon[0,1,i] * eR[i] + epsilon[0,1,i+1] * eR[i+1] ) / 2 $
+                        + epsilon_[1,1,i] * ePhi[i] $
+                        + epsilon_[2,1,i] * ez[i]  
+            D_[i,2]   = ( epsilon[0,2,i] * eR[i] + epsilon[0,2,i+1] * eR[i+1] ) / 2 $
+                        + epsilon_[1,2,i] * ePhi[i] $
+                        + epsilon_[2,2,i] * ez[i]  
+
+        endif
  
     endfor
 
@@ -422,7 +457,8 @@ pro rsfwc_1d
 
     divD_   = complexArr ( nR - 1 )
 
-    for i=1,nR-3 do begin 
+    print, '*** calculating div D'
+    for i=0,nR-2 do begin 
         divD_[i]    = D_[i,0] / r_[i] $
                         + II * nPhi * D_[i,1] / r_[i] $
                         + II * kz * D_[i,2] $
