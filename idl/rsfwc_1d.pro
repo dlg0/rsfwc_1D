@@ -45,7 +45,7 @@ pro rsfwc_1d, $
 				n_ : dblArr ( nR - 1 ) }, nSpec )
 
 	nPeakR	= 1.1d0
-	nMax	= 0.05d19
+	nMax	= 0.1d19
 
 	;	electrons
 
@@ -160,15 +160,15 @@ pro rsfwc_1d, $
 	epsilon_	= dcomplexArr ( 3, 3, nR-1 )
 
 	epsilon[0,0,*]	= stixS
-	epsilon[0,2,*]	= -II * stixD
-	epsilon[1,1,*]	= stixP
-	epsilon[2,0,*]	= II * stixD
+	epsilon[0,2,*]	= II * stixD
+	epsilon[1,1,*]	= -stixP
+	epsilon[2,0,*]	= -II * stixD
 	epsilon[2,2,*]	= stixS
 
 	epsilon_[0,0,*]	= stixS_
-	epsilon_[0,2,*]	= -II * stixD_
-	epsilon_[1,1,*]	= stixP_
-	epsilon_[2,0,*]	= II * stixD_
+	epsilon_[0,2,*]	= II * stixD_
+	epsilon_[1,1,*]	= -stixP_
+	epsilon_[2,0,*]	= -II * stixD_
 	epsilon_[2,2,*]	= stixS_
 
 ;	Build matrix
@@ -183,47 +183,81 @@ pro rsfwc_1d, $
 	for i = 0, nR - 1 do begin
 
 		;	r component
+            ;if i gt 0 then begin
+			;	aMat[3*i-2,3*i]	= II * nPhi / (2 * r[i]^2) - II * nPhi / ( r[i] * dr ) $
+            ;                        - w^2/(2*c^2)*epsilon_[1,0,i-1]
+			;	aMat[3*i-1,3*i]	= -II * kz / dr - w^2 / (2 * c^2) * epsilon_[2,0,i-1]
+            ;endif
+			;	aMat[3*i,3*i]	= nPhi / r[i]^2 + kz^2 - w^2 / c^2 * epsilon[0,0,i]
+            ;if i lt nR-1 then begin
+			;	aMat[3*i+1,3*i]	= II * nPhi / ( r[i] * dr ) + II * nPhi / ( 2 * r[i]^2 ) $
+            ;                        - w^2/(2*c^2)*epsilon_[1,0,i]
+			;	aMat[3*i+2,3*i]	= II * kz / dr - w^2 / (2*c^2) * epsilon_[2,0,i]
+            ;endif
             if i gt 0 then begin
-				aMat[3*i-2,3*i]	= II * nPhi / (2 * r[i]^2) - II * nPhi / ( r[i] * dr ) $
+				aMat[3*i-2,3*i]	= - II * nPhi * r_[i-1] / ( r[i]^2 * dr ) $
                                     - w^2/(2*c^2)*epsilon_[1,0,i-1]
 				aMat[3*i-1,3*i]	= -II * kz / dr - w^2 / (2 * c^2) * epsilon_[2,0,i-1]
             endif
 				aMat[3*i,3*i]	= nPhi / r[i]^2 + kz^2 - w^2 / c^2 * epsilon[0,0,i]
             if i lt nR-1 then begin
-				aMat[3*i+1,3*i]	= II * nPhi / ( r[i] * dr ) + II * nPhi / ( 2 * r[i]^2 ) $
+				aMat[3*i+1,3*i]	= II * nPhi * r_[i] / ( r[i]^2 * dr ) $
                                     - w^2/(2*c^2)*epsilon_[1,0,i]
 				aMat[3*i+2,3*i]	= II * kz / dr - w^2 / (2*c^2) * epsilon_[2,0,i]
             endif
 
+
 		;	phi component
 			if i lt nR-1 then begin
+                ;if i gt 0 then $
+				;aMat[3*i-2,3*i+1] = 1 / ( 2 * r_[i] * dr ) - 1/ dr^2
+				;aMat[3*i,3*i+1]	= -II*nPhi/(r_[i]*dr) $
+                ;                    - II*nPhi/(2*r_[i]^2)-w^2/(2*c^2)*epsilon[0,1,i]
+				;aMat[3*i+1,3*i+1]	= 2 / dr^2 + kz^2 + 1 / r_[i]^2 -w^2/c^2*epsilon_[1,1,i]
+				;aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon_[2,1,i]
+				;aMat[3*i+3,3*i+1]	= II * nPhi / (r_[i]*dr) - II*nPhi/(2*r_[i]^2) $
+                ;                        - w^2/(2*c^2)*epsilon[0,1,i+1]
+				;if i lt nR-2 then $
+				;aMat[3*i+4,3*i+1]	= -1/dr^2 - 1/(2*r_[i]*dr)
+            
                 if i gt 0 then $
-				aMat[3*i-2,3*i+1] = 1 / ( 2 * r_[i] * dr ) - 1/ dr^2
-				aMat[3*i,3*i+1]	= -II*nPhi/(r_[i]*dr) $
-                                    - II*nPhi/(2*r_[i]^2)-w^2/(2*c^2)*epsilon[0,1,i]
-				aMat[3*i+1,3*i+1]	= 2 / dr^2 + kz^2 + 1 / r_[i]^2 -w^2/c^2*epsilon_[1,1,i]
+				aMat[3*i-2,3*i+1] = -r_[i-1] / ( r[i] * dr^2 ) 
+				aMat[3*i,3*i+1]	= -II*nPhi/(r_[i]*dr) - w^2/(2*c^2)*epsilon[0,1,i]
+				aMat[3*i+1,3*i+1]	= kz^2 + r_[i]/(r[i]*dr^2) + r_[i]/(r[i]*dr^2) $
+                                        - w^2/c^2*epsilon_[1,1,i]
 				aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon_[2,1,i]
-				aMat[3*i+3,3*i+1]	= II * nPhi / (r_[i]*dr) - II*nPhi/(2*r_[i]^2) $
-                                        - w^2/(2*c^2)*epsilon[0,1,i+1]
+				aMat[3*i+3,3*i+1]	= II * nPhi / (r[i+1]*dr) - w^2/(2*c^2)*epsilon[0,1,i+1]
 				if i lt nR-2 then $
-				aMat[3*i+4,3*i+1]	= -1/dr^2 - 1/(2*r_[i]*dr)
+				aMat[3*i+4,3*i+1]	= -r_[i+1]/(r[i+1]*dr^2)
+
 			endif
 
 		;	z component	
 			if i lt nR-1 then begin
+
+                ;if i gt 0 then $
+				;aMat[3*i-1,3*i+2] = 1/(2*r_[i]*dr)-1/dr^2
+				;aMat[3*i,3*i+2] = II*kz/(2*r_[i])-II*kz/dr-w^2/(2*c^2)*epsilon[0,2,i]
+				;aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon_[1,2,i]
+				;aMat[3*i+2,3*i+2] = 2/dr^2 + nPhi^2/r_[i]^2 - w^2/c^2*epsilon_[2,2,i]
+				;aMat[3*i+3,3*i+2] = II * kz / dr + II * kz / (2*r_[i]) -w^2/(2*c^2)*epsilon[0,2,i+1]
+				;if i lt nR-2 then $
+				;aMat[3*i+5,3*i+2] = -1/dr^2 -1/(2*r_[i]*dr)
+
                 if i gt 0 then $
-				aMat[3*i-1,3*i+2] = 1/(2*r_[i]*dr)-1/dr^2
-				aMat[3*i,3*i+2] = II*kz/(2*r_[i])-II*kz/dr-w^2/(2*c^2)*epsilon[0,2,i]
-				aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon_[1,2,i]
-				aMat[3*i+2,3*i+2] = 2/dr^2 + nPhi^2/r_[i]^2 - w^2/c^2*epsilon_[2,2,i]
-				aMat[3*i+3,3*i+2] = II * kz / dr + II * kz / (2*r_[i]) -w^2/(2*c^2)*epsilon[0,2,i+1]
+				aMat[3*i-1,3*i+2] = -r[i]/(r_[i]*dr^2)
+				aMat[3*i,3*i+2] = -II*kz*r[i]/r_[i]-w^2/(2*c^2)*epsilon[0,2,i]
+				aMat[3*i+1,3*i+2] = -nPhi*kz - w^2/c^2*epsilon_[1,2,i]
+				aMat[3*i+2,3*i+2] = (r[i+1]+r[i])/(r_[i]*dr^2) + nPhi^2/r_[i]^2 - w^2/c^2*epsilon_[2,2,i]
+				aMat[3*i+3,3*i+2] = II * kz * r[i+1] / r_[i] -w^2/(2*c^2)*epsilon[0,2,i+1]
 				if i lt nR-2 then $
-				aMat[3*i+5,3*i+2] = -1/dr^2 -1/(2*r_[i]*dr)
+				aMat[3*i+5,3*i+2] = -r[i+1] / ( r_[i] * dr^2 ) 
+	
 			endif
 
 	endfor
 
-	rhs[3*(nR-20)+2]	= II * w * u0 * r_[nR-20] * dr * 1d0
+	rhs[2]	= II * w * u0 / ( r_[0] * dr ) * 1d0
 
 ;	Solve matrix
 
@@ -245,98 +279,115 @@ pro rsfwc_1d, $
 ;   Calculate the Div of D @ the z,phi grid pts
 ;   but first we need to invert epsilon to get D & D_
 
-    D   = dcomplexArr ( nR, 3 )
-    D_  = dcomplexArr ( nR-1, 3 )
+    ;D   = dcomplexArr ( nR, 3 )
+    ;D_  = dcomplexArr ( nR-1, 3 )
 
-    print, '*** calculating D'
-    for i=0,nR-1 do begin
-       
-        if i eq 0 then begin
+    ;print, '*** calculating D'
+    ;for i=0,nR-1 do begin
+    ;   
+    ;    if i eq 0 then begin
 
-            D[i,0]   = epsilon[0,0,i] * eR[i] $
-                        + ( epsilon_[1,0,i] * ePhi[i] ) / 2 $
-                        + ( epsilon_[2,0,i] * ez[i] ) / 2
-            D[i,1]   = epsilon[0,1,i] * eR[i] $
-                        + ( epsilon_[1,1,i] * ePhi[i] ) / 2 $
-                        + ( epsilon_[2,1,i] * ez[i] ) / 2
-            D[i,2]   = epsilon[0,2,i] * eR[i] $
-                        + ( epsilon_[1,2,i] * ePhi[i] ) / 2 $
-                        + ( epsilon_[2,2,i] * ez[i] ) / 2
+    ;        D[i,0]   = epsilon[0,0,i] * eR[i] $
+    ;                    + ( epsilon_[1,0,i] * ePhi[i] ) / 2 $
+    ;                    + ( epsilon_[2,0,i] * ez[i] ) / 2
+    ;        D[i,1]   = epsilon[0,1,i] * eR[i] $
+    ;                    + ( epsilon_[1,1,i] * ePhi[i] ) / 2 $
+    ;                    + ( epsilon_[2,1,i] * ez[i] ) / 2
+    ;        D[i,2]   = epsilon[0,2,i] * eR[i] $
+    ;                    + ( epsilon_[1,2,i] * ePhi[i] ) / 2 $
+    ;                    + ( epsilon_[2,2,i] * ez[i] ) / 2
 
-        endif else if i eq nR-1 then begin
+    ;    endif else if i eq nR-1 then begin
 
-            D[i,0]   = epsilon[0,0,i] * eR[i] $
-                        + ( epsilon_[1,0,i-1] * ePhi[i-1] ) / 2 $
-                        + ( epsilon_[2,0,i-1] * ez[i-1] ) / 2
-            D[i,1]   = epsilon[0,1,i] * eR[i] $
-                        + ( epsilon_[1,1,i-1] * ePhi[i-1] ) / 2 $
-                        + ( epsilon_[2,1,i-1] * ez[i-1] ) / 2
-            D[i,2]   = epsilon[0,2,i] * eR[i] $
-                        + ( epsilon_[1,2,i-1] * ePhi[i-1] ) / 2 $
-                        + ( epsilon_[2,2,i-1] * ez[i-1] ) / 2
+    ;        D[i,0]   = epsilon[0,0,i] * eR[i] $
+    ;                    + ( epsilon_[1,0,i-1] * ePhi[i-1] ) / 2 $
+    ;                    + ( epsilon_[2,0,i-1] * ez[i-1] ) / 2
+    ;        D[i,1]   = epsilon[0,1,i] * eR[i] $
+    ;                    + ( epsilon_[1,1,i-1] * ePhi[i-1] ) / 2 $
+    ;                    + ( epsilon_[2,1,i-1] * ez[i-1] ) / 2
+    ;        D[i,2]   = epsilon[0,2,i] * eR[i] $
+    ;                    + ( epsilon_[1,2,i-1] * ePhi[i-1] ) / 2 $
+    ;                    + ( epsilon_[2,2,i-1] * ez[i-1] ) / 2
 
-        endif else begin
-    
-            D[i,0]   = epsilon[0,0,i] * eR[i] $
-                        + ( epsilon_[1,0,i-1] * ePhi[i-1] + epsilon_[1,0,i] * ePhi[i] ) / 2 $
-                        + ( epsilon_[2,0,i-1] * ez[i-1] + epsilon_[2,0,i] * ez[i] ) / 2
-            D[i,1]   = epsilon[0,1,i] * eR[i] $
-                        + ( epsilon_[1,1,i-1] * ePhi[i-1] + epsilon_[1,1,i] * ePhi[i] ) / 2 $
-                        + ( epsilon_[2,1,i-1] * ez[i-1] + epsilon_[2,1,i] * ez[i] ) / 2
-            D[i,2]   = epsilon[0,2,i] * eR[i] $
-                        + ( epsilon_[1,2,i-1] * ePhi[i-1] + epsilon_[1,2,i] * ePhi[i] ) / 2 $
-                        + ( epsilon_[2,2,i-1] * ez[i-1] + epsilon_[2,2,i] * ez[i] ) / 2
+    ;    endif else begin
+    ;
+    ;        D[i,0]   = epsilon[0,0,i] * eR[i] $
+    ;                    + ( epsilon_[1,0,i-1] * ePhi[i-1] + epsilon_[1,0,i] * ePhi[i] ) / 2 $
+    ;                    + ( epsilon_[2,0,i-1] * ez[i-1] + epsilon_[2,0,i] * ez[i] ) / 2
+    ;        D[i,1]   = epsilon[0,1,i] * eR[i] $
+    ;                    + ( epsilon_[1,1,i-1] * ePhi[i-1] + epsilon_[1,1,i] * ePhi[i] ) / 2 $
+    ;                    + ( epsilon_[2,1,i-1] * ez[i-1] + epsilon_[2,1,i] * ez[i] ) / 2
+    ;        D[i,2]   = epsilon[0,2,i] * eR[i] $
+    ;                    + ( epsilon_[1,2,i-1] * ePhi[i-1] + epsilon_[1,2,i] * ePhi[i] ) / 2 $
+    ;                    + ( epsilon_[2,2,i-1] * ez[i-1] + epsilon_[2,2,i] * ez[i] ) / 2
 
-        endelse
+    ;    endelse
 
-        if i lt nR-1 then begin
+    ;    if i lt nR-1 then begin
  
-            D_[i,0]   = ( epsilon[0,0,i] * eR[i] + epsilon[0,0,i+1] * eR[i+1] ) / 2 $
-                        + epsilon_[1,0,i] * ePhi[i] $
-                        + epsilon_[2,0,i] * ez[i]  
-            D_[i,1]   = ( epsilon[0,1,i] * eR[i] + epsilon[0,1,i+1] * eR[i+1] ) / 2 $
-                        + epsilon_[1,1,i] * ePhi[i] $
-                        + epsilon_[2,1,i] * ez[i]  
-            D_[i,2]   = ( epsilon[0,2,i] * eR[i] + epsilon[0,2,i+1] * eR[i+1] ) / 2 $
-                        + epsilon_[1,2,i] * ePhi[i] $
-                        + epsilon_[2,2,i] * ez[i]  
+    ;        D_[i,0]   = ( epsilon[0,0,i] * eR[i] + epsilon[0,0,i+1] * eR[i+1] ) / 2 $
+    ;                    + epsilon_[1,0,i] * ePhi[i] $
+    ;                    + epsilon_[2,0,i] * ez[i]  
+    ;        D_[i,1]   = ( epsilon[0,1,i] * eR[i] + epsilon[0,1,i+1] * eR[i+1] ) / 2 $
+    ;                    + epsilon_[1,1,i] * ePhi[i] $
+    ;                    + epsilon_[2,1,i] * ez[i]  
+    ;        D_[i,2]   = ( epsilon[0,2,i] * eR[i] + epsilon[0,2,i+1] * eR[i+1] ) / 2 $
+    ;                    + epsilon_[1,2,i] * ePhi[i] $
+    ;                    + epsilon_[2,2,i] * ez[i]  
 
-        endif
+    ;    endif
  
-    endfor
+    ;endfor
 
-    D   = e0 * D
-    D_  = e0 * D_
+    ;D   = e0 * D
+    ;D_  = e0 * D_
 
     divD_   = dcomplexArr ( nR - 1 )
 
     print, '*** calculating div D'
-    for i=0,nR-2 do begin 
-        divD_[i]    = D_[i,0] / r_[i] $
-                        + II * nPhi * D_[i,1] / r_[i] $
-                        + II * kz * D_[i,2] $
-                        + D[i+1,0] / dr $
-                        - D[i,0] / dr
+    for i=1,nR-3 do begin 
+        
+        Dri     = epsilon[0,0,i] * eR[i] $
+                + ( epsilon_[1,0,i-1] * ePhi[i-1] + epsilon_[1,0,i] * ePhi[i] ) / 2 $
+                + ( epsilon_[2,0,i-1] * ez[i-1] + epsilon_[2,0,i] * ez[i] ) / 2
+        Dri1    =  epsilon[0,0,i+1] * eR[i+1] $
+                + ( epsilon_[1,0,i] * ePhi[i] + epsilon_[1,0,i+1] * ePhi[i+1] ) / 2 $
+                + ( epsilon_[2,0,i] * ez[i] + epsilon_[2,0,i+1] * ez[i+1] ) / 2
+        Dth     = ( epsilon[0,1,i] * eR[i] + epsilon[0,1,i+1] * eR[i+1] ) / 2 $
+                + epsilon[1,1,i] * ePhi[i] $
+                + epsilon[2,1,i] * ez[i] 
+        Dz      = ( epsilon[0,2,i] * eR[i] + epsilon[0,2,i+1] * eR[i+1] ) / 2 $
+                + epsilon[1,2,i] * ePhi[i] $
+                + epsilon[2,2,i] * ez[i] 
+
+        ;divD_[i]    = D_[i,0] / r_[i] $
+        ;                + II * nPhi * D_[i,1] / r_[i] $
+        ;                + II * kz * D_[i,2] $
+        ;                + D[i+1,0] / dr $
+        ;                - D[i,0] / dr
+
+        divD_[i]    = ( r[i+1] * e0 * Dri1 - r[i] * e0 * Dri ) / ( r_[i] * dr ) $
+                        + II * nPhi / r_[i] * e0 * Dth $
+                        + II * kz * e0 * Dz
     endfor
 
-    ;   and @ the r grid pts
+    ;;   and @ the r grid pts
 
-    divD    = dcomplexArr ( nR )
+    ;divD    = dcomplexArr ( nR )
 
-    for i=1,nR-2 do begin 
-        divD[i]    = D[i,0] / r[i] $
-                        + II * nPhi * D[i,1] / r[i] $
-                        + II * kz * D[i,2] $
-                        - D[i-1,0] / ( 2 * dr ) $
-                        + D[i,0] / ( 2 * dr )
-    endfor
+    ;for i=1,nR-2 do begin 
+    ;    divD[i]    = D[i,0] / r[i] $
+    ;                    + II * nPhi * D[i,1] / r[i] $
+    ;                    + II * kz * D[i,2] $
+    ;                    - D[i-1,0] / ( 2 * dr ) $
+    ;                    + D[i,0] / ( 2 * dr )
+    ;endfor
 
     divE_   = dcomplexArr ( nR - 1 )
     for i=0,nR-2 do begin
         divE_[i]    = II * nPhi * ePhi[i] / r_[i] $
                         + II * kz * ez[i] $
-                        + eR[i+1] * ( 0.5 + r_[i] / dr ) / r_[i] $
-                        + eR[i] * ( 0.5 - r_[i] / dr ) / r_[i] 
+                        + ( r[i+1] * eR[i+1] - r[i] * eR[i] ) / ( r_[i] * dr ) 
     endfor
 
     rho_ = e0 * divE_
@@ -348,16 +399,16 @@ pro rsfwc_1d, $
     
         iPlot, r_, divD_, $
             /zoom_on_resize
-        iPlot, r, divD, $
-            /over, $
-            color = transpose ( ct12[12*16-1,*] )
+        ;iPlot, r, divD, $
+        ;    /over, $
+        ;    color = transpose ( ct12[12*16-1,*] )
         iPlot, r_, imaginary ( divD_ ), $
             /over, $
             lineStyle = 1
-        iPlot, r, imaginary ( divD ), $
-            /over, $
-            color = transpose ( ct12[12*16-1,*] ), $
-            lineStyle = 1
+        ;iPlot, r, imaginary ( divD ), $
+        ;    /over, $
+        ;    color = transpose ( ct12[12*16-1,*] ), $
+        ;    lineStyle = 1
         iPlot, r_, rho_, $
             color = transpose ( ct12[8*16-1,*] ), $
             /over
