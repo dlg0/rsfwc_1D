@@ -1,7 +1,11 @@
 ;	Real Space Full Wave Code in 1D
 ;	DLG
 
-pro rsfwc_1d
+pro rsfwc_1d, $
+    eR = eR, $
+    w = wReal, $
+    nR = nR, $
+    noPlot = noPlot
 
 ;	Parameters
 
@@ -14,33 +18,34 @@ pro rsfwc_1d
 
 ;	Setup Grid
 
-	nR		= 1024 
-	rMin	= 1.0
-	rMax	= 1.2
+	if not keyword_set ( nR ) then $
+        nR = 1024 
+	rMin	= 1d0
+	rMax	= 1.8d0
 	dR	= ( rMax - rMin ) / ( nR - 1 )
-	r	= fIndGen ( nR ) * dR + rMin
+	r	= dIndGen ( nR ) * dR + rMin
 	;	half grid variables are _
 	r_	= r[1:*] - dR / 2
 
 ;	Setup plasma and field profiles
 
-	bMax	= 0.6
-	bPhi	= fltArr(nR)+bMax; / r 
-	bPhi_	= fltArr(nR-1)+bMax; / r_
+	bMax	= 0.6d0
+	bPhi	= dblArr(nR)+bMax; / r 
+	bPhi_	= dblArr(nR-1)+bMax; / r_
 
 	nSpec	= 2
 	specData	= replicate ( $
-			{ 	q : 0.0, $
-				m : 0.0, $
-				wp : fltArr ( nR ), $
-				wp_ : fltArr ( nR - 1 ), $
-				wc : fltArr ( nR ), $
-				wc_ : fltArr ( nR - 1 ), $
-				n : fltArr ( nR ), $
-				n_ : fltArr ( nR - 1 ) }, nSpec )
+			{ 	q : 0d0, $
+				m : 0d0, $
+				wp : dblArr ( nR ), $
+				wp_ : dblArr ( nR - 1 ), $
+				wc : dblArr ( nR ), $
+				wc_ : dblArr ( nR - 1 ), $
+				n : dblArr ( nR ), $
+				n_ : dblArr ( nR - 1 ) }, nSpec )
 
-	nPeakR	= 1.1
-	nMax	= 1.6e19
+	nPeakR	= 1.1d0
+	nMax	= 0.05d19
 
 	;	electrons
 
@@ -63,21 +68,21 @@ pro rsfwc_1d
 
 	endfor
 
-	winNo	= 0
-	;window, winNo
-	;!p.multi = [0,2,2]
-    
-	iPlot, r, bPhi, $
-        view_grid = [3,1]
-	iPlot, r, specData[0].n, $
-        /view_next
-	iPlot, r, specData[1].n, $
-        /view_next
+   
+    if not keyword_set ( noPlot ) then begin 
+	    iPlot, r, bPhi, $
+            view_grid = [3,1]
+	    iPlot, r, specData[0].n, $
+            /view_next
+	    iPlot, r, specData[1].n, $
+            /view_next
+    endif
 
 ;	Dispersion analysis
 
-	wReal	= 30d6 * 2d0 * !dpi
-	w	= complex ( wReal, wReal * 0.02 )
+    if not keyword_set ( wReal ) then $
+	    wReal	= 30d6 * 2d0 * !dpi
+	w	= complex ( wReal, wReal * 0.00 )
 
 	nPhi	= 5 
 	kPar	= nPhi / r
@@ -108,61 +113,62 @@ pro rsfwc_1d
     kR2  = sqrt ( kPerp2^2 - kz^2 )
 
 
+    if not keyword_set ( noPlot ) then begin
     loadct, 12, /sil, rgb_table = ct12
     device, decomposed = 0
 
-	iPlot, r, real_part ( kPerp1 ), $
-        /yLog, $
-        yRange = [1, 1e3], $
-        view_grid = [2,1]
-	iPlot, r, imaginary ( kPerp1 ), $
-		lineStyle = 1, $
-        /over
-	iPlot, r, real_part ( kR1 ), $
-        /over, $
-        color = transpose ( ct12[8*16-1,*] )
-	iPlot, r, imaginary ( kR1 ), $
-		lineStyle = 1, $
-        /over, $
-        color = transpose ( ct12[8*16-1,*] )
+	    iPlot, r, real_part ( kPerp1 ), $
+            /yLog, $
+            yRange = [1, 1e3], $
+            view_grid = [2,1]
+	    iPlot, r, imaginary ( kPerp1 ), $
+	    	lineStyle = 1, $
+            /over
+	    iPlot, r, real_part ( kR1 ), $
+            /over, $
+            color = transpose ( ct12[8*16-1,*] )
+	    iPlot, r, imaginary ( kR1 ), $
+	    	lineStyle = 1, $
+            /over, $
+            color = transpose ( ct12[8*16-1,*] )
 
 
-	iPlot, r, real_part ( kPerp2 ), $
-        /yLog, $
-        yRange = [1, 1e3], $
-        /view_next
-	iPlot, r, imaginary ( kPerp2 ), $
-		lineStyle = 1, $
-        /over
-	iPlot, r, real_part ( kR2 ), $
-        /over, $
-        color = transpose ( ct12[8*16-1,*] )
-	iPlot, r, imaginary ( kR2 ), $
-		lineStyle = 1, $
-        /over, $
-        color = transpose ( ct12[8*16-1,*] )
+	    iPlot, r, real_part ( kPerp2 ), $
+            /yLog, $
+            yRange = [1, 1e3], $
+            /view_next
+	    iPlot, r, imaginary ( kPerp2 ), $
+	    	lineStyle = 1, $
+            /over
+	    iPlot, r, real_part ( kR2 ), $
+            /over, $
+            color = transpose ( ct12[8*16-1,*] )
+	    iPlot, r, imaginary ( kR2 ), $
+	    	lineStyle = 1, $
+            /over, $
+            color = transpose ( ct12[8*16-1,*] )
 
-
+    endif
 
 	!p.multi = 0
 
 ;	Calculate dielectric tensor
 
-	II	= complex ( 0, 1 )
+	II	= dcomplex ( 0, 1 )
 
-	epsilon		= complexArr ( 3, 3, nR )
-	epsilon_	= complexArr ( 3, 3, nR-1 )
+	epsilon		= dcomplexArr ( 3, 3, nR )
+	epsilon_	= dcomplexArr ( 3, 3, nR-1 )
 
 	epsilon[0,0,*]	= stixS
-	epsilon[0,2,*]	= II * stixD
+	epsilon[0,2,*]	= -II * stixD
 	epsilon[1,1,*]	= stixP
-	epsilon[2,0,*]	= -II * stixD
+	epsilon[2,0,*]	= II * stixD
 	epsilon[2,2,*]	= stixS
 
 	epsilon_[0,0,*]	= stixS_
-	epsilon_[0,2,*]	= II * stixD_
+	epsilon_[0,2,*]	= -II * stixD_
 	epsilon_[1,1,*]	= stixP_
-	epsilon_[2,0,*]	= -II * stixD_
+	epsilon_[2,0,*]	= II * stixD_
 	epsilon_[2,2,*]	= stixS_
 
 ;	Build matrix
@@ -178,12 +184,14 @@ pro rsfwc_1d
 
 		;	r component
             if i gt 0 then begin
-				aMat[3*i-2,3*i]	= II * nPhi / (2 * r[i]^2) - II * nPhi / ( r[i] * dr ) - w^2/(2*c^2)*epsilon_[1,0,i-1]
+				aMat[3*i-2,3*i]	= II * nPhi / (2 * r[i]^2) - II * nPhi / ( r[i] * dr ) $
+                                    - w^2/(2*c^2)*epsilon_[1,0,i-1]
 				aMat[3*i-1,3*i]	= -II * kz / dr - w^2 / (2 * c^2) * epsilon_[2,0,i-1]
             endif
 				aMat[3*i,3*i]	= nPhi / r[i]^2 + kz^2 - w^2 / c^2 * epsilon[0,0,i]
             if i lt nR-1 then begin
-				aMat[3*i+1,3*i]	= II * nPhi / ( r[i] * dr ) + II * nPhi / ( 2 * r[i]^2 ) - w^2/(2*c^2)*epsilon_[1,0,i]
+				aMat[3*i+1,3*i]	= II * nPhi / ( r[i] * dr ) + II * nPhi / ( 2 * r[i]^2 ) $
+                                    - w^2/(2*c^2)*epsilon_[1,0,i]
 				aMat[3*i+2,3*i]	= II * kz / dr - w^2 / (2*c^2) * epsilon_[2,0,i]
             endif
 
@@ -191,10 +199,12 @@ pro rsfwc_1d
 			if i lt nR-1 then begin
                 if i gt 0 then $
 				aMat[3*i-2,3*i+1] = 1 / ( 2 * r_[i] * dr ) - 1/ dr^2
-				aMat[3*i,3*i+1]	= -II*nPhi/(r_[i]*dr) -II*nPhi/(2*r_[i]^2)-w^2/(2*c^2)*epsilon[0,1,i]
+				aMat[3*i,3*i+1]	= -II*nPhi/(r_[i]*dr) $
+                                    - II*nPhi/(2*r_[i]^2)-w^2/(2*c^2)*epsilon[0,1,i]
 				aMat[3*i+1,3*i+1]	= 2 / dr^2 + kz^2 + 1 / r_[i]^2 -w^2/c^2*epsilon_[1,1,i]
-				aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon[2,1,i]
-				aMat[3*i+3,3*i+1]	= II * nPhi / (r_[i]*dr) - II*nPhi/(2*r_[i]^2) - w^2/(2*c^2)*epsilon[0,1,i]
+				aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon_[2,1,i]
+				aMat[3*i+3,3*i+1]	= II * nPhi / (r_[i]*dr) - II*nPhi/(2*r_[i]^2) $
+                                        - w^2/(2*c^2)*epsilon[0,1,i+1]
 				if i lt nR-2 then $
 				aMat[3*i+4,3*i+1]	= -1/dr^2 - 1/(2*r_[i]*dr)
 			endif
@@ -204,8 +214,8 @@ pro rsfwc_1d
                 if i gt 0 then $
 				aMat[3*i-1,3*i+2] = 1/(2*r_[i]*dr)-1/dr^2
 				aMat[3*i,3*i+2] = II*kz/(2*r_[i])-II*kz/dr-w^2/(2*c^2)*epsilon[0,2,i]
-				aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon[1,2,i]
-				aMat[3*i+2,3*i+2] = 2/dr^2 + nPhi^2/r_[i]^2 - w^2/c^2*epsilon[2,2,i]
+				aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon_[1,2,i]
+				aMat[3*i+2,3*i+2] = 2/dr^2 + nPhi^2/r_[i]^2 - w^2/c^2*epsilon_[2,2,i]
 				aMat[3*i+3,3*i+2] = II * kz / dr + II * kz / (2*r_[i]) -w^2/(2*c^2)*epsilon[0,2,i+1]
 				if i lt nR-2 then $
 				aMat[3*i+5,3*i+2] = -1/dr^2 -1/(2*r_[i]*dr)
@@ -213,15 +223,15 @@ pro rsfwc_1d
 
 	endfor
 
-	rhs[3*(nR-2)+2]	= II * w * u0 * r_[nR-2] * dr * 1.0 
+	rhs[3*(nR-20)+2]	= II * w * u0 * r_[nR-20] * dr * 1d0
 
 ;	Solve matrix
 
-    print, '*** solving linear system', (nAll*2.0)^2*8.0/(1024.0^2)
-	eField	= la_linear_equation ( aMat, rhs, status = stat )
+    print, '*** solving linear system', (nAll*2.0)^2*16.0/(1024.0^2)
+	eField	= la_linear_equation ( aMat, rhs, status = stat, /double )
 	print, 'lapack status: ', stat
 
-	eFieldTmp	= complexArr ( nAll )
+	eFieldTmp	= dcomplexArr ( nAll )
 	eFieldTmp	= eField
 	eField	= temporary ( eFieldTmp )
 
@@ -235,8 +245,8 @@ pro rsfwc_1d
 ;   Calculate the Div of D @ the z,phi grid pts
 ;   but first we need to invert epsilon to get D & D_
 
-    D   = complexArr ( nR, 3 )
-    D_  = complexArr ( nR-1, 3 )
+    D   = dcomplexArr ( nR, 3 )
+    D_  = dcomplexArr ( nR-1, 3 )
 
     print, '*** calculating D'
     for i=0,nR-1 do begin
@@ -298,7 +308,7 @@ pro rsfwc_1d
     D   = e0 * D
     D_  = e0 * D_
 
-    divD_   = complexArr ( nR - 1 )
+    divD_   = dcomplexArr ( nR - 1 )
 
     print, '*** calculating div D'
     for i=0,nR-2 do begin 
@@ -311,7 +321,7 @@ pro rsfwc_1d
 
     ;   and @ the r grid pts
 
-    divD    = complexArr ( nR )
+    divD    = dcomplexArr ( nR )
 
     for i=1,nR-2 do begin 
         divD[i]    = D[i,0] / r[i] $
@@ -321,7 +331,7 @@ pro rsfwc_1d
                         + D[i,0] / ( 2 * dr )
     endfor
 
-    divE_   = complexArr ( nR - 1 )
+    divE_   = dcomplexArr ( nR - 1 )
     for i=0,nR-2 do begin
         divE_[i]    = II * nPhi * ePhi[i] / r_[i] $
                         + II * kz * ez[i] $
@@ -332,55 +342,50 @@ pro rsfwc_1d
     rho_ = e0 * divE_
 
 
-    iPlot, r_, divD_
-    iPlot, r, divD, $
-        /over, $
-        color = transpose ( ct12[12*16-1,*] )
-    iPlot, r_, imaginary ( divD_ ), $
-        /over, $
-        lineStyle = 1
-    iPlot, r, imaginary ( divD ), $
-        /over, $
-        color = transpose ( ct12[12*16-1,*] ), $
-        lineStyle = 1
-    iPlot, r_, rho_, $
-        color = transpose ( ct12[8*16-1,*] ), $
-        /over
+    if not keyword_set ( noPlot ) then begin
 
-;	Visualise solution
+    ;   plot the numerical and real charge density
+    
+        iPlot, r_, divD_, $
+            /zoom_on_resize
+        iPlot, r, divD, $
+            /over, $
+            color = transpose ( ct12[12*16-1,*] )
+        iPlot, r_, imaginary ( divD_ ), $
+            /over, $
+            lineStyle = 1
+        iPlot, r, imaginary ( divD ), $
+            /over, $
+            color = transpose ( ct12[12*16-1,*] ), $
+            lineStyle = 1
+        iPlot, r_, rho_, $
+            color = transpose ( ct12[8*16-1,*] ), $
+            /over
+    
+    ;	Visualise solution
+    
+        loadct, 12, /sil
+    	!p.charSize = 3
+    
+        iPlot, r, eR, $
+            view_grid = [3,1], $
+            yTickFont_size = 30, $
+            /zoom_on_resize
+        iPlot, r, imaginary ( eR ), $
+            /over, $
+            color = transpose ( ct12[8*16-1,*] )
+    	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ePhi,0], $
+            psym = -4, /view_next
+    	iPlot, r_, imaginary(ePhi), $
+            psym = -4, $
+            /over, $
+            color = transpose ( ct12[8*16-1,*] )
+    	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ez,0], $
+            psym = -4, /view_next
+    	iPlot, r_, imaginary(ez), $
+            psym = -4, $
+            /over, $
+            color = transpose ( ct12[8*16-1,*] )
+    endif
 
-	++winNo
-    loadct, 12, /sil
-	!p.charSize = 3
-
-    iPlot, r, eR, $
-        view_grid = [3,1], $
-        yTickFont_size = 30 
-    iPlot, r, imaginary ( eR ), $
-        /over, $
-        color = transpose ( ct12[8*16-1,*] )
-	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ePhi,0], $
-        psym = -4, /view_next
-	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], imaginary([0,ePhi,0]), $
-        psym = -4, $
-        /over, $
-        color = transpose ( ct12[8*16-1,*] )
-	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ez,0], $
-        psym = -4, /view_next
-	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], imaginary([0,ez,0]), $
-        psym = -4, $
-        /over, $
-        color = transpose ( ct12[8*16-1,*] )
-
-	;++winNo
-	;window, winNo, ySize = 800
-	;!p.multi = [0,2,3]
-	;!p.charSize = 3
-	;plot, r, OD_eR
-	;plot, r, imaginary (OD_eR)
-	;plot, r_, OD_ePhi
-	;plot, r_, imaginary (OD_ePhi)
-	;plot, r_, OD_ez
-	;plot, r_, imaginary(OD_ez)
-stop
 end
