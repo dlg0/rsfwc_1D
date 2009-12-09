@@ -34,8 +34,8 @@ pro rsfwc_1d, $
         bMax = 0.0 $
     else $
 	    bMax	= 0.5d0
-	bPhi	= dblArr(nR)+bMax; / r 
-	bPhi_	= dblArr(nR-1)+bMax; / r_
+	bPhi	= dblArr(nR)+bMax / r 
+	bPhi_	= dblArr(nR-1)+bMax / r_
 
 	nSpec	= 2
 	specData	= replicate ( $
@@ -48,17 +48,15 @@ pro rsfwc_1d, $
 				n : dblArr ( nR ), $
 				n_ : dblArr ( nR - 1 ) }, nSpec )
 
-	nPeakR	= 1.4d0
-	nMax	= 0.1d19
+	nPeakR	= 1.5d0
+	nMax	= 1.0d19
 
 	;	electrons
 
 	specData[0].q 		= -1 * e
 	specData[0].m 		= me
-	specData.n 		= nMax
-;((-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)
-	specData.n_		= nMax
-;((-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)
+	specData.n 		= ((-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)
+	specData.n_		= ((-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)
 
 	;	dueterium
 
@@ -93,13 +91,13 @@ pro rsfwc_1d, $
 
     if not keyword_set ( wReal ) then $
 	    wReal	= 30d6 * 2d0 * !dpi
-	w	= dcomplex ( wReal, wReal * 0.00 )
+	w	= dcomplex ( wReal, wReal * 0.01 )
 
     if keyword_set ( freeSpace ) then w  = 3000d6 * 2d0 * !dpi
 
-	nPhi	= 0.0 
+	nPhi	= 00.0 
 	kPar	= nPhi / r
-	kz		= 5.0 
+	kz		= 0.0 
 	nPar	= kPar * c / wReal
 
     loadct, 12, /sil, rgb_table = ct12
@@ -211,15 +209,15 @@ pro rsfwc_1d, $
     endif else begin
 
 	    epsilon[0,0,*]	= stixS
-	    epsilon[0,2,*]	= II * stixD
-	    epsilon[1,1,*]	= -stixP
-	    epsilon[2,0,*]	= -II * stixD
+	    epsilon[0,2,*]	= -II * stixD
+	    epsilon[1,1,*]	= stixP
+	    epsilon[2,0,*]	= II * stixD
 	    epsilon[2,2,*]	= stixS
 
 	    epsilon_[0,0,*]	= stixS_
-	    epsilon_[0,2,*]	= II * stixD_
-	    epsilon_[1,1,*]	= -stixP_
-	    epsilon_[2,0,*]	= -II * stixD_
+	    epsilon_[0,2,*]	= -II * stixD_
+	    epsilon_[1,1,*]	= stixP_
+	    epsilon_[2,0,*]	= II * stixD_
 	    epsilon_[2,2,*]	= stixS_
 
     endelse
@@ -338,7 +336,7 @@ pro rsfwc_1d, $
 
     endelse
 
-	rhs[2]	= II * w * u0 / ( r_[0] * dr ) * 1d0
+	rhs[(nR-2)*3+2]	= II * w * u0 / ( r_[0] * dr ) * 1d0
 
 ;	Solve matrix
 
