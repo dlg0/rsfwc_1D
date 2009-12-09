@@ -92,14 +92,14 @@ pro rsfwc_1d, $
 ;	Dispersion analysis
 
     if not keyword_set ( wReal ) then $
-	    wReal	= 3000d6 * 2d0 * !dpi
+	    wReal	= 30d6 * 2d0 * !dpi
 	w	= dcomplex ( wReal, wReal * 0.00 )
 
-    if keyword_set ( freeSpace ) then w  = wReal
+    if keyword_set ( freeSpace ) then w  = 3000d6 * 2d0 * !dpi
 
 	nPhi	= 0.0 
 	kPar	= nPhi / r
-	kz		= 0.0 
+	kz		= 5.0 
 	nPar	= kPar * c / wReal
 
     loadct, 12, /sil, rgb_table = ct12
@@ -239,7 +239,7 @@ pro rsfwc_1d, $
 	for i = 0, nR - 1 do begin
 
 		;	r component
-            if i gt 1 then begin
+            if i gt 0 then begin
 				aMat[3*i-2,3*i]	= -II * nPhi * r_[i-1] / ( r[i]^2 * dr ) 
 				aMat[3*i-1,3*i]	= -II * kz / dr 
             endif
@@ -267,7 +267,6 @@ pro rsfwc_1d, $
 
 
 		;	z component	
-
                 if i gt 0 then $
 				aMat[3*i-1,3*i+2] = -r[i]/(r_[i]*dr^2)
 				aMat[3*i,3*i+2] = -II*kz*r[i]/(r_[i]*dr)
@@ -434,10 +433,12 @@ pro rsfwc_1d, $
             /over, $
             color = transpose ( ct12[8*16-1,*] )
 
-        iPlot, findgen(nR-1)*dr*nr*2*!pi,(abs(fft(ez)))>0.001,$
+        iPlot, findgen(nR)*dr*nr*2*!pi,(abs(fft(eR)))>0.001,$
             xrange=[0,900], $
             /ylog, $
             yrange=[0.001,1e3]
+        iPlot, findgen(nR-1)*dr*nr*2*!pi,(abs(fft(ePhi)))>0.001, /over
+        iPlot, findgen(nR-1)*dr*nr*2*!pi,(abs(fft(ez)))>0.001, /over
 
         iPlot, [median(abs(kPer1)),median(abs(kPer1))], [0.001,1e3], /over
         iPlot, [mean(abs(kPer2)),mean(abs(kPer2))], [0.001,1e3], /over
