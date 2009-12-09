@@ -20,9 +20,9 @@ pro rsfwc_1d, $
 ;	Setup Grid
 
 	if not keyword_set ( nR ) then $
-        nR = 1024 
+        nR = 256 
 	rMin	= 1.0d0
-	rMax	= 20.0d0
+	rMax	= 2.0d0
 	dR	= ( rMax - rMin ) / ( nR - 1 )
 	r	= dIndGen ( nR ) * dR + rMin
 	;	half grid variables are _
@@ -92,9 +92,10 @@ pro rsfwc_1d, $
 ;	Dispersion analysis
 
     if not keyword_set ( wReal ) then $
-	    wReal	= 30d6 * 2d0 * !dpi
+	    wReal	= 3000d6 * 2d0 * !dpi
 	w	= dcomplex ( wReal, wReal * 0.00 )
-    w   = wReal
+
+    if keyword_set ( freeSpace ) then w  = wReal
 
 	nPhi	= 0.0 
 	kPar	= nPhi / r
@@ -199,13 +200,13 @@ pro rsfwc_1d, $
 
     if keyword_set ( freeSpace ) then begin
 
-        epsilon[0,0,*]  = complex ( e0, e0 )
-        epsilon[1,1,*]  = complex ( e0, e0 )
-        epsilon[2,2,*]  = complex ( e0, e0 )
+        epsilon[0,0,*]  = complex ( 1, 0 )
+        epsilon[1,1,*]  = complex ( 1, 0 )
+        epsilon[2,2,*]  = complex ( 1, 0 )
 
-        epsilon_[0,0,*]  = complex ( e0, e0 )
-        epsilon_[1,1,*]  = complex ( e0, e0 )
-        epsilon_[2,2,*]  = complex ( e0, e0 )
+        epsilon_[0,0,*]  = complex ( 1, 0 )
+        epsilon_[1,1,*]  = complex ( 1, 0 )
+        epsilon_[2,2,*]  = complex ( 1, 0 )
 
     endif else begin
 
@@ -238,12 +239,12 @@ pro rsfwc_1d, $
 	for i = 0, nR - 1 do begin
 
 		;	r component
-            if i gt 0 then begin
+            if i gt 1 then begin
 				aMat[3*i-2,3*i]	= -II * nPhi * r_[i-1] / ( r[i]^2 * dr ) 
 				aMat[3*i-1,3*i]	= -II * kz / dr 
             endif
 				aMat[3*i,3*i]	= nPhi^2 / r[i]^2 + kz^2 $
-                                    - w^2 / c^2 * e0 
+                                    - w^2 / c^2 * 1 
             if i lt nR-1 then begin
 				aMat[3*i+1,3*i]	= II * nPhi * r_[i] / ( r[i]^2 * dr ) 
 				aMat[3*i+2,3*i]	= II * kz / dr 
@@ -258,7 +259,7 @@ pro rsfwc_1d, $
 				aMat[3*i,3*i+1]	= -II*nPhi/(r[i]*dr) 
 				aMat[3*i+1,3*i+1]	= kz^2 + r_[i]/(r[i+1]*dr^2) $
                                         + r_[i]/(r[i]*dr^2) $
-                                        - w^2/c^2*e0
+                                        - w^2/c^2*1
 				aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] 
 				aMat[3*i+3,3*i+1]	= II * nPhi / (r[i+1]*dr) 
 				if i lt nR-2 then $
@@ -269,13 +270,10 @@ pro rsfwc_1d, $
 
                 if i gt 0 then $
 				aMat[3*i-1,3*i+2] = -r[i]/(r_[i]*dr^2)
-                ;*** unit error in this term too?
 				aMat[3*i,3*i+2] = -II*kz*r[i]/(r_[i]*dr)
-                ;*** and this one?
 				aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] 
 				aMat[3*i+2,3*i+2] = (r[i+1]+r[i])/(r_[i]*dr^2) + nPhi^2/r_[i]^2 $
-                                        - w^2/c^2*e0
-                ;*** and this one?
+                                        - w^2/c^2*1
 				aMat[3*i+3,3*i+2] = II * kz * r[i+1] / (r_[i]*dr)
 				if i lt nR-2 then $
 				aMat[3*i+5,3*i+2] = -r[i+1] / ( r_[i] * dr^2 ) 
@@ -436,7 +434,7 @@ pro rsfwc_1d, $
             /over, $
             color = transpose ( ct12[8*16-1,*] )
 
-        iPlot, findgen(nR-1)*dr*nr*2*!pi*2,(abs(fft(ez)))>0.001,$
+        iPlot, findgen(nR-1)*dr*nr*2*!pi,(abs(fft(ez)))>0.001,$
             xrange=[0,900], $
             /ylog, $
             yrange=[0.001,1e3]
