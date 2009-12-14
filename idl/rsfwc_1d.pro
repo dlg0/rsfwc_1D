@@ -5,9 +5,13 @@ pro rsfwc_1d, $
     eR = eR, $
     w = wReal, $
     nR = nR, $
-    noPlot = noPlot, $
+    plot = plot, $
     freeSpace = freeSpace, $
-    bandStorage = bandStorage
+    bandStorage = bandStorage, $
+	divD = divD, $
+	kz = kz, $
+	nPhi = nPhi
+	
 
 ;	Parameters
 
@@ -22,8 +26,8 @@ pro rsfwc_1d, $
 
 	if not keyword_set ( nR ) then $
         nR = 256L
-	rMin	= 1.0d0
-	rMax	= 2.0d0
+	rMin	= 0.2d0
+	rMax	= 1.7d0
 	dR	= ( rMax - rMin ) / ( nR - 1 )
 	r	= dIndGen ( nR ) * dR + rMin
 	;	half grid variables are _
@@ -34,7 +38,8 @@ pro rsfwc_1d, $
     if keyword_set ( freeSpace ) then $
         bMax = 0.0 $
     else $
-	    bMax	= 0.5d0
+	    bMax	= 0.55d0
+
 	bPhi	= dblArr(nR)+bMax / r 
 	bPhi_	= dblArr(nR-1)+bMax / r_
 
@@ -49,19 +54,38 @@ pro rsfwc_1d, $
 				n : dblArr ( nR ), $
 				n_ : dblArr ( nR - 1 ) }, nSpec )
 
-	nPeakR	= 1.5d0
-	nMax	= 1.0d19
+	nPeakR	= 2.65d0
+	nMax	= 4.0d18
 
 	;	electrons
 
 	specData[0].q 		= -1 * e
 	specData[0].m 		= me
-	specData.n 		= ((-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)
-	specData.n_		= ((-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)
+	specData[0].n 		= nMax;((-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)>0
+	specData[0].n_		= nMax;((-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)>0
 
-	;	dueterium
+	;	sinusoidal density gradient
 
-	specData[1].q 		= 1 * e
+	;gradSize = 0.1
+	;gradStart	= 1.5
+	;gradFreq	= 1 / (2*gradSize)
+	;ne_profile	= fltArr ( nR ) 
+	;ii1	= where ( r lt gradStart )
+	;ii2	= where ( r ge gradStart and r lt gradStart+gradSize )
+	;ne_profile[*]	= -1
+	;ne_profile[ii1]	= 1
+	;ne_profile[ii2]	= cos ( 2*!pi*gradFreq*(r[ii2]-gradStart) )
+	;ne_profile	= (ne_profile + 2) * nMax
+	;specData[0].n	= ne_profile
+	;specData[0].n_	= ((specData[0].n)[0:nR-2] + (specData[0].n)[1:nR-1])/2
+	
+	specData[1].n 		= specData[0].n / 2
+	specData[1].n_		= specData[0].n_ / 2
+
+
+	;   helium	
+
+	specData[1].q 		= 2 * e
 	specData[1].m 		= 2 * mi 
 
 	for i = 0, nSpec - 1 do begin
@@ -76,7 +100,7 @@ pro rsfwc_1d, $
 	endfor
 
    
-    if not keyword_set ( noPlot ) then begin 
+    if keyword_set ( plot ) then begin 
 	    iPlot, r, bPhi, $
             view_grid = [3,3], $
             title = 'bPhi', $
@@ -91,7 +115,7 @@ pro rsfwc_1d, $
 ;	Dispersion analysis
 
     if not keyword_set ( wReal ) then $
-	    wReal	= 30d6 * 2d0 * !dpi
+	    wReal	= 1.118468d11 
 	w	= dcomplex ( wReal, wReal * 0.00 )
 
     if keyword_set ( freeSpace ) then begin
@@ -99,13 +123,17 @@ pro rsfwc_1d, $
         w  = wReal
     endif
 
-	nPhi	= 15.0 
+	if not keyword_set ( nPhi ) then $
+		nPhi = 0 
 	kPar	= nPhi / r
-	kz		= 0.0 
+	if not keyword_set ( kz ) then $
+		kz = 0 
 	nPar	= kPar * c / wReal
 
-    loadct, 12, /sil, rgb_table = ct12
-    device, decomposed = 0
+	if keyword_set ( plot ) then begin
+    	loadct, 12, /sil, rgb_table = ct12
+    	device, decomposed = 0
+	endif
 
     if keyword_set ( freeSpace ) then begin
 
@@ -150,37 +178,30 @@ pro rsfwc_1d, $
         kR1  = sqrt ( kPer1^2 - kz^2 )
         kR2  = sqrt ( kPer2^2 - kz^2 )
 
-        if not keyword_set ( noPlot ) then begin
+        if keyword_set ( plot ) then begin
 
-	        iPlot, r, real_part ( kPer1 ), $
+	        iPlot, r, real_part ( kR1 ), $
                 /yLog, $
                 yRange = [1, 1e3], $
                 /view_next, $
-                title = 'dispersion root 0'
-	        iPlot, r, imaginary ( kPer1 ), $
-	        	lineStyle = 1, $
-                /over
-	        iPlot, r, real_part ( kR1 ), $
-                /over, $
-                color = transpose ( ct12[8*16-1,*] )
+                title = 'dispersion', $
+				xTitle = 'R[m]', $
+				yTitle = 'kR', $
+                color = transpose ( ct12[8*16-1,*] ), $
+				xRange = [min(r),max(r)]
+
 	        iPlot, r, imaginary ( kR1 ), $
 	        	lineStyle = 1, $
                 /over, $
                 color = transpose ( ct12[8*16-1,*] )
 
-
-	        iPlot, r, real_part ( kPer2 ), $
-                /over
-	        iPlot, r, imaginary ( kPer2 ), $
-	        	lineStyle = 1, $
-                /over
 	        iPlot, r, real_part ( kR2 ), $
                 /over, $
-                color = transpose ( ct12[8*16-1,*] )
+                color = transpose ( ct12[12*16-1,*] )
 	        iPlot, r, imaginary ( kR2 ), $
 	        	lineStyle = 1, $
                 /over, $
-                color = transpose ( ct12[8*16-1,*] )
+                color = transpose ( ct12[12*16-1,*] )
 
         endif
 
@@ -244,7 +265,7 @@ pro rsfwc_1d, $
 
 	rhs		= complexArr ( nAll )
 
-	for i = 0L, nR - 1L do begin
+	for i = 0UL, nR - 1L do begin
 
 		;	r component
             if keyword_set ( bandStorage ) then begin
@@ -376,27 +397,10 @@ pro rsfwc_1d, $
 
 	endfor
 
-;    if keyword_set ( bandStorage ) then begin
-;
-;        test_bandStorage    = complexArr ( nAll, m )
-;        for i=0,nAll-1 do begin
-;            for j=0,nAll-1 do begin
-;
-;                if abs ( aMat[i,j] ) ne 0 then begin
-;                    test_bandStorage[i,nuca+j-i] = aMat[i,j] 
-;                    ;if test_bandStorage[(i-j+nuca+1)*i+j] ne aMat_bandStorage[(i-j+nuca+1)*i+j] then begin
-;                    ;    print, aMat[i,j], test_bandStorage[(i-j+nuca+1)*i+j], aMat_bandStorage[(i-j+nuca+1)*i+j], i, j
-;                    ;endif
-;                endif
-;
-;            endfor
-;        endfor
-;    stop
-;    endif
-
-    ;endelse
-
-	rhs[(nR-2)*3+2]	= II * w * u0 / ( r_[0] * dr ) * 1d0
+    antLoc  = 1.65d0
+    iiAnt   = where ( abs ( r_ - antLoc ) eq min ( abs ( r_ - antLoc ) ) )
+    
+	rhs[iiAnt*3+2]	= II * w * u0 / ( r_[0] * dr ) * 1d0
 
 ;	Solve matrix
 
@@ -405,7 +409,7 @@ pro rsfwc_1d, $
 
     if keyword_set ( bandStorage ) then begin
 
-        eField = imsl_sp_bdSol ( rhs, nlca, nuca, aMat_bandStorage[*], /double )
+        eField = imsl_sp_bdSol ( rhs, nlca, nuca, aMat_bandStorage[*] )
 
     endif else begin
 
@@ -413,69 +417,72 @@ pro rsfwc_1d, $
 	    print, 'lapack status: ', stat
 
     endelse
-    
-	;eFieldTmp	= dcomplexArr ( nAll )
-	;eFieldTmp	= eField
-	;eField	= temporary ( eFieldTmp )
-
-	ii_eR	= indGen(nR, /long)*3
-	ii_ePhi	= indGen(nR-1, /long)*3+1
-	ii_ez	= indGen(nR-1, /long)*3+2
+   
+	ii_eR	= lIndGen(nR)*3
 	eR	= eField[ii_eR]
+	ii_ePhi	= temporary(ii_eR[0:nR-2]+1)
 	ePhi	= eField[ii_ePhi]
+	ii_ez	= temporary(ii_ePhi+1)
 	ez	= eField[ii_ez]
 
-;   Calculate the Div of D @ the z,phi grid pts
-;   but first we need to invert epsilon to get D & D_
+	if keyword_set ( divD ) then begin
 
-    divD_   = dcomplexArr ( nR - 1 )
+	;  	Calculate the Div of D @ the z,phi grid pts
+	;  	but first we need to invert epsilon to get D & D_
 
-    print, '*** calculating div D'
-    for i=1,nR-3 do begin 
-        
-        Dri     = epsilon[0,0,i] * eR[i] $
-                + ( epsilon_[1,0,i-1] * ePhi[i-1] + epsilon_[1,0,i] * ePhi[i] )/2 $
-                + ( epsilon_[2,0,i-1] * ez[i-1] + epsilon_[2,0,i] * ez[i] )/2
-        Dri1    =  epsilon[0,0,i+1] * eR[i+1] $
-                + ( epsilon_[1,0,i] * ePhi[i] + epsilon_[1,0,i+1] * ePhi[i+1] )/2 $
-                + ( epsilon_[2,0,i] * ez[i] + epsilon_[2,0,i+1] * ez[i+1] )/2
-        Dth     = ( epsilon[0,1,i] * eR[i] + epsilon[0,1,i+1] * eR[i+1] )/2 $
-                + epsilon[1,1,i] * ePhi[i] $
-                + epsilon[2,1,i] * ez[i] 
-        Dz      = ( epsilon[0,2,i] * eR[i] + epsilon[0,2,i+1] * eR[i+1] )/2 $
-                + epsilon[1,2,i] * ePhi[i] $
-                + epsilon[2,2,i] * ez[i] 
+    	divD_   = dcomplexArr ( nR - 1 )
 
-        divD_[i]    = ( r[i+1] * e0 * Dri1 - r[i] * e0 * Dri ) / ( r_[i] * dr ) $
-                        + II * nPhi / r_[i] * e0 * Dth $
-                        + II * kz * e0 * Dz
-    endfor
+    	print, '*** calculating div D'
+    	for i=1UL,nR-3L do begin 
+    	    
+    	    Dri     = epsilon[0,0,i] * eR[i] $
+    	            + ( epsilon_[1,0,i-1] * ePhi[i-1] + epsilon_[1,0,i] * ePhi[i] )/2 $
+    	            + ( epsilon_[2,0,i-1] * ez[i-1] + epsilon_[2,0,i] * ez[i] )/2
+    	    Dri1    =  epsilon[0,0,i+1] * eR[i+1] $
+    	            + ( epsilon_[1,0,i] * ePhi[i] + epsilon_[1,0,i+1] * ePhi[i+1] )/2 $
+    	            + ( epsilon_[2,0,i] * ez[i] + epsilon_[2,0,i+1] * ez[i+1] )/2
+    	    Dth     = ( epsilon[0,1,i] * eR[i] + epsilon[0,1,i+1] * eR[i+1] )/2 $
+    	            + epsilon[1,1,i] * ePhi[i] $
+    	            + epsilon[2,1,i] * ez[i] 
+    	    Dz      = ( epsilon[0,2,i] * eR[i] + epsilon[0,2,i+1] * eR[i+1] )/2 $
+    	            + epsilon[1,2,i] * ePhi[i] $
+    	            + epsilon[2,2,i] * ez[i] 
 
-    divE_   = dcomplexArr ( nR - 1 )
-    for i=0,nR-2 do begin
-        divE_[i]    = II * nPhi * ePhi[i] / r_[i] $
-                        + II * kz * ez[i] $
-                        + ( r[i+1] * eR[i+1] - r[i] * eR[i] ) / ( r_[i] * dr ) 
-    endfor
+    	    divD_[i]    = ( r[i+1] * e0 * Dri1 - r[i] * e0 * Dri ) / ( r_[i] * dr ) $
+    	                    + II * nPhi / r_[i] * e0 * Dth $
+    	                    + II * kz * e0 * Dz
+    	endfor
 
-    rho_ = e0 * divE_
+    	divE_   = dcomplexArr ( nR - 1 )
+    	for i=0UL,nR-2L do begin
+    	    divE_[i]    = II * nPhi * ePhi[i] / r_[i] $
+    	                    + II * kz * ez[i] $
+    	                    + ( r[i+1] * eR[i+1] - r[i] * eR[i] ) / ( r_[i] * dr ) 
+    	endfor
+
+    	rho_ = e0 * divE_
+
+	endif
 
 
-    if not keyword_set ( noPlot ) then begin
+    if keyword_set ( plot ) then begin
 
    
     ;	Visualise solution
     
         loadct, 12, /sil
-    	!p.charSize = 3
     
         iPlot, r, eR, $
             /view_next, $
-            yTickFont_size = 30, $
             title = 'eR'
         iPlot, r, imaginary ( eR ), $
             /over, $
             color = transpose ( ct12[8*16-1,*] )
+		iPlot, [antLoc,antLoc], [-max(abs(eR)),max(abs(eR))], $
+			transparency = 80, $
+			thick = 10, $
+			/over
+	
     	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ePhi,0], $
             psym = -4, $
             /view_next, $
@@ -484,6 +491,11 @@ pro rsfwc_1d, $
             psym = -4, $
             /over, $
             color = transpose ( ct12[8*16-1,*] )
+		iPlot, [antLoc,antLoc], [-max(abs(ePhi)),max(abs(ePhi))], $
+			transparency = 80, $
+			thick = 10, $
+			/over
+	
     	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ez,0], $
             psym = -4, $
             /view_next, $
@@ -492,45 +504,120 @@ pro rsfwc_1d, $
             psym = -4, $
             /over, $
             color = transpose ( ct12[8*16-1,*] )
+		iPlot, [antLoc,antLoc], [-max(abs(ez)),max(abs(ez))], $
+			transparency = 80, $
+			thick = 10, $
+			/over
+	
 
-        iPlot, findgen(nR)*dr*nR*2*!pi,(abs(fft(eR)))>0.001,$
-            xrange=[0,900], $
+		nFFT	= 64 
+		fftData_eR	= complexArr ( nFFT )
+		fftData_ePhi	= complexArr ( nFFT )
+		fftData_ez	= complexArr ( nFFT )
+		rFFTData	= fltArr ( nFFT )
+		fftStep	= nR / nFFT 
+		fftWidth	= nR / 10 
+		fftWidth	+= (fftWidth mod 2)
+		osf	= 10
+
+		fftData2d_eR	= complexArr ( nFFT, fftWidth*osf )
+
+		for i=0,nFFT-1 do begin
+		
+			iiLow	= i*fftStep-fftWidth/2
+			iiHig	= i*fftStep+fftWidth/2-1
+			hannWin	= hanning ( fftWidth )
+
+			rFFTData[i]	= r[i*fftStep]
+
+			if iiLow gt 0 and iiHig lt nR-1 then begin
+
+				dk	= 1d0 / ( fftWidth * osf * dr )
+				kRFFT	= findgen ( fftWidth * osf ) * dk * 2 * !pi
+
+				eRTmp	= eR[iiLow:iiHig] * hannWin
+				eRTmp2	= complexArr ( fftWidth * osf )
+				eRTmp2[fftWidth*osf/2-fftWidth/2:fftWidth*osf/2+fftWidth/2-1]	= eRTmp
+				fftTmp	= abs ( fft ( eRTmp2 ) )^2
+				iiPeak	= where ( fftTmp eq max ( fftTmp ) )
+				fftData_eR[i]	= kRFFT[iiPeak[0]]
+				fftData2D_eR[i,*]	= fftTmp
+				;ePhiTmp	= ePhi[iiLow:iiHig] * hannWin
+				;ePhiTmp2	= complexArr ( fftWidth * osf )
+				;ePhiTmp2[fftWidth*osf/2-fftWidth/2:fftWidth*osf/2+fftWidth/2-1]	= ePhiTmp
+				;fftTmp	= abs ( fft ( ePhiTmp2 ) )^2
+				;;fftTmp	= fftTmp[0:fftWidth-1]
+				;iiPeak	= where ( fftTmp eq max ( fftTmp ) )
+				;fftData_ePhi[i]	= kRTmp[iiPeak[0]]
+
+				;ezTmp	= ez[iiLow:iiHig] * hannWin
+				;ezTmp2	= complexArr ( fftWidth * osf )
+				;ezTmp2[fftWidth*osf/2-fftWidth/2:fftWidth*osf/2+fftWidth/2-1]	= ezTmp
+				;fftTmp	= abs ( fft ( ezTmp2 ) )^2
+				;;fftTmp	= fftTmp[0:fftWidth-1]
+				;iiPeak	= where ( fftTmp eq max ( fftTmp ) )
+				;fftData_ez[i]	= kRTmp[iiPeak[0]]
+
+			endif
+
+		endfor
+
+        iPlot, rFFTData, FFTData_eR,$
             /ylog, $
-            yrange=[0.001,1e3], $
-            /over, $
+            yrange=[1,1e3], $
             /view_next, $
-            title = 'Soln spectrum'
+            title = 'Soln dispersion', $
+			xRange = [min(r),max(r)]
 
-        iPlot, findgen(nR-1)*dr*nr*2*!pi,(abs(fft(ePhi)))>0.001, /over
-        iPlot, findgen(nR-1)*dr*nr*2*!pi,(abs(fft(ez)))>0.001, /over
+		iPlot, rFFTData, FFTData_ePhi, $
+			/over, $
+       	    color = transpose ( ct12[8*16-1,*] )
 
-        iPlot, [median(abs(kPer1)),median(abs(kPer1))], [0.001,1e3], /over
-        iPlot, [mean(abs(kPer2)),mean(abs(kPer2))], [0.001,1e3], /over
-        iPlot, [median(abs(kPer1)),median(abs(kPer1))], [0.001,1e3], /over
-        iPlot, [mean(abs(kPer2)),mean(abs(kPer2))], [0.001,1e3], /over
+		iPlot, rFFTData, FFTData_ez, $
+			/over, $
+       	    color = transpose ( ct12[12*16-1,*] )
+		
+		iPlot, [antLoc,antLoc], [1,1e3], $
+			transparency = 80, $
+			thick = 10, $
+			/over
 
-    ;   plot the numerical and real charge density
+		levels	= fIndGen ( 11 ) * 10
+		colors	= 255 - ( bytScl ( levels, top = 253 ) + 1 )
+		iContour, fftData2D_eR[*,1:*], rFFTData, kRFFT[1:*], $
+			/yLog, $
+			yRange = [1,1e3], $
+			/view_next, $
+			xRange = [min(r),max(r)], $
+			rgb_indices = colors, $
+			rgb_table = 1, $
+			/fill
+			
+
+		if keyword_set ( divD ) then begin
+
+    		;   plot the numerical and real charge density
  
-        iPlot, r_, rho_, $
-            color = transpose ( ct12[8*16-1,*] ), $
-            /over, $
-            title = 'rho', $
-            /view_next
-        iPlot, r_, divD_, $
-            /over
-        iPlot, r_, imaginary ( divD_ ), $
-            /over, $
-            lineStyle = 1
+        	iPlot, r_, rho_, $
+        	    color = transpose ( ct12[8*16-1,*] ), $
+        	    /over, $
+        	    title = 'rho', $
+        	    /view_next
+        	iPlot, r_, divD_, $
+        	    /over
+        	iPlot, r_, imaginary ( divD_ ), $
+        	    /over, $
+        	    lineStyle = 1
 
-        iPlot, r_, divD_, $
-            title = 'div D', $
-            /over, $
-            /view_next
-        iPlot, r_, imaginary ( divD_ ), $
-            /over, $
-            lineStyle = 1
+        	iPlot, r_, divD_, $
+        	    title = 'div D', $
+        	    /over, $
+        	    /view_next
+        	iPlot, r_, imaginary ( divD_ ), $
+        	    /over, $
+        	    lineStyle = 1
 
-
+		endif
 
     endif
 stop
