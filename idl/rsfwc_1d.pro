@@ -45,8 +45,15 @@ pro rsfwc_1d, $
     else $
 	    bMax	= 0.45d0
 
+	r0	= 1
+
 	bPhi	= dblArr(nR)+bMax / r^0.1
 	bPhi_	= dblArr(nR-1)+bMax / r_^0.1
+
+	bR		= dblArr ( nR ) 
+	bR_		= dblArr ( nR-1 ) 
+	bz		= dblArr ( nR ) + sin ( r - r0 ) * 0.3
+	bz_		= dblArr ( nR-1 ) + sin ( r_ - r0 ) * 0.3
 
 	nSpec	= 2
 	specData	= replicate ( $
@@ -104,12 +111,27 @@ pro rsfwc_1d, $
 
 	endfor
 
+	if keyword_set ( plot ) then begin
+    	loadct, 12, /sil, rgb_table = ct12
+    	device, decomposed = 0
+		red	= transpose ( ct12[12*16-1,*] )
+		blue	= transpose ( ct12[8*16-1,*] )
+		green	= transpose ( ct12[2*16-1,*] )
+	endif
+
    
     if keyword_set ( plot ) then begin 
 	    iPlot, r, bPhi, $
             view_grid = [3,2], $
             title = 'bPhi', $
-            /zoom_on_resize
+            /zoom_on_resize, $
+			yRange = [-1,1]
+	    iPlot, r, bR, $
+			/over, $
+			color = red
+	    iPlot, r, bz, $
+			/over, $
+			color = blue
 	    iPlot, r, specData[0].n, $
             /view_next, $
             title = 'density 0', $
@@ -141,11 +163,6 @@ pro rsfwc_1d, $
 		kz = 0 
 	nPar	= kPar * c / wReal
 
-	if keyword_set ( plot ) then begin
-    	loadct, 12, /sil, rgb_table = ct12
-    	device, decomposed = 0
-	endif
-
     if keyword_set ( freeSpace ) then begin
 
         k   = wReal / c
@@ -169,13 +186,13 @@ pro rsfwc_1d, $
 	    stixD_	= 0.5d0 * ( stixR_ - stixL_ )
 	    stixP_	= 1d0 - total ( specData.wp_^2 / wReal^2, 2 )
 
-        part1   = -4 * stixP * ( -stixD^2 + ( nPar^2 - stixS )^2 ) * stixS $
-                    + ( stixD^2 + ( nPar^2 - stixS ) * ( stixP + stixS ) )^2
-        part2_1   = stixD^2 + nPar^2 * stixP + nPar^2 * stixS - stixP * stixS - stixS^2
-        part2_2   = -stixD^2 - nPar^2 * stixP - nPar^2 * stixS + stixP * stixS + stixS^2
+        ;part1   = -4 * stixP * ( -stixD^2 + ( nPar^2 - stixS )^2 ) * stixS $
+        ;            + ( stixD^2 + ( nPar^2 - stixS ) * ( stixP + stixS ) )^2
+        ;part2_1   = stixD^2 + nPar^2 * stixP + nPar^2 * stixS - stixP * stixS - stixS^2
+        ;part2_2   = -stixD^2 - nPar^2 * stixP - nPar^2 * stixS + stixP * stixS + stixS^2
 
-        kPer1   =  sqrt ( complex ( ( -part2_1 - sqrt ( part1 ) ) / ( 2 * stixS ), fltArr ( nR ) ) * wReal / c )
-        kPer2   =  sqrt ( complex ( ( part2_2 + sqrt ( part1 ) ) / ( 2 * stixS ), fltArr ( nR ) ) * wReal / c )
+        ;kPer1   =  sqrt ( complex ( ( -part2_1 - sqrt ( part1 ) ) / ( 2 * stixS ), fltArr ( nR ) ) * wReal / c )
+        ;kPer2   =  sqrt ( complex ( ( part2_2 + sqrt ( part1 ) ) / ( 2 * stixS ), fltArr ( nR ) ) * wReal / c )
 
 	    AA	= stixS
 	    BB	= -1d0 * ( stixR * stixL + stixP * stixS - nPar^2 * ( stixP + stixS ) )
@@ -188,33 +205,6 @@ pro rsfwc_1d, $
 
         kR1  = sqrt ( kPerp1^2 - kz^2 )
         kR2  = sqrt ( kPerp2^2 - kz^2 )
-
-        ;if keyword_set ( plot ) then begin
-
-	    ;    iPlot, r, real_part ( kR1 ), $
-        ;        /yLog, $
-        ;        yRange = [1, 1e3], $
-        ;        /view_next, $
-        ;        title = 'dispersion', $
-		;		xTitle = 'R[m]', $
-		;		yTitle = 'kR', $
-        ;        color = transpose ( ct12[8*16-1,*] ), $
-		;		xRange = [min(r),max(r)]
-
-	    ;    iPlot, r, imaginary ( kR1 ), $
-	    ;    	lineStyle = 1, $
-        ;        /over, $
-        ;        color = transpose ( ct12[8*16-1,*] )
-
-	    ;    iPlot, r, real_part ( kR2 ), $
-        ;        /over, $
-        ;        color = transpose ( ct12[12*16-1,*] )
-	    ;    iPlot, r, imaginary ( kR2 ), $
-	    ;    	lineStyle = 1, $
-        ;        /over, $
-        ;        color = transpose ( ct12[12*16-1,*] )
-
-        ;endif
 
     endelse
 
@@ -250,6 +240,100 @@ pro rsfwc_1d, $
 	    epsilon_[2,2,*]	= stixS_
 
     endelse
+
+;	Generic dielectric for arbitrary magnetic field direction
+
+
+	bMag	= sqrt ( bR^2 + bPhi^2 + bz^2 )
+	bMag_	= sqrt ( bR_^2 + bPhi_^2 + bz_^2 )
+
+	bUnit_cyl	= [ [ bR / bMag ], $	
+					[ bPhi / bMag ], $
+					[ bz / bMag ] ]
+	bUnit_cyl_	= [ [ bR_ / bMag_ ], $	
+					[ bPhi_ / bMag_ ], $
+					[ bz_ / bMag_ ] ]
+
+	;	rotate to cartesian
+
+	phi	= 0d0
+	bUnit_car	= dblArr ( nR, 3 )
+	bUnit_car_	= dblArr ( nR-1, 3 )
+
+	for i = 0, nR - 1 do begin
+
+		;	Here the rotation from cylindrical to cartesian and
+		;	its inverse is not used since for phi = 0, the 
+		;	rotation is simply the identity matrix.
+
+		;cyl2car	= [ [ cos ( phi ), -sin ( phi ), 0 ], $
+		;			[ sin ( phi ), cos ( phi ), 0 ], $
+		;			[ 0, 0, 1 ] ]
+
+		;car2cyl	= invert ( cyl2car )
+
+		;bUnit_car[i,*]	= cyl2car ## bUnit_cyl[i,*]
+		;bUnit_car_[i,*]	= cyl2car ## bUnit_cyl[i,*]
+
+		bUnit_car[i,*]	= bUnit_cyl[i,*]	
+
+		;	build rotation matrices for dependant on b field
+
+		;	y towards z
+		rotTh1	=	-aTan ( bUnit_car[i,1], bUnit_car[i,2] ) 
+		rot_x	= [ [ 1, 0, 0], $
+					[ 0, cos ( rotTh1 ), sin ( rotTh1 ) ], $
+					[ 0, -sin ( rotTh1 ), cos ( rotTh1 ) ] ]
+		inv_rot_x	= invert ( rot_x )
+
+		;	z towards x
+		rotTh2	=	aTan ( bUnit_car[i,0], bUnit_car[i,2] ) 
+		rot_y	= [ [ cos ( rotTh2 ), 0, -sin ( rotTh2 ) ], $
+					[ 0, 1, 0 ], $
+					[ sin ( rotTh2 ), 0, cos ( rotTh2 ) ] ]
+		inv_rot_y	= invert ( rot_y )
+
+		;	build dielectric in x,y,z with z assumed along b
+
+		epsilon_stix	= [ [ stixS[i], II * stixD[i], 0 ], $
+							[ -II * stixD[i], stixS[i], 0 ], $
+							[ 0, 0, stixP[i] ] ]
+
+		;	rotate
+
+		epsilon[*,*,i]	= rot_x ## rot_y ## epsilon_stix ## inv_rot_y ## inv_rot_x
+		;;	rotate to cylindrical
+		;epsilon[*,*,i]	=	car2cyl ## epsilon_car ## cyl2car
+
+
+		;	same for 1/2 grid
+
+		if i lt nR - 1 then begin
+
+			bUnit_car_[i,*]	= bUnit_cyl_[i,*]	
+
+			rotTh1_	=	-aTan ( bUnit_car_[i,1], bUnit_car_[i,2] ) 
+			rot_x_	= [ [ 1, 0, 0], $
+						[ 0, cos ( rotTh1_ ), sin ( rotTh1_ ) ], $
+						[ 0, -sin ( rotTh1_ ), cos ( rotTh1_ ) ] ]
+			inv_rot_x_	= invert ( rot_x_ )
+
+			rotTh2_	=	aTan ( bUnit_car_[i,0], bUnit_car_[i,2] ) 
+			rot_y_	= [ [ cos ( rotTh2_ ), 0, -sin ( rotTh2_ ) ], $
+						[ 0, 1, 0 ], $
+						[ sin ( rotTh2_ ), 0, cos ( rotTh2_ ) ] ]
+			inv_rot_y_	= invert ( rot_y_ )
+
+			epsilon_stix_	= [ [ stixS_[i], II * stixD_[i], 0 ], $
+								[ -II * stixD_[i], stixS_[i], 0 ], $
+								[ 0, 0, stixP_[i] ] ]
+
+			epsilon_[*,*,i]	= rot_x_ ## rot_y_ ## epsilon_stix_ ## inv_rot_y_ ## inv_rot_x_
+
+		endif
+	
+	endfor
+stop
 
 ;	Build matrix
 
