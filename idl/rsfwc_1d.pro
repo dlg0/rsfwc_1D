@@ -1,6 +1,19 @@
 ;	Real Space Full Wave Code in 1D
 ;	DLG
 
+function plotLog10, y
+
+	iiPos	= where ( y gt 0, iiPosCnt )
+	if iiPosCnt gt 0 then $
+		y[iiPos] = aLog10 ( y[iiPos] )
+	iiNeg	= where ( y lt 0, iiNegCnt )
+	if iiNegCnt gt 0 then $
+		y[iiNeg] = -aLog10 ( -y[iiNeg] )
+
+	return, y
+
+end
+
 pro rsfwc_1d, $
     eR = eR, $
 	ePhi = ePhi, $
@@ -18,6 +31,7 @@ pro rsfwc_1d, $
 	damping = damping
 	
 
+	if not keyword_set ( band ) then band = 1
 ;	Parameters
 
 	e	= 1.60217646d-19
@@ -31,8 +45,11 @@ pro rsfwc_1d, $
 
 	if not keyword_set ( nR ) then $
         nR = 256L
-	rMin	= 0.2d0
-	rMax	= 2.7d0
+
+	r0	= 0.55
+	rMin	= 0.45 
+	rMax	= 0.75 
+
 	dR	= ( rMax - rMin ) / ( nR - 1 )
 	r	= dIndGen ( nR ) * dR + rMin
 	;	half grid variables are _
@@ -43,19 +60,18 @@ pro rsfwc_1d, $
     if keyword_set ( freeSpace ) then $
         bMax = 0.0 $
     else $
-	    bMax	= 0.45d0
+	    bMax	= 5.85d0
 
-	r0	= 1
 
-	bPhi	= dblArr(nR)+bMax / r^0.1
-	bPhi_	= dblArr(nR-1)+bMax / r_^0.1
+	bPhi	= dblArr(nR)+bMax / r * r0
+	bPhi_	= dblArr(nR-1)+bMax / r_ * r0
 
-	bR		= dblArr ( nR ) 
-	bR_		= dblArr ( nR-1 ) 
-	bz		= dblArr ( nR ) + sin ( r - r0 ) * 0.3
-	bz_		= dblArr ( nR-1 ) + sin ( r_ - r0 ) * 0.3
-
-	nSpec	= 2
+	bR		= dblArr ( nR ) + cos ( 15 * (r - r0) ) * bPhi * 0.15 
+	bR_		= dblArr ( nR-1 ) + cos ( 15 * (r - r0) ) * bPhi_ * 0.15 
+	bz		= dblArr ( nR ) + sin ( 15 * (r - r0) ) * bPhi * 0.15
+	bz_		= dblArr ( nR-1 ) + sin ( 15 * (r_ - r0) ) * bPhi_ * 0.15 
+stop
+	nSpec	= 4
 	specData	= replicate ( $
 			{ 	q : 0d0, $
 				m : 0d0, $
@@ -67,7 +83,7 @@ pro rsfwc_1d, $
 				n_ : dblArr ( nR - 1 ) }, nSpec )
 
 	nPeakR	= 2.65d0
-	nMax	= 1.0d17
+	nMax	= 2.0d20
 
 	;	electrons
 
@@ -76,29 +92,56 @@ pro rsfwc_1d, $
 	specData[0].n 		= nMax;((-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)>0
 	specData[0].n_		= nMax;((-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)>0
 
-	;	sinusoidal density gradient
+	;;	sinusoidal density gradient
 
-	gradSize = 0.15
-	gradStart	= 1.4
-	gradFreq	= 1 / (2*gradSize)
-	ne_profile	= fltArr ( nR ) 
-	ii1	= where ( r lt gradStart )
-	ii2	= where ( r ge gradStart and r lt gradStart+gradSize )
-	ne_profile[*]	= -1
-	ne_profile[ii1]	= 1
-	ne_profile[ii2]	= cos ( 2*!pi*gradFreq*(r[ii2]-gradStart) )
-	ne_profile	= (ne_profile + 1) * 200e17 + nMax
+	;gradSize = 0.15
+	;gradStart	= 1.4
+	;gradFreq	= 1 / (2*gradSize)
+	;ne_profile	= fltArr ( nR ) 
+	;ii1	= where ( r lt gradStart )
+	;ii2	= where ( r ge gradStart and r lt gradStart+gradSize )
+	;ne_profile[*]	= -1
+	;ne_profile[ii1]	= 1
+	;ne_profile[ii2]	= cos ( 2*!pi*gradFreq*(r[ii2]-gradStart) )
+	;ne_profile	= (ne_profile + 1) * 200e17 + nMax
 
-	specData[0].n	= ne_profile
-	specData[0].n_	= ((specData[0].n)[0:nR-2] + (specData[0].n)[1:nR-1])/2
-	
-	specData[1].n 		= specData[0].n / 2
-	specData[1].n_		= specData[0].n_ / 2
+	;specData[0].n	= ne_profile
+	;specData[0].n_	= ((specData[0].n)[0:nR-2] + (specData[0].n)[1:nR-1])/2
+	;
+	;specData[1].n 		= specData[0].n / 2
+	;specData[1].n_		= specData[0].n_ / 2
 
-	;   helium	
+	;   deuterium
 
-	specData[1].q 		= 2 * e
+	specData[1].q 		= 1 * e
 	specData[1].m 		= 2 * mi 
+	specData[1].n		= 0.44 * specData[0].n
+	specData[1].n_		= 0.44 * specData[0].n_
+
+	;	helium 3	
+
+	specData[2].q 		= 2 * e
+	specData[2].m 		= 3 * mi 
+	specData[2].n		= 0.115 * specData[0].n
+	specData[2].n_		= 0.115 * specData[0].n_
+
+	;	hydrogen
+
+	specData[3].q 		= 1 * e
+	specData[3].m 		= 1 * mi 
+	specData[3].n		= 0.33 * specData[0].n
+	specData[3].n_		= 0.33 * specData[0].n_
+
+
+   	;	anntenna location
+ 
+	antLoc  = max ( r_ )
+
+	if antLoc gt rMax and antLoc lt rMin then begin
+		print, 'ERROR: antenna outside domain, please correct.'
+		stop
+	endif
+
 
 	for i = 0, nSpec - 1 do begin
 
@@ -111,13 +154,12 @@ pro rsfwc_1d, $
 
 	endfor
 
-	if keyword_set ( plot ) then begin
+	;if keyword_set ( plot ) then begin
     	loadct, 12, /sil, rgb_table = ct12
-    	device, decomposed = 0
 		red	= transpose ( ct12[12*16-1,*] )
 		blue	= transpose ( ct12[8*16-1,*] )
 		green	= transpose ( ct12[2*16-1,*] )
-	endif
+	;endif
 
    
     if keyword_set ( plot ) then begin 
@@ -125,7 +167,7 @@ pro rsfwc_1d, $
             view_grid = [3,2], $
             title = 'bPhi', $
             /zoom_on_resize, $
-			yRange = [-1,1]
+			id = panel
 	    iPlot, r, bR, $
 			/over, $
 			color = red
@@ -186,27 +228,112 @@ pro rsfwc_1d, $
 	    stixD_	= 0.5d0 * ( stixR_ - stixL_ )
 	    stixP_	= 1d0 - total ( specData.wp_^2 / wReal^2, 2 )
 
-        ;part1   = -4 * stixP * ( -stixD^2 + ( nPar^2 - stixS )^2 ) * stixS $
-        ;            + ( stixD^2 + ( nPar^2 - stixS ) * ( stixP + stixS ) )^2
-        ;part2_1   = stixD^2 + nPar^2 * stixP + nPar^2 * stixS - stixP * stixS - stixS^2
-        ;part2_2   = -stixD^2 - nPar^2 * stixP - nPar^2 * stixS + stixP * stixS + stixS^2
+        part1   = -complex(4d0,0d0) * stixP * ( -stixD^2 + ( nPar^2 - stixS )^2 ) * stixS $
+                    + ( stixD^2 + ( nPar^2 - stixS ) * ( stixP + stixS ) )^2
+        part2_1   = stixD^2 + nPar^2 * stixP + nPar^2 * stixS - stixP * stixS - stixS^2
+        part2_2   = -stixD^2 - nPar^2 * stixP - nPar^2 * stixS + stixP * stixS + stixS^2
 
-        ;kPer1   =  sqrt ( complex ( ( -part2_1 - sqrt ( part1 ) ) / ( 2 * stixS ), fltArr ( nR ) ) * wReal / c )
-        ;kPer2   =  sqrt ( complex ( ( part2_2 + sqrt ( part1 ) ) / ( 2 * stixS ), fltArr ( nR ) ) * wReal / c )
+        kPerpSq1_   =  ( part2_2 + sqrt ( part1 ) ) / ( 2 * stixS ) * wReal / c 
+        kPerpSq2_   =  ( -part2_1 - sqrt ( part1 ) ) / ( 2 * stixS ) * wReal / c 
 
 	    AA	= stixS
 	    BB	= -1d0 * ( stixR * stixL + stixP * stixS - nPar^2 * ( stixP + stixS ) )
 	    CC	= stixP * ( nPar^2 - stixR ) * ( nPar^2 - stixL )
 	    B24AC	= BB^2 - 4d0 * AA * CC
-	    kPerp1	= sqrt ( ( -BB $
-            + sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * wReal / c
-	    kPerp2	= sqrt ( ( -BB $
-            - sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) ) * wReal / c
+	    kPerpSq1	=  ( -BB $
+            + sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) * wReal / c
+	    kPerpSq2	= ( -BB $
+            - sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) * wReal / c
 
-        kR1  = sqrt ( kPerp1^2 - kz^2 )
-        kR2  = sqrt ( kPerp2^2 - kz^2 )
+		kPerp1	= sqrt ( kPerpSq1 )
+		kPerp2	= sqrt ( kPerpSq2 )
+
+        kR1  = sqrt ( kPerpSq1 - kz^2 )
+        kR2  = sqrt ( kPerpSq2 - kz^2 )
+
+		;	poloidal field dispersion analysis
+
+		kPhi	= nPhi / r
+
+		nPhi_	= kPhi * c / wReal	
+		bMag	= sqrt ( bR^2 + bPhi^2 + bz^2 )
+		bPol	= sqrt ( bR^2 + bz^2 ) / bMag
+		bTor	= bPhi / bMag
+
+		c0		= -stixD^2 * stixP $
+					+ nPhi_^4 * stixP / bTor^4 $
+					- 2 * nPhi_^2 * stixP * stixS / bTor^2 $
+					+ stixP * stixS^2
+		c1		= 4 * bPol * nPhi_^3 * stixP / bTor^4 $
+					- 4 * bPol * nPhi_ * stixP * stixS / bTor^2
+		c2		= stixD^2 $
+					+ 6 * bPol^2 * nPhi_^2 * stixP / bTor^4 $
+					+ nPhi_^2 * stixP / bTor^2 $
+					+ nPhi_^2 * stixS / bTor^2 $
+					- stixP * stixS $
+					- 2 * bPol^2 * stixP * stixS / bTor^2 $
+					- stixS^2
+		c3		= 4 * bPol^3 * nPhi_ * stixP / bTor^4 $
+					+ 2 * bPol * nPhi_ * stixP / bTor^2 $
+					+ 2 * bPol * nPhi_ * stixS / bTor^2
+		c4		= bPol^4 * stixP / bTor^4 $
+					+ bPol^2 * stixP / bTor^2 $
+					+ stixS $
+					+ bPol^2 * stixS / bTor^2
+
+		kPerp__	= complexArr ( nR, 4 )	
+		for i = 0, nR - 1 do begin	
+	
+			c_	= [ c0[i], c1[i], c2[i], c3[i], c4[i] ]
+			kPerp__[i,*]	= imsl_zeroPoly ( c_, /double ) * wReal / c
+
+		endfor
+
+		iPlot, r,kPerp__[*,0], lineStyle = 6, sym_index = 4, /zoom_on_reSize
+		iPlot, r,imaginary ( kPerp__[*,0] ), lineStyle = 6, sym_index = 3, /over
+		iPlot, r,kPerp__[*,1], lineStyle = 6, sym_index = 4, /over
+		iPlot, r,imaginary ( kPerp__[*,1] ), lineStyle = 6, sym_index = 3, /over
+		iPlot, r,kPerp__[*,2], lineStyle = 6, sym_index = 4, /over
+		iPlot, r,imaginary ( kPerp__[*,2] ), lineStyle = 6, sym_index = 3, /over
+		iPlot, r,kPerp__[*,3], lineStyle = 6, sym_index = 4, /over
+		iPlot, r,imaginary ( kPerp__[*,3] ), lineStyle = 6, sym_index = 3, /over
+
+		for i = 1, nSpec - 1 do begin
+
+			iiRes	= where ( abs ( specData[i].wc - wReal ) $
+						eq min ( abs ( specData[i].wc - wReal ) ) )
+
+			if iiRes ne 0 and iiRes ne nR-1 then begin
+
+				iPlot, [ r[iiRes], r[iiRes] ], [ -1e3, 1e3 ], thick = 10, trans = 50, /over
+	
+			endif			
+
+		endfor
 
     endelse
+
+;	;Seperate visualisation of the dispersion relation
+
+	;kPerpSq1_re	= plotLog10 ( real_part ( kPerpSq1 ) )
+	;kPerpSq1_im	= plotLog10 ( imaginary ( kPerpSq1 ) )
+	;kPerpSq2_re	= plotLog10 ( real_part ( kPerpSq2 ) )
+	;kPerpSq2_im	= plotLog10 ( imaginary ( kPerpSq2 ) )
+
+	;
+	;iPlot, r, kPerpSq1_re, $
+	;	/zoom_on_resize
+	;iPlot, r, kPerpSq1_im, $
+	;	/over, $
+	;	lineStyle = 2
+	;iPlot, r, kPerpSq2_re, $
+	;	/over, $
+	;	color = blue
+	;iPlot, r, kPerpSq2_im, $
+	;	/over, $
+	;	color = blue, $
+	;	lineStyle = 2
+
 
 ;	Calculate dielectric tensor
 
@@ -333,7 +460,6 @@ pro rsfwc_1d, $
 		endif
 	
 	endfor
-stop
 
 ;	Build matrix
 
@@ -490,7 +616,6 @@ stop
 
 	endfor
 
-    antLoc  = 1.7d0
     iiAnt   = where ( abs ( r_ - antLoc ) eq min ( abs ( r_ - antLoc ) ) )
     
 	rhs[iiAnt*3+2]	= II * w * u0 / ( r_[0] * dr ) * 1d0
@@ -567,44 +692,53 @@ stop
     ;	Visualise solution
     
         loadct, 12, /sil
+		eMag	= sqrt ( abs(er)^2 + abs(ePhi)^2 + abs(ez)^2 )
     
         iPlot, r, eR, $
             view_number = 4, $
-            title = 'eR'
+            title = 'eR', $
+			over = panel
         iPlot, r, imaginary ( eR ), $
-            /over, $
+			view_number = 4, $
+            over = panel, $
             color = transpose ( ct12[8*16-1,*] )
 		iPlot, [antLoc,antLoc], [-max(abs(eR)),max(abs(eR))], $
 			transparency = 80, $
 			thick = 10, $
-			/over
+			over = panel, $
+			yRange = [ -mean ( eMag ), mean ( eMag ) ] * 2
 	
     	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ePhi,0], $
             psym = -4, $
             view_number = 5, $
-            title = 'ePhi'
+            title = 'ePhi', $
+			over = panel
     	iPlot, r_, imaginary(ePhi), $
             psym = -4, $
-            /over, $
+            over = panel, $
+			view_number = 5, $
             color = transpose ( ct12[8*16-1,*] )
 		iPlot, [antLoc,antLoc], [-max(abs(ePhi)),max(abs(ePhi))], $
 			transparency = 80, $
 			thick = 10, $
-			/over
-	
+			over = panel, $
+			yRange = [ -mean ( eMag ), mean ( eMag ) ] * 2
+
     	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ez,0], $
             psym = -4, $
             view_number = 6, $
-            title = 'ez'
+            title = 'ez', $
+			over = panel
     	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,imaginary(ez),0], $
             psym = -4, $
-            /over, $
+            over = panel, $
             color = transpose ( ct12[8*16-1,*] )
 		iPlot, [antLoc,antLoc], [-max(abs(ez)),max(abs(ez))], $
 			transparency = 80, $
 			thick = 10, $
-			/over
-	
+			over = panel, $
+			yRange = [ -mean ( eMag ), mean ( eMag ) ] * 2
+
 		print, 'FFTing solution ...'
 		nFFT	= 128 
 		fftData_eR	= complexArr ( nFFT )
@@ -612,14 +746,14 @@ stop
 		fftData_ez	= complexArr ( nFFT )
 		rFFTData	= fltArr ( nFFT )
 		fftStep	= nR / nFFT 
-		fftWidth	= nR / 5 
+		fftWidth	= nR / 10 
 		fftWidth	+= (fftWidth mod 2)
 		osf	= 10
 
-		fftData2d_eR	= complexArr ( nFFT, fftWidth*osf )
+		fftData2d	= complexArr ( nFFT, fftWidth*osf )
 		hannWin	= hanning ( fftWidth )
 		kRFFT	= findgen ( fftWidth * osf ) / ( fftWidth * osf * dr ) * ( 2 * !pi )
-		eRTmp2	= complexArr ( fftWidth * osf )
+		eTmp	= complexArr ( fftWidth * osf )
 
 		for i=0,nFFT-1 do begin
 		
@@ -628,64 +762,70 @@ stop
 
 			rFFTData[i]	= r[i*fftStep]
 
-			if iiLow gt 0 and iiHig lt nR-1 then begin
+			if iiLow gt 0 and iiHig lt nR-2 then begin
 
-				eRTmp	= eR[iiLow:iiHig] * hannWin
-				eRTmp2[fftWidth*osf/2-fftWidth/2:fftWidth*osf/2+fftWidth/2-1]	= eRTmp
-				fftTmp	= abs ( fft ( eRTmp2 ) )^2
-				fftData2D_eR[i,*]	= fftTmp
+				ezTmp	= ( ez[iiLow:iiHig] + ez[iiLow+1:iiHig+1] )	/ 2
+				ePhiTmp	= ( ePhi[iiLow:iiHig] + ePhi[iiLow+1:iiHig+1] )	/ 2
+				eRTmp	= eR[iiLow:iiHig] 
+				eTmp[fftWidth*osf/2-fftWidth/2:fftWidth*osf/2+fftWidth/2-1]	= $
+					eRTmp * hannWin
+				fftTmp	= abs ( fft ( eTmp ) )^2
+				fftData2D[i,*]	= fftTmp
 
 			endif
 
 		endfor
 		print, 'DONE'
 	
-		nLevs	= 11	
-		levels	= 10.0^fIndGen ( nLevs )/1e3
+		nLevs	= 21	
+		levels	= 10.0^fIndGen ( nLevs )/1e10
 		colors	= 255 - ( bytScl ( fIndGen(nLevs), top = 253 ) + 1 )
-		iiPlotk	= where ( kRFFT gt 0 and kRFFT le 1e3 )
-		iContour, fftData2D_eR[*,iiPlotk], rFFTData, kRFFT[iiPlotk], $
+		kMax	= 1e5
+		iiPlotk	= where ( kRFFT gt 0 and kRFFT le kMax )
+		iContour, fftData2D[*,iiPlotk]/max(fftData2D), rFFTData, kRFFT[iiPlotk], $
 			/yLog, $
-			yRange = [1,1e3], $
+			yRange = [1,kMax], $
 			view_number = 3, $
 			xRange = [min(r),max(r)], $
 			rgb_indices = colors, $
 			rgb_table = 1, $
 			/fill, $
-			c_value = levels
+			c_value = levels, $
+			/zoom_on_resize, $
+			over = panel
 
-		iPlot, r, real_part ( kR1 ), $
+
+		iiReal	= where ( real_part ( kR1 ) gt 0, comp = iiImag )
+		kR1_color	= fltArr ( nR )
+		kR1_color[iiReal]	= 1*16-1
+		kR1_color[iiImag]	= 2*16-1
+		iPlot, r, abs ( kR1 ), $
             /yLog, $
-            /over, $
+            over = panel, $
             title = 'dispersion', $
 			xTitle = 'R[m]', $
 			yTitle = 'kR', $
 			xRange = [min(r),max(r)], $
-			thick = 2, $
-			trans	= 50
+			trans	= 50, $
+			rgb_table = 12, $
+			vert_colors = kR1_color, $
+			thick = 2
 
-	    iPlot, r, imaginary ( kR1 ), $
-	    	lineStyle = 1, $
-            /over, $
-			thick = 2, $
-			trans = 50
-
-	    iPlot, r, real_part ( kR2 ), $
-            /over, $
-            color = transpose ( ct12[12*16-1,*] ), $
-			thick = 2, $
-			trans = 50
-	    iPlot, r, imaginary ( kR2 ), $
-	    	lineStyle = 1, $
-            /over, $
-            color = transpose ( ct12[12*16-1,*] ), $
-			thick = 2, $
-			trans = 50
+		iiReal	= where ( real_part ( kR2 ) gt 0, comp = iiImag )
+		kR2_color	= fltArr ( nR )
+		kR2_color[iiReal]	= 13*16-1
+		kR2_color[iiImag]	= 9*16-1
+	    iPlot, r, abs ( kR2 ), $
+            over = panel, $
+			trans = 50, $
+			rgb_table = 12, $
+			vert_colors = kR2_color, $
+			thick = 2
 
 		iPlot, [antLoc,antLoc], [1,1e3], $
 			transparency = 80, $
 			thick = 10, $
-			/over
+			over = panel
 	
 
 		if keyword_set ( divD ) then begin
@@ -714,5 +854,5 @@ stop
 		endif
 
     endif
-
+stop
 end
