@@ -4,13 +4,14 @@ pro grad_freq_scan
 	wArray = 0
 	eRArray = fltArr ( nP )
 	i	= 0		
-	for w=1e6*2*!pi,15e6*2*!pi,1e6*2*!pi do begin
+	for w=20e6*2*!pi,40e6*2*!pi,0.5e6*2*!pi do begin
 
 		print, w
-		rsfwc_1d, /band, nR = nP, plot = 0, nPhi = 0, w = w, kz = 20, $
+		rsfwc_1d, /band, nR = nP, plot = 0, nPhi = -22, w = w, kz = 10, $
 			eR = eRTmp, rFull = r, rHalf = r_, $
 			ez = ezTmp, ePhi = ePhiTmp, $
-			kR1 = kR1, kR2 = kR2, damping = 0.01
+			kR1 = kR1, kR2 = kR2, damping = 0.01, $
+			/useProf, /useEqds
 
 		wArray	= [ wArray, w ]
 		eRArray	= [ [eRArray], [eRTmp ] ]

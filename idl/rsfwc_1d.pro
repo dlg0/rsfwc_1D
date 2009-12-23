@@ -1,18 +1,40 @@
 ;	Real Space Full Wave Code in 1D
 ;	DLG
 
-function plotLog10, y
+;function plotLog10, y
+;
+;	iiPos	= where ( y gt 0, iiPosCnt )
+;	if iiPosCnt gt 0 then $
+;		y[iiPos] = aLog10 ( y[iiPos] )
+;	iiNeg	= where ( y lt 0, iiNegCnt )
+;	if iiNegCnt gt 0 then $
+;		y[iiNeg] = -aLog10 ( -y[iiNeg] )
+;
+;	return, y
+;
+;end
 
-	iiPos	= where ( y gt 0, iiPosCnt )
-	if iiPosCnt gt 0 then $
-		y[iiPos] = aLog10 ( y[iiPos] )
-	iiNeg	= where ( y lt 0, iiNegCnt )
-	if iiNegCnt gt 0 then $
-		y[iiNeg] = -aLog10 ( -y[iiNeg] )
+function dlg_interpB, r, bStruct, bMag = bMag
 
-	return, y
+	bR  = interpolate ( bStruct.bR, $
+			( r[0] - bStruct.rleft ) / bStruct.rdim * (bStruct.nW-1.0), $
+        ( r[2] - min ( bStruct.z ) ) / bStruct.zdim * (bStruct.nH-1.0), $
+		cubic = -0.5 )
+    bPhi  = interpolate ( bStruct.bPhi, $
+			( r[0] - bStruct.rleft ) / bStruct.rdim * (bStruct.nW-1.0), $
+        ( r[2] - min ( bStruct.z ) ) / bStruct.zdim * (bStruct.nH-1.0), $
+		cubic = -0.5 )
+    bz  = interpolate ( bStruct.bz, $
+			( r[0] - bStruct.rleft ) / bStruct.rdim * (bStruct.nW-1.0), $
+        ( r[2] - min ( bStruct.z ) ) / bStruct.zdim * (bStruct.nH-1.0), $
+		cubic = -0.5 )
+
+	bMag	= sqrt ( bR^2 + bPhi^2 + bz^2 )
+
+	return, [ bR, bPhi, bz ]
 
 end
+
 
 pro rsfwc_1d, $
     eR = eR, $
@@ -28,7 +50,9 @@ pro rsfwc_1d, $
 	nPhi = nPhi, $
 	rFull = r, rHalf = r_, $
 	kR1 = kR1, kR2 = kR2, $
-	damping = damping
+	damping = damping, $
+	useEqdsk = useEqdsk, $
+	useProfiles = useProfiles
 	
 
 	if not keyword_set ( band ) then band = 1
@@ -46,9 +70,9 @@ pro rsfwc_1d, $
 	if not keyword_set ( nR ) then $
         nR = 256L
 
-	r0	= 0.55
-	rMin	= 0.45 
-	rMax	= 0.75 
+	r0	= 1.00
+	rMin	= 0.2 
+	rMax	= 1.7
 
 	dR	= ( rMax - rMin ) / ( nR - 1 )
 	r	= dIndGen ( nR ) * dR + rMin
@@ -60,18 +84,62 @@ pro rsfwc_1d, $
     if keyword_set ( freeSpace ) then $
         bMax = 0.0 $
     else $
-	    bMax	= 5.85d0
+	    bMax	= 0.375d0
 
 
 	bPhi	= dblArr(nR)+bMax / r * r0
 	bPhi_	= dblArr(nR-1)+bMax / r_ * r0
 
-	bR		= dblArr ( nR ) + cos ( 15 * (r - r0) ) * bPhi * 0.15 
-	bR_		= dblArr ( nR-1 ) + cos ( 15 * (r - r0) ) * bPhi_ * 0.15 
-	bz		= dblArr ( nR ) + sin ( 15 * (r - r0) ) * bPhi * 0.15
-	bz_		= dblArr ( nR-1 ) + sin ( 15 * (r_ - r0) ) * bPhi_ * 0.15 
-stop
-	nSpec	= 4
+	bR		= dblArr ( nR ) ;- bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi * 0.15 
+	bR_		= dblArr ( nR-1 ) ;- bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi_ * 0.15 
+	bz		= dblArr ( nR ) ;+ bPhi * 0.15 ;+ sin ( 15 * (r - r0) ) * bPhi * 0.15
+	bz_		= dblArr ( nR-1 ) ;+ bPhi * 0.15;+ sin ( 15 * (r_ - r0) ) * bPhi_ * 0.15 
+
+	if keyword_set ( useEqdsk ) then begin
+
+		nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'
+		eqdsk	= readgeqdsk ( nstx_eqdsk )
+
+		z	= r * 0  + 0.4
+		z_	= r_ * 0 + 0.4 
+
+		bR  = interpolate ( eqdsk.bR, $
+				( r - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
+    	    ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
+			cubic = -0.5 )
+    	bPhi  = interpolate ( eqdsk.bPhi, $
+				( r - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
+    	    ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
+			cubic = -0.5 )
+    	bz  = interpolate ( eqdsk.bz, $
+				( r - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
+    	    ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
+			cubic = -0.5 )
+
+		bR_  = interpolate ( eqdsk.bR, $
+				( r_ - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
+    	    ( z_ - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
+			cubic = -0.5 )
+    	bPhi_  = interpolate ( eqdsk.bPhi, $
+				( r_ - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
+    	    ( z_ - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
+			cubic = -0.5 )
+    	bz_  = interpolate ( eqdsk.bz, $
+				( r_ - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
+    	    ( z_ - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
+			cubic = -0.5 )
+	
+	endif
+
+	;bR[*]	= 0
+	;bR_[*]	= 0
+	;bz[*]	= 0
+	;bz_[*]	= 0
+
+	bMag	= sqrt ( bR^2 + bPhi^2 + bz^2 )
+	bMag_	= sqrt ( bR_^2 + bPhi_^2 + bz_^2 )
+
+	nSpec	= 2
 	specData	= replicate ( $
 			{ 	q : 0d0, $
 				m : 0d0, $
@@ -83,7 +151,7 @@ stop
 				n_ : dblArr ( nR - 1 ) }, nSpec )
 
 	nPeakR	= 2.65d0
-	nMax	= 2.0d20
+	nMax	= 4d19
 
 	;	electrons
 
@@ -94,43 +162,77 @@ stop
 
 	;;	sinusoidal density gradient
 
-	;gradSize = 0.15
-	;gradStart	= 1.4
-	;gradFreq	= 1 / (2*gradSize)
-	;ne_profile	= fltArr ( nR ) 
-	;ii1	= where ( r lt gradStart )
-	;ii2	= where ( r ge gradStart and r lt gradStart+gradSize )
-	;ne_profile[*]	= -1
-	;ne_profile[ii1]	= 1
-	;ne_profile[ii2]	= cos ( 2*!pi*gradFreq*(r[ii2]-gradStart) )
-	;ne_profile	= (ne_profile + 1) * 200e17 + nMax
+	gradSize = 0.15
+	gradStart	= 1.4
+	gradFreq	= 1 / (2*gradSize)
+	ne_profile	= fltArr ( nR ) 
+	ii1	= where ( r lt gradStart )
+	ii2	= where ( r ge gradStart and r lt gradStart+gradSize )
+	ne_profile[*]	= -1
+	ne_profile[ii1]	= 1
+	ne_profile[ii2]	= cos ( 2*!pi*gradFreq*(r[ii2]-gradStart) )
+	ne_profile	= (ne_profile + 1) * 200e17 + nMax
 
-	;specData[0].n	= ne_profile
-	;specData[0].n_	= ((specData[0].n)[0:nR-2] + (specData[0].n)[1:nR-1])/2
+	specData[0].n	= ne_profile
+	specData[0].n_	= ((specData[0].n)[0:nR-2] + (specData[0].n)[1:nR-1])/2
 	;
 	;specData[1].n 		= specData[0].n / 2
 	;specData[1].n_		= specData[0].n_ / 2
 
-	;   deuterium
+       
+	;	import density profiles 
 
-	specData[1].q 		= 1 * e
-	specData[1].m 		= 2 * mi 
-	specData[1].n		= 0.44 * specData[0].n
-	specData[1].n_		= 0.44 * specData[0].n_
+	if keyword_set ( useProfiles ) then begin
+
+		nstx_profile	= '../profiles/dlg_profiles_x1.00.nc' 
+		cdfId = ncdf_open ( nstx_profile, /noWrite ) 
+        ncdf_varGet, cdfId, 'R_binCenters', xMap_R
+        ncdf_varGet, cdfId, 'z_binCenters', xMap_z
+        ncdf_varGet, cdfId, 'ne', xMap_ne
+        ncdf_varGet, cdfId, 'te', xMap_te
+        ncdf_varGet, cdfId, 'ti', xMap_ti
+        ncdf_varGet, cdfId, 'bMag', xMap_B
+        ncdf_varGet, cdfId, 'r2d', xMap_R2D
+        ncdf_varGet, cdfId, 'z2d', xMap_z2D
+        nCdf_close, cdfId
+             
+        nX  = n_elements ( xMap_B[*,0] )
+        nY  = n_elements ( xMap_B[0,*] )
+
+		ne_  = interpolate ( xMap_ne, $
+				( r - min(xMap_R2d) ) / (max(xMap_R2d)-min(xMap_R2d)) * (nX-1.0), $
+    	    ( z - min ( xMap_z2d ) ) / (max(xMap_z2d)-min(xMap_z2d)) * (nY-1.0), $
+			cubic = -0.5 )
+    	ne__  = interpolate ( xMap_ne, $
+				( r_ - min(xMap_R2d) ) / (max(xMap_R2d)-min(xMap_R2d)) * (nX-1.0), $
+    	    ( z_ - min ( xMap_z2d ) ) / (max(xMap_z2d)-min(xMap_z2d)) * (nY-1.0), $
+			cubic = -0.5 )
+
+		specData[0].n	= ne_
+		specData[0].n_	= ne__
+    
+	endif
+
+	;;   deuterium
+
+	;specData[1].q 		= 1 * e
+	;specData[1].m 		= 2 * mi 
+	;specData[1].n		= specData[0].n
+	;specData[1].n_		= specData[0].n_
 
 	;	helium 3	
 
-	specData[2].q 		= 2 * e
-	specData[2].m 		= 3 * mi 
-	specData[2].n		= 0.115 * specData[0].n
-	specData[2].n_		= 0.115 * specData[0].n_
+	specData[1].q 		= 2 * e
+	specData[1].m 		= 4 * mi 
+	specData[1].n		= specData[0].n / 2
+	specData[1].n_		= specData[0].n_ / 2
 
-	;	hydrogen
+	;;	hydrogen
 
-	specData[3].q 		= 1 * e
-	specData[3].m 		= 1 * mi 
-	specData[3].n		= 0.33 * specData[0].n
-	specData[3].n_		= 0.33 * specData[0].n_
+	;specData[3].q 		= 1 * e
+	;specData[3].m 		= 1 * mi 
+	;specData[3].n		= 0.33 * specData[0].n
+	;specData[3].n_		= 0.33 * specData[0].n_
 
 
    	;	anntenna location
@@ -147,19 +249,19 @@ stop
 
 		specData[i].wp	= sqrt ( specData[i].n * specData[i].q^2 $
                             / ( specData[i].m*e0 ))
-		specData[i].wc	= specData[i].q * bPhi / specData[i].m
+		specData[i].wc	= specData[i].q * bMag / specData[i].m
 		specData[i].wp_	= sqrt ( specData[i].n_ * specData[i].q^2 $
                             / ( specData[i].m*e0 ))
-		specData[i].wc_	= specData[i].q * bPhi_ / specData[i].m
+		specData[i].wc_	= specData[i].q * bMag_ / specData[i].m
 
 	endfor
 
-	;if keyword_set ( plot ) then begin
+	if keyword_set ( plot ) then begin
     	loadct, 12, /sil, rgb_table = ct12
 		red	= transpose ( ct12[12*16-1,*] )
 		blue	= transpose ( ct12[8*16-1,*] )
 		green	= transpose ( ct12[2*16-1,*] )
-	;endif
+	endif
 
    
     if keyword_set ( plot ) then begin 
@@ -190,7 +292,7 @@ stop
 
 
     if not keyword_set ( wReal ) then $
-	    wReal	= 1.118468d11 
+	    wReal	= 30e6 * 2 * !pi 
 	w	= dcomplex ( wReal, wReal * damping )
 
     if keyword_set ( freeSpace ) then begin
@@ -256,7 +358,6 @@ stop
 		kPhi	= nPhi / r
 
 		nPhi_	= kPhi * c / wReal	
-		bMag	= sqrt ( bR^2 + bPhi^2 + bz^2 )
 		bPol	= sqrt ( bR^2 + bz^2 ) / bMag
 		bTor	= bPhi / bMag
 
@@ -289,27 +390,43 @@ stop
 
 		endfor
 
-		iPlot, r,kPerp__[*,0], lineStyle = 6, sym_index = 4, /zoom_on_reSize
-		iPlot, r,imaginary ( kPerp__[*,0] ), lineStyle = 6, sym_index = 3, /over
-		iPlot, r,kPerp__[*,1], lineStyle = 6, sym_index = 4, /over
-		iPlot, r,imaginary ( kPerp__[*,1] ), lineStyle = 6, sym_index = 3, /over
-		iPlot, r,kPerp__[*,2], lineStyle = 6, sym_index = 4, /over
-		iPlot, r,imaginary ( kPerp__[*,2] ), lineStyle = 6, sym_index = 3, /over
-		iPlot, r,kPerp__[*,3], lineStyle = 6, sym_index = 4, /over
-		iPlot, r,imaginary ( kPerp__[*,3] ), lineStyle = 6, sym_index = 3, /over
+		if keyword_set ( plot ) then begin
 
-		for i = 1, nSpec - 1 do begin
+			iPlot, r,kPerp__[*,0], lineStyle = 6, sym_index = 4, /zoom_on_reSize, $
+				view_grid = [2,1]
+			iPlot, r,imaginary ( kPerp__[*,0] ), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,kPerp__[*,1], lineStyle = 6, sym_index = 4, /over
+			iPlot, r,imaginary ( kPerp__[*,1] ), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,kPerp__[*,2], lineStyle = 6, sym_index = 4, /over
+			iPlot, r,imaginary ( kPerp__[*,2] ), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,kPerp__[*,3], lineStyle = 6, sym_index = 4, /over
+			iPlot, r,imaginary ( kPerp__[*,3] ), lineStyle = 6, sym_index = 3, /over
 
-			iiRes	= where ( abs ( specData[i].wc - wReal ) $
-						eq min ( abs ( specData[i].wc - wReal ) ) )
+			for i = 1, nSpec - 1 do begin
 
-			if iiRes ne 0 and iiRes ne nR-1 then begin
+				iiRes	= where ( abs ( specData[i].wc - wReal ) $
+							eq min ( abs ( specData[i].wc - wReal ) ) )
 
-				iPlot, [ r[iiRes], r[iiRes] ], [ -1e3, 1e3 ], thick = 10, trans = 50, /over
+				if iiRes ne 0 and iiRes ne nR-1 then begin
+
+					iPlot, [ r[iiRes], r[iiRes] ], [ -1e3, 1e3 ], thick = 10, trans = 50, /over
 	
-			endif			
+				endif			
 
-		endfor
+			endfor
+	
+			iPlot, r,abs(real_part(kPerp__[*,0])), lineStyle = 6, sym_index = 4, /zoom_on_reSize, $
+				/view_next, /ylog, yRange = [1,1e4]
+			iPlot, r,abs(imaginary ( kPerp__[*,0] )), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,abs(real_part(kPerp__[*,1])), lineStyle = 6, sym_index = 4, /over
+			iPlot, r,abs(imaginary ( kPerp__[*,1] )), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,abs(real_part(kPerp__[*,2])), lineStyle = 6, sym_index = 4, /over
+			iPlot, r,abs(imaginary ( kPerp__[*,2] )), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,abs(real_part(kPerp__[*,3])), lineStyle = 6, sym_index = 4, /over
+			iPlot, r,abs(imaginary ( kPerp__[*,3] )), lineStyle = 6, sym_index = 3, /over
+
+	
+		endif
 
     endelse
 
@@ -370,10 +487,6 @@ stop
 
 ;	Generic dielectric for arbitrary magnetic field direction
 
-
-	bMag	= sqrt ( bR^2 + bPhi^2 + bz^2 )
-	bMag_	= sqrt ( bR_^2 + bPhi_^2 + bz_^2 )
-
 	bUnit_cyl	= [ [ bR / bMag ], $	
 					[ bPhi / bMag ], $
 					[ bz / bMag ] ]
@@ -411,14 +524,14 @@ stop
 		rot_x	= [ [ 1, 0, 0], $
 					[ 0, cos ( rotTh1 ), sin ( rotTh1 ) ], $
 					[ 0, -sin ( rotTh1 ), cos ( rotTh1 ) ] ]
-		inv_rot_x	= invert ( rot_x )
+		inv_rot_x	= transpose ( rot_x )
 
 		;	z towards x
 		rotTh2	=	aTan ( bUnit_car[i,0], bUnit_car[i,2] ) 
 		rot_y	= [ [ cos ( rotTh2 ), 0, -sin ( rotTh2 ) ], $
 					[ 0, 1, 0 ], $
 					[ sin ( rotTh2 ), 0, cos ( rotTh2 ) ] ]
-		inv_rot_y	= invert ( rot_y )
+		inv_rot_y	= transpose ( rot_y )
 
 		;	build dielectric in x,y,z with z assumed along b
 
@@ -618,7 +731,7 @@ stop
 
     iiAnt   = where ( abs ( r_ - antLoc ) eq min ( abs ( r_ - antLoc ) ) )
     
-	rhs[iiAnt*3+2]	= II * w * u0 / ( r_[0] * dr ) * 1d0
+	rhs[iiAnt*3+2]	= -II * w * u0 ( r_[0] * dr ) * 20d0
 	;rhs[iiAnt*3]	= II * w * u0 / ( r_[0] * dr ) * 1d0/2
 	;rhs[iiAnt*3+3]	= II * w * u0 / ( r_[0] * dr ) * 1d0/2
 
@@ -780,10 +893,9 @@ stop
 		nLevs	= 21	
 		levels	= 10.0^fIndGen ( nLevs )/1e10
 		colors	= 255 - ( bytScl ( fIndGen(nLevs), top = 253 ) + 1 )
-		kMax	= 1e5
+		kMax	= 300 
 		iiPlotk	= where ( kRFFT gt 0 and kRFFT le kMax )
 		iContour, fftData2D[*,iiPlotk]/max(fftData2D), rFFTData, kRFFT[iiPlotk], $
-			/yLog, $
 			yRange = [1,kMax], $
 			view_number = 3, $
 			xRange = [min(r),max(r)], $
@@ -794,33 +906,6 @@ stop
 			/zoom_on_resize, $
 			over = panel
 
-
-		iiReal	= where ( real_part ( kR1 ) gt 0, comp = iiImag )
-		kR1_color	= fltArr ( nR )
-		kR1_color[iiReal]	= 1*16-1
-		kR1_color[iiImag]	= 2*16-1
-		iPlot, r, abs ( kR1 ), $
-            /yLog, $
-            over = panel, $
-            title = 'dispersion', $
-			xTitle = 'R[m]', $
-			yTitle = 'kR', $
-			xRange = [min(r),max(r)], $
-			trans	= 50, $
-			rgb_table = 12, $
-			vert_colors = kR1_color, $
-			thick = 2
-
-		iiReal	= where ( real_part ( kR2 ) gt 0, comp = iiImag )
-		kR2_color	= fltArr ( nR )
-		kR2_color[iiReal]	= 13*16-1
-		kR2_color[iiImag]	= 9*16-1
-	    iPlot, r, abs ( kR2 ), $
-            over = panel, $
-			trans = 50, $
-			rgb_table = 12, $
-			vert_colors = kR2_color, $
-			thick = 2
 
 		iPlot, [antLoc,antLoc], [1,1e3], $
 			transparency = 80, $
@@ -854,5 +939,6 @@ stop
 		endif
 
     endif
-stop
+
+	close, /all
 end
