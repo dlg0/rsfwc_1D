@@ -4,7 +4,7 @@
 pro test_freq_scan
 
     w = 30d6 * 2d0 * !pi
-    nR = 128 
+    nR = 1024 
     
     nFreq   = 301
     eR_all  = complexArr ( nR, nFreq )
@@ -15,7 +15,11 @@ pro test_freq_scan
         rsfwc_1d, eR = eR_tmp, $
                     w = w + w * i/500.0, $
                     nR = nR, $
-                    /noPlot
+					/useProfiles, $
+					/useEqdsk, $
+					kz = 0, $
+					nPhi = -22, $
+					/band
             eR_all[*,i] = eR_tmp / (i+1)
     
     endfor

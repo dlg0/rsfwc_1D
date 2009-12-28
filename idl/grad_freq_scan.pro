@@ -1,16 +1,16 @@
 pro grad_freq_scan
 
-	nP = 2048 
+	nP = 512 
 	wArray = 0
 	eRArray = fltArr ( nP )
 	i	= 0		
-	for w=20e6*2*!pi,40e6*2*!pi,0.5e6*2*!pi do begin
+	for w=20e6*2*!pi,40e6*2*!pi,0.1e6*2*!pi do begin
 
 		print, w
-		rsfwc_1d, /band, nR = nP, plot = 0, nPhi = -22, w = w, kz = 10, $
+		rsfwc_1d, /band, nR = nP, plot = 0, nPhi = -22, w = w, kz = 00, $
 			eR = eRTmp, rFull = r, rHalf = r_, $
 			ez = ezTmp, ePhi = ePhiTmp, $
-			kR1 = kR1, kR2 = kR2, damping = 0.01, $
+			kR1 = kR1, kR2 = kR2, damping = 0.02, $
 			/useProf, /useEqds
 
 		wArray	= [ wArray, w ]

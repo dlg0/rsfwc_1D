@@ -52,7 +52,8 @@ pro rsfwc_1d, $
 	kR1 = kR1, kR2 = kR2, $
 	damping = damping, $
 	useEqdsk = useEqdsk, $
-	useProfiles = useProfiles
+	useProfiles = useProfiles, $
+	noPoloidal = noPoloidal
 	
 
 	if not keyword_set ( band ) then band = 1
@@ -71,8 +72,8 @@ pro rsfwc_1d, $
         nR = 256L
 
 	r0	= 1.00
-	rMin	= 0.4 
-	rMax	= 1.6
+	rMin	= 0.2 
+	rMax	= 1.7
 
 	dR	= ( rMax - rMin ) / ( nR - 1 )
 	r	= dIndGen ( nR ) * dR + rMin
@@ -81,27 +82,13 @@ pro rsfwc_1d, $
 
 ;	Setup plasma and field profiles
 
-    if keyword_set ( freeSpace ) then $
-        bMax = 0.0 $
-    else $
-	    bMax	= 0.375d0
-
-
-	bPhi	= dblArr(nR)+bMax / r * r0
-	bPhi_	= dblArr(nR-1)+bMax / r_ * r0
-
-	bR		= dblArr ( nR ) - bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi * 0.15 
-	bR_		= dblArr ( nR-1 ) - bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi_ * 0.15 
-	bz		= dblArr ( nR ) + bPhi * 0.15 ;+ sin ( 15 * (r - r0) ) * bPhi * 0.15
-	bz_		= dblArr ( nR-1 ) + bPhi * 0.15;+ sin ( 15 * (r_ - r0) ) * bPhi_ * 0.15 
-
 	if keyword_set ( useEqdsk ) then begin
 
 		nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'
 		eqdsk	= readgeqdsk ( nstx_eqdsk )
 
-		z	= r * 0  + 0.4
-		z_	= r_ * 0 + 0.4 
+		z	= r * 0  + 0.8
+		z_	= r_ * 0 + 0.8 
 
 		bR  = interpolate ( eqdsk.bR, $
 				( r - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
@@ -129,12 +116,31 @@ pro rsfwc_1d, $
     	    ( z_ - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
 			cubic = -0.5 )
 	
-	endif
+	endif else begin
 
-	;bR[*]	= 0
-	;bR_[*]	= 0
-	;bz[*]	= 0
-	;bz_[*]	= 0
+    	if keyword_set ( freeSpace ) then $
+    	    bMax = 0.0 $
+    	else $
+		    bMax	= 0.375d0
+
+		bPhi	= dblArr(nR)+bMax / r * r0
+		bPhi_	= dblArr(nR-1)+bMax / r_ * r0
+
+		bR		= dblArr ( nR ) - bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi * 0.15 
+		bR_		= dblArr ( nR-1 ) - bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi_ * 0.15 
+		bz		= dblArr ( nR ) + bPhi * 0.15 ;+ sin ( 15 * (r - r0) ) * bPhi * 0.15
+		bz_		= dblArr ( nR-1 ) + bPhi * 0.15;+ sin ( 15 * (r_ - r0) ) * bPhi_ * 0.15 
+
+	endelse
+
+	if keyword_set ( noPoloidal ) then begin
+
+		bR[*]	= 0
+		bR_[*]	= 0
+		bz[*]	= 0
+		bz_[*]	= 0
+
+	endif
 
 	bMag	= sqrt ( bR^2 + bPhi^2 + bz^2 )
 	bMag_	= sqrt ( bR_^2 + bPhi_^2 + bz_^2 )
@@ -213,19 +219,19 @@ pro rsfwc_1d, $
     
 	endif
 
-	;   deuterium
+	;;   deuterium
 
-	specData[1].q 		= 1 * e
-	specData[1].m 		= 2 * mi 
-	specData[1].n		= specData[0].n
-	specData[1].n_		= specData[0].n_
+	;specData[1].q 		= 1 * e
+	;specData[1].m 		= 2 * mi 
+	;specData[1].n		= specData[0].n
+	;specData[1].n_		= specData[0].n_
 
-	;;	helium 3	
+	;	helium 4	
 
-	;specData[1].q 		= 2 * e
-	;specData[1].m 		= 4 * mi 
-	;specData[1].n		= specData[0].n / 2
-	;specData[1].n_		= specData[0].n_ / 2
+	specData[1].q 		= 2 * e
+	specData[1].m 		= 4 * mi 
+	specData[1].n		= specData[0].n / 2
+	specData[1].n_		= specData[0].n_ / 2
 
 	;;	hydrogen
 
@@ -237,7 +243,7 @@ pro rsfwc_1d, $
 
    	;	anntenna location
  
-	antLoc  = max ( r_ )
+	antLoc  = 0.7;max ( r_ )
 
 	if antLoc gt rMax and antLoc lt rMin then begin
 		print, 'ERROR: antenna outside domain, please correct.'
