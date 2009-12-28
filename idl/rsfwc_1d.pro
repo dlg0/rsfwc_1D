@@ -71,8 +71,8 @@ pro rsfwc_1d, $
         nR = 256L
 
 	r0	= 1.00
-	rMin	= 0.2 
-	rMax	= 1.7
+	rMin	= 0.4 
+	rMax	= 1.6
 
 	dR	= ( rMax - rMin ) / ( nR - 1 )
 	r	= dIndGen ( nR ) * dR + rMin
@@ -90,10 +90,10 @@ pro rsfwc_1d, $
 	bPhi	= dblArr(nR)+bMax / r * r0
 	bPhi_	= dblArr(nR-1)+bMax / r_ * r0
 
-	bR		= dblArr ( nR ) ;- bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi * 0.15 
-	bR_		= dblArr ( nR-1 ) ;- bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi_ * 0.15 
-	bz		= dblArr ( nR ) ;+ bPhi * 0.15 ;+ sin ( 15 * (r - r0) ) * bPhi * 0.15
-	bz_		= dblArr ( nR-1 ) ;+ bPhi * 0.15;+ sin ( 15 * (r_ - r0) ) * bPhi_ * 0.15 
+	bR		= dblArr ( nR ) - bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi * 0.15 
+	bR_		= dblArr ( nR-1 ) - bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi_ * 0.15 
+	bz		= dblArr ( nR ) + bPhi * 0.15 ;+ sin ( 15 * (r - r0) ) * bPhi * 0.15
+	bz_		= dblArr ( nR-1 ) + bPhi * 0.15;+ sin ( 15 * (r_ - r0) ) * bPhi_ * 0.15 
 
 	if keyword_set ( useEqdsk ) then begin
 
@@ -151,7 +151,7 @@ pro rsfwc_1d, $
 				n_ : dblArr ( nR - 1 ) }, nSpec )
 
 	nPeakR	= 2.65d0
-	nMax	= 4d19
+	nMax	= 2.5d18
 
 	;	electrons
 
@@ -162,19 +162,19 @@ pro rsfwc_1d, $
 
 	;;	sinusoidal density gradient
 
-	gradSize = 0.15
-	gradStart	= 1.4
-	gradFreq	= 1 / (2*gradSize)
-	ne_profile	= fltArr ( nR ) 
-	ii1	= where ( r lt gradStart )
-	ii2	= where ( r ge gradStart and r lt gradStart+gradSize )
-	ne_profile[*]	= -1
-	ne_profile[ii1]	= 1
-	ne_profile[ii2]	= cos ( 2*!pi*gradFreq*(r[ii2]-gradStart) )
-	ne_profile	= (ne_profile + 1) * 200e17 + nMax
+	;gradSize = 0.15
+	;gradStart	= 1.4
+	;gradFreq	= 1 / (2*gradSize)
+	;ne_profile	= fltArr ( nR ) 
+	;ii1	= where ( r lt gradStart )
+	;ii2	= where ( r ge gradStart and r lt gradStart+gradSize )
+	;ne_profile[*]	= -1
+	;ne_profile[ii1]	= 1
+	;ne_profile[ii2]	= cos ( 2*!pi*gradFreq*(r[ii2]-gradStart) )
+	;ne_profile	= (ne_profile + 1) * 200e17 + nMax
 
-	specData[0].n	= ne_profile
-	specData[0].n_	= ((specData[0].n)[0:nR-2] + (specData[0].n)[1:nR-1])/2
+	;specData[0].n	= ne_profile
+	;specData[0].n_	= ((specData[0].n)[0:nR-2] + (specData[0].n)[1:nR-1])/2
 	;
 	;specData[1].n 		= specData[0].n / 2
 	;specData[1].n_		= specData[0].n_ / 2
@@ -213,19 +213,19 @@ pro rsfwc_1d, $
     
 	endif
 
-	;;   deuterium
+	;   deuterium
 
-	;specData[1].q 		= 1 * e
-	;specData[1].m 		= 2 * mi 
-	;specData[1].n		= specData[0].n
-	;specData[1].n_		= specData[0].n_
+	specData[1].q 		= 1 * e
+	specData[1].m 		= 2 * mi 
+	specData[1].n		= specData[0].n
+	specData[1].n_		= specData[0].n_
 
-	;	helium 3	
+	;;	helium 3	
 
-	specData[1].q 		= 2 * e
-	specData[1].m 		= 4 * mi 
-	specData[1].n		= specData[0].n / 2
-	specData[1].n_		= specData[0].n_ / 2
+	;specData[1].q 		= 2 * e
+	;specData[1].m 		= 4 * mi 
+	;specData[1].n		= specData[0].n / 2
+	;specData[1].n_		= specData[0].n_ / 2
 
 	;;	hydrogen
 
@@ -541,7 +541,8 @@ pro rsfwc_1d, $
 
 		;	rotate
 
-		epsilon[*,*,i]	= rot_x ## rot_y ## epsilon_stix ## inv_rot_y ## inv_rot_x
+		epsilon[*,*,i]	= rot_x ## epsilon_stix ## inv_rot_x 
+		epsilon[*,*,i]	= rot_y ## epsilon[*,*,i] ## inv_rot_y
 		;;	rotate to cylindrical
 		;epsilon[*,*,i]	=	car2cyl ## epsilon_car ## cyl2car
 
@@ -568,7 +569,8 @@ pro rsfwc_1d, $
 								[ -II * stixD_[i], stixS_[i], 0 ], $
 								[ 0, 0, stixP_[i] ] ]
 
-			epsilon_[*,*,i]	= rot_x_ ## rot_y_ ## epsilon_stix_ ## inv_rot_y_ ## inv_rot_x_
+			epsilon_[*,*,i]	= rot_x_ ## epsilon_stix_ ## inv_rot_x_
+			epsilon_[*,*,i]	= rot_y_ ## epsilon_[*,*,i] ## inv_rot_y_
 
 		endif
 	
