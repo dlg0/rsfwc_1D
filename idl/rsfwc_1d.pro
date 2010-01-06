@@ -72,7 +72,7 @@ pro rsfwc_1d, $
         nR = 256L
 
 	r0	= 1.00
-	rMin	= 0.2 
+	rMin	= 0.25 
 	rMax	= 1.7
 
 	dR	= ( rMax - rMin ) / ( nR - 1 )
@@ -157,7 +157,7 @@ pro rsfwc_1d, $
 				n_ : dblArr ( nR - 1 ) }, nSpec )
 
 	nPeakR	= 2.65d0
-	nMax	= 2.5d18
+	nMax	= 16d18
 
 	;	electrons
 
@@ -168,8 +168,8 @@ pro rsfwc_1d, $
 
 	;;	sinusoidal density gradient
 
-	;gradSize = 0.15
-	;gradStart	= 1.4
+	;gradSize = 0.1
+	;gradStart	= 1.2
 	;gradFreq	= 1 / (2*gradSize)
 	;ne_profile	= fltArr ( nR ) 
 	;ii1	= where ( r lt gradStart )
@@ -177,11 +177,11 @@ pro rsfwc_1d, $
 	;ne_profile[*]	= -1
 	;ne_profile[ii1]	= 1
 	;ne_profile[ii2]	= cos ( 2*!pi*gradFreq*(r[ii2]-gradStart) )
-	;ne_profile	= (ne_profile + 1) * 200e17 + nMax
+	;ne_profile	= (ne_profile + 1) * 50e17 + nMax
 
 	;specData[0].n	= ne_profile
 	;specData[0].n_	= ((specData[0].n)[0:nR-2] + (specData[0].n)[1:nR-1])/2
-	;
+	
 	;specData[1].n 		= specData[0].n / 2
 	;specData[1].n_		= specData[0].n_ / 2
 
@@ -243,9 +243,9 @@ pro rsfwc_1d, $
 
    	;	anntenna location
  
-	antLoc  = 0.7;max ( r_ )
+	antLoc  = 0.8;max ( r_ )
 
-	if antLoc gt rMax and antLoc lt rMin then begin
+	if antLoc gt rMax or antLoc lt rMin then begin
 		print, 'ERROR: antenna outside domain, please correct.'
 		stop
 	endif
@@ -300,6 +300,9 @@ pro rsfwc_1d, $
     if not keyword_set ( wReal ) then $
 	    wReal	= 30e6 * 2 * !pi 
 	w	= dcomplex ( wReal, wReal * damping )
+	w	= dcomplexArr ( nR ) + wReal
+	iiDamped	= where ( r gt 1.4 )
+	w[iiDamped]	= complex ( wReal, wReal * damping )
 
     if keyword_set ( freeSpace ) then begin
         wReal   = 3000d6 * 2d0 * !dpi 
@@ -356,8 +359,8 @@ pro rsfwc_1d, $
 		kPerp1	= sqrt ( kPerpSq1 )
 		kPerp2	= sqrt ( kPerpSq2 )
 
-        kR1  = sqrt ( kPerpSq1 - kz^2 )
-        kR2  = sqrt ( kPerpSq2 - kz^2 )
+        kR1  = sqrt ( kPerpSq1 - kz^2 ) * 0
+        kR2  = sqrt ( kPerpSq2 - kz^2 ) * 0
 
 		;	poloidal field dispersion analysis
 
@@ -396,10 +399,15 @@ pro rsfwc_1d, $
 
 		endfor
 
+		sqrtArg	= kPerp__^2 - kz^2
+		kR	= sqrt ( sqrtArg )
+		kR2	= -sqrt ( -sqrtArg)
+
+
 		if keyword_set ( plot ) then begin
 
 			iPlot, r,kPerp__[*,0], lineStyle = 6, sym_index = 4, /zoom_on_reSize, $
-				view_grid = [2,1]
+				view_grid = [2,2]
 			iPlot, r,imaginary ( kPerp__[*,0] ), lineStyle = 6, sym_index = 3, /over
 			iPlot, r,kPerp__[*,1], lineStyle = 6, sym_index = 4, /over
 			iPlot, r,imaginary ( kPerp__[*,1] ), lineStyle = 6, sym_index = 3, /over
@@ -430,6 +438,26 @@ pro rsfwc_1d, $
 			iPlot, r,abs(imaginary ( kPerp__[*,2] )), lineStyle = 6, sym_index = 3, /over
 			iPlot, r,abs(real_part(kPerp__[*,3])), lineStyle = 6, sym_index = 4, /over
 			iPlot, r,abs(imaginary ( kPerp__[*,3] )), lineStyle = 6, sym_index = 3, /over
+
+			iPlot, r,real_part(kR[*,0]), lineStyle = 6, sym_index = 4, /zoom_on_reSize, $
+				/view_next
+			iPlot, r,imaginary ( kR[*,0] ), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,real_part(kR[*,1]), lineStyle = 6, sym_index = 4, /over
+			iPlot, r,imaginary ( kR[*,1] ), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,real_part(kR[*,2]), lineStyle = 6, sym_index = 4, /over
+			iPlot, r,imaginary ( kR[*,2] ), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,real_part(kR[*,3]), lineStyle = 6, sym_index = 4, /over
+			iPlot, r,imaginary ( kR[*,3] ), lineStyle = 6, sym_index = 3, /over
+
+			iPlot, r,abs(real_part(kR[*,0])), lineStyle = 6, sym_index = 4, /zoom_on_reSize, $
+				/view_next, /ylog, yRange = [1,1e4]
+			iPlot, r,abs(imaginary ( kR[*,0] )), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,abs(real_part(kR[*,1])), lineStyle = 6, sym_index = 4, /over
+			iPlot, r,abs(imaginary ( kR[*,1] )), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,abs(real_part(kR[*,2])), lineStyle = 6, sym_index = 4, /over
+			iPlot, r,abs(imaginary ( kR[*,2] )), lineStyle = 6, sym_index = 3, /over
+			iPlot, r,abs(real_part(kR[*,3])), lineStyle = 6, sym_index = 4, /over
+			iPlot, r,abs(imaginary ( kR[*,3] )), lineStyle = 6, sym_index = 3, /over
 
 	
 		endif
@@ -614,39 +642,39 @@ pro rsfwc_1d, $
                 if i gt 0 then begin
                     i_  = 3*i-2
 			    	aMat_bandStorage[i_,nuca+j_-i_]	= -II * nPhi * r_[i-1] / ( r[i]^2 * dr ) $
-                                        - w^2*r_[i-1]/(2*c^2*r[i])*epsilon_[1,0,i-1]
+                                        - w[i]^2*r_[i-1]/(2*c^2*r[i])*epsilon_[1,0,i-1]
                     i_  = 3*i-1
 			    	aMat_bandStorage[i_,nuca+j_-i_]	= -II * kz / dr $
-                                        - w^2*r_[i-1]/(2*c^2*r[i])*epsilon_[2,0,i-1]
+                                        - w[i]^2*r_[i-1]/(2*c^2*r[i])*epsilon_[2,0,i-1]
                 endif
                     
                     i_=3*i    
 			    	aMat_bandStorage[i_,nuca+j_-i_]	= nPhi^2 / r[i]^2 + kz^2 $
-                                        - w^2 / c^2 * epsilon[0,0,i]
+                                        - w[i]^2 / c^2 * epsilon[0,0,i]
                 if i lt nR-1 then begin
                     i_=3*i+1
 			    	aMat_bandStorage[i_,nuca+j_-i_]	= II * nPhi * r_[i] / ( r[i]^2 * dr ) $
-                                        - w^2*r_[i]/(2*c^2*r[i])*epsilon_[1,0,i]
+                                        - w[i]^2*r_[i]/(2*c^2*r[i])*epsilon_[1,0,i]
                     i_=3*i+2
 			    	aMat_bandStorage[i_,nuca+j_-i_]	= II * kz / dr $
-                                        - w^2*r_[i]/(2*c^2*r[i])*epsilon_[2,0,i]
+                                        - w[i]^2*r_[i]/(2*c^2*r[i])*epsilon_[2,0,i]
                 endif
 
             endif else begin
 
                 if i gt 0 then begin
 			    	aMat[3*i-2,3*i]	= -II * nPhi * r_[i-1] / ( r[i]^2 * dr ) $
-                                        - w^2*r_[i-1]/(2*c^2*r[i])*epsilon_[1,0,i-1]
+                                        - w[i]^2*r_[i-1]/(2*c^2*r[i])*epsilon_[1,0,i-1]
 			    	aMat[3*i-1,3*i]	= -II * kz / dr $
-                                        - w^2*r_[i-1]/(2*c^2*r[i])*epsilon_[2,0,i-1]
+                                        - w[i]^2*r_[i-1]/(2*c^2*r[i])*epsilon_[2,0,i-1]
                 endif
 			    	aMat[3*i,3*i]	= nPhi^2 / r[i]^2 + kz^2 $
-                                        - w^2 / c^2 * epsilon[0,0,i]
+                                        - w[i]^2 / c^2 * epsilon[0,0,i]
                 if i lt nR-1 then begin
 			    	aMat[3*i+1,3*i]	= II * nPhi * r_[i] / ( r[i]^2 * dr ) $
-                                        - w^2*r_[i]/(2*c^2*r[i])*epsilon_[1,0,i]
+                                        - w[i]^2*r_[i]/(2*c^2*r[i])*epsilon_[1,0,i]
 			    	aMat[3*i+2,3*i]	= II * kz / dr $
-                                        - w^2*r_[i]/(2*c^2*r[i])*epsilon_[2,0,i]
+                                        - w[i]^2*r_[i]/(2*c^2*r[i])*epsilon_[2,0,i]
                 endif
 
             endelse
@@ -663,16 +691,16 @@ pro rsfwc_1d, $
 				    aMat_bandStorage[i_,nuca+j_-i_] = -r_[i-1] / ( r[i] * dr^2 ) 
                     i_=3*i
 				    aMat_bandStorage[i_,nuca+j_-i_]	= -II*nPhi/(r[i]*dr) $
-                                        - w^2*r[i]/(2*c^2*r_[i])*epsilon[0,1,i]
+                                        - w[i]^2*r[i]/(2*c^2*r_[i])*epsilon[0,1,i]
                     i_=3*i+1
 				    aMat_bandStorage[i_,nuca+j_-i_]	= kz^2 + r_[i]/(r[i+1]*dr^2) $
                                             + r_[i]/(r[i]*dr^2) $
-                                            - w^2/c^2*epsilon_[1,1,i]
+                                            - w[i]^2/c^2*epsilon_[1,1,i]
                     i_=3*i+2
-				    aMat_bandStorage[i_,nuca+j_-i_]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon_[2,1,i]
+				    aMat_bandStorage[i_,nuca+j_-i_]	= -kz*nPhi/r_[i] - w[i]^2/(c^2)*epsilon_[2,1,i]
                     i_=3*i+3
 				    aMat_bandStorage[i_,nuca+j_-i_]	= II * nPhi / (r[i+1]*dr) $
-                                            - w^2*r[i+1]/(2*c^2*r_[i])*epsilon[0,1,i+1]
+                                            - w[i]^2*r[i+1]/(2*c^2*r_[i])*epsilon[0,1,i+1]
                     i_=3*i+4
 				    if i lt nR-2 then $
 				    aMat_bandStorage[i_,nuca+j_-i_]	= -r_[i+1]/(r[i+1]*dr^2)
@@ -682,13 +710,13 @@ pro rsfwc_1d, $
                     if i gt 0 then $
 				    aMat[3*i-2,3*i+1] = -r_[i-1] / ( r[i] * dr^2 ) 
 				    aMat[3*i,3*i+1]	= -II*nPhi/(r[i]*dr) $
-                                        - w^2*r[i]/(2*c^2*r_[i])*epsilon[0,1,i]
+                                        - w[i]^2*r[i]/(2*c^2*r_[i])*epsilon[0,1,i]
 				    aMat[3*i+1,3*i+1]	= kz^2 + r_[i]/(r[i+1]*dr^2) $
                                             + r_[i]/(r[i]*dr^2) $
-                                            - w^2/c^2*epsilon_[1,1,i]
-				    aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] - w^2/(c^2)*epsilon_[2,1,i]
+                                            - w[i]^2/c^2*epsilon_[1,1,i]
+				    aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] - w[i]^2/(c^2)*epsilon_[2,1,i]
 				    aMat[3*i+3,3*i+1]	= II * nPhi / (r[i+1]*dr) $
-                                            - w^2*r[i+1]/(2*c^2*r_[i])*epsilon[0,1,i+1]
+                                            - w[i]^2*r[i+1]/(2*c^2*r_[i])*epsilon[0,1,i+1]
 				    if i lt nR-2 then $
 				    aMat[3*i+4,3*i+1]	= -r_[i+1]/(r[i+1]*dr^2)
                 
@@ -704,15 +732,15 @@ pro rsfwc_1d, $
 				    aMat_bandStorage[i_,nuca+j_-i_] = -r[i]/(r_[i]*dr^2)
                     i_=3*i
 				    aMat_bandStorage[i_,nuca+j_-i_] = -II*kz*r[i]/(r_[i]*dr)$
-                                        -w^2*r[i]/(2*c^2*r_[i])*epsilon[0,2,i]
+                                        -w[i]^2*r[i]/(2*c^2*r_[i])*epsilon[0,2,i]
                     i_=3*i+1
-				    aMat_bandStorage[i_,nuca+j_-i_] = -nPhi*kz/r_[i] - w^2/c^2*epsilon_[1,2,i]
+				    aMat_bandStorage[i_,nuca+j_-i_] = -nPhi*kz/r_[i] - w[i]^2/c^2*epsilon_[1,2,i]
                     i_=3*i+2
 				    aMat_bandStorage[i_,nuca+j_-i_] = (r[i+1]+r[i])/(r_[i]*dr^2) + nPhi^2/r_[i]^2 $
-                                            - w^2/c^2*epsilon_[2,2,i]
+                                            - w[i]^2/c^2*epsilon_[2,2,i]
                     i_=3*i+3
 				    aMat_bandStorage[i_,nuca+j_-i_] = II * kz * r[i+1] / (r_[i]*dr) $
-                                            - w^2*r[i+1]/(2*c^2*r_[i])*epsilon[0,2,i+1]
+                                            - w[i]^2*r[i+1]/(2*c^2*r_[i])*epsilon[0,2,i+1]
                     i_=3*i+5
 				    if i lt nR-2 then $
 				    aMat_bandStorage[i_,nuca+j_-i_] = -r[i+1] / ( r_[i] * dr^2 ) 
@@ -722,12 +750,12 @@ pro rsfwc_1d, $
 	                if i gt 0 then $
 				    aMat[3*i-1,3*i+2] = -r[i]/(r_[i]*dr^2)
 				    aMat[3*i,3*i+2] = -II*kz*r[i]/(r_[i]*dr)$
-                                        -w^2*r[i]/(2*c^2*r_[i])*epsilon[0,2,i]
-				    aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] - w^2/c^2*epsilon_[1,2,i]
+                                        -w[i]^2*r[i]/(2*c^2*r_[i])*epsilon[0,2,i]
+				    aMat[3*i+1,3*i+2] = -nPhi*kz/r_[i] - w[i]^2/c^2*epsilon_[1,2,i]
 				    aMat[3*i+2,3*i+2] = (r[i+1]+r[i])/(r_[i]*dr^2) + nPhi^2/r_[i]^2 $
-                                            - w^2/c^2*epsilon_[2,2,i]
+                                            - w[i]^2/c^2*epsilon_[2,2,i]
 				    aMat[3*i+3,3*i+2] = II * kz * r[i+1] / (r_[i]*dr) $
-                                            - w^2*r[i+1]/(2*c^2*r_[i])*epsilon[0,2,i+1]
+                                            - w[i]^2*r[i+1]/(2*c^2*r_[i])*epsilon[0,2,i+1]
 				    if i lt nR-2 then $
 				    aMat[3*i+5,3*i+2] = -r[i+1] / ( r_[i] * dr^2 ) 
 
@@ -739,7 +767,7 @@ pro rsfwc_1d, $
 
     iiAnt   = where ( abs ( r_ - antLoc ) eq min ( abs ( r_ - antLoc ) ) )
     
-	rhs[iiAnt*3+2]	= -II * w * u0 ( r_[0] * dr ) * 20d0
+	rhs[iiAnt*3+2]	= -II * wReal * u0 ( r_[0] * dr ) * 20d0
 	;rhs[iiAnt*3]	= II * w * u0 / ( r_[0] * dr ) * 1d0/2
 	;rhs[iiAnt*3+3]	= II * w * u0 / ( r_[0] * dr ) * 1d0/2
 
