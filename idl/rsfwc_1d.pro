@@ -71,9 +71,9 @@ pro rsfwc_1d, $
 	if not keyword_set ( nR ) then $
         nR = 256L
 
-	r0	= 0.67
-	rMin	= 0.575
-	rMax	= 0.725 
+	r0	= 0.67d0
+	rMin	= r0 - 0.21
+	rMax	= r0 + 0.21 
 
 	dR	= ( rMax - rMin ) / ( nR - 1 )
 	r	= dIndGen ( nR ) * dR + rMin
@@ -125,17 +125,17 @@ pro rsfwc_1d, $
 	endif else begin
 
     	if keyword_set ( freeSpace ) then $
-    	    bMax = 0.0 $
+    	    b0 = 0.0 $
     	else $
-		    bMax	= 5.85d0
+		    b0	= 5.85d0
 
-		bPhi	= dblArr(nR)+bMax / r * r0
-		bPhi_	= dblArr(nR-1)+bMax / r_ * r0
+		bPhi	= dblArr(nR) + b0 / r * r0
+		bPhi_	= dblArr(nR-1) + b0 / r_ * r0
 
 		bR		= dblArr ( nR ) + bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi * 0.15 
 		bR_		= dblArr ( nR-1 ) + bPhi * 0.15;+ cos ( 15 * (r - r0) ) * bPhi_ * 0.15 
-		bz		= dblArr ( nR ) + bPhi * 0.15 ;+ sin ( 15 * (r - r0) ) * bPhi * 0.15
-		bz_		= dblArr ( nR-1 ) + bPhi * 0.15;+ sin ( 15 * (r_ - r0) ) * bPhi_ * 0.15 
+		bz		= dblArr ( nR ) + bPhi * 0. ;+ sin ( 15 * (r - r0) ) * bPhi * 0.15
+		bz_		= dblArr ( nR-1 ) + bPhi * 0.;+ sin ( 15 * (r_ - r0) ) * bPhi_ * 0.15 
 
 	endelse
 
@@ -164,14 +164,14 @@ pro rsfwc_1d, $
 				n_ : dblArr ( nR - 1 ) }, nSpec )
 
 	nPeakR	= 2.65d0
-	nMax	= 2d20
+	nMax	= 2.0d20
 
 	;	electrons
 
 	specData[0].q 		= -1 * e
 	specData[0].m 		= me
-	specData[0].n 		= nMax*(1.0-((r-r0)/0.22)^2);((-(r-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)>0
-	specData[0].n_		= nMax*(1.0-((r_-r0)/0.22)^2);((-(r_-nPeakR)^2+(r[0]-nPeakR)^2) / (r[0]-nPeakR)^2 * nMax)>0
+	specData[0].n 		= nMax*(1.0-(abs(r-r0)/0.22)^2)
+	specData[0].n_		= nMax*(1.0-(abs(r_-r0)/0.22)^2)
 
 	;;	sinusoidal density gradient
 
@@ -346,27 +346,8 @@ pro rsfwc_1d, $
 	    stixD_	= 0.5d0 * ( stixR_ - stixL_ )
 	    stixP_	= 1d0 - total ( specData.wp_^2 / wReal^2, 2 )
 
-        ;part1   = -complex(4d0,0d0) * stixP * ( -stixD^2 + ( nPar^2 - stixS )^2 ) * stixS $
-        ;            + ( stixD^2 + ( nPar^2 - stixS ) * ( stixP + stixS ) )^2
-        ;part2_1   = stixD^2 + nPar^2 * stixP + nPar^2 * stixS - stixP * stixS - stixS^2
-        ;part2_2   = -stixD^2 - nPar^2 * stixP - nPar^2 * stixS + stixP * stixS + stixS^2
-
-        ;kPerpSq1_   =  ( part2_2 + sqrt ( part1 ) ) / ( 2 * stixS ) * wReal / c 
-        ;kPerpSq2_   =  ( -part2_1 - sqrt ( part1 ) ) / ( 2 * stixS ) * wReal / c 
-
-	    ;AA	= stixS
-	    ;BB	= -1d0 * ( stixR * stixL + stixP * stixS - nPar^2 * ( stixP + stixS ) )
-	    ;CC	= stixP * ( nPar^2 - stixR ) * ( nPar^2 - stixL )
-	    ;B24AC	= BB^2 - 4d0 * AA * CC
-	    ;kPerpSq1	=  ( -BB $
-        ;    + sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) * wReal / c
-	    ;kPerpSq2	= ( -BB $
-        ;    - sqrt ( complex ( B24AC, B24AC * 0 ) ) ) / ( 2d0 * AA ) * wReal / c
-		;kPerp1	= sqrt ( kPerpSq1 )
-		;kPerp2	= sqrt ( kPerpSq2 )
-
 		kPerp0	= complexArr ( nR, 4 )
-		for i=0,nR-1 do begin
+		for i=0L,nR-1L do begin
 			c0	= -stixD[i]^2 * stixP[i] + nPar[i]^4 * stixP[i] $
 					- 2.0 * nPar[i]^2 * stixP[i] * stixS[i] $
 					+ stixP[i] * stixS[i]^2
@@ -380,15 +361,13 @@ pro rsfwc_1d, $
 
 		endfor
 	
-        ;kR1  = sqrt ( kPerpSq1 - kz^2 ) * 0
-        ;kR2  = sqrt ( kPerpSq2 - kz^2 ) * 0
 
 		;	poloidal field dispersion analysis
 
 		kPhi	= nPhi / r
 
 		nPhi_	= kPhi * c / wReal	
-		bPol	= -sqrt ( bR^2 + bz^2 ) / bMag
+		bPol	= sqrt ( bR^2 + bz^2 ) / bMag
 		bTor	= bPhi / bMag
 
 		c0		= -stixD^2 * stixP $
@@ -413,7 +392,7 @@ pro rsfwc_1d, $
 					+ bPol^2 * stixS / bTor^2
 
 		kPerp__	= complexArr ( nR, 4 )	
-		for i = 0, nR - 1 do begin	
+		for i = 0L, nR - 1L do begin	
 	
 			c_	= [ c0[i], c1[i], c2[i], c3[i], c4[i] ]
 			kPerp__[i,*]	= imsl_zeroPoly ( c_, /double ) * wReal / c
@@ -425,87 +404,7 @@ pro rsfwc_1d, $
 		kR2	= -sqrt ( -sqrtArg)
 
 
-		;if keyword_set ( plot ) then begin
-
-		;	iPlot, r,kPerp__[*,0], lineStyle = 6, sym_index = 4, /zoom_on_reSize, $
-		;		view_grid = [2,2]
-		;	iPlot, r,imaginary ( kPerp__[*,0] ), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,kPerp__[*,1], lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,imaginary ( kPerp__[*,1] ), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,kPerp__[*,2], lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,imaginary ( kPerp__[*,2] ), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,kPerp__[*,3], lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,imaginary ( kPerp__[*,3] ), lineStyle = 6, sym_index = 3, /over
-
-		;	for i = 1, nSpec - 1 do begin
-
-		;		iiRes	= where ( abs ( specData[i].wc - wReal ) $
-		;					eq min ( abs ( specData[i].wc - wReal ) ) )
-
-		;		if iiRes gt 0 and iiRes ne nR-1 then begin
-
-		;			iPlot, [ r[iiRes], r[iiRes] ], [ -1e3, 1e3 ], thick = 10, trans = 50, /over
-	
-		;		endif			
-
-		;	endfor
-	
-		;	iPlot, r,abs(real_part(kPerp__[*,0])), lineStyle = 6, sym_index = 4, /zoom_on_reSize, $
-		;		/view_next, /ylog, yRange = [1,1e4]
-		;	iPlot, r,abs(imaginary ( kPerp__[*,0] )), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,abs(real_part(kPerp__[*,1])), lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,abs(imaginary ( kPerp__[*,1] )), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,abs(real_part(kPerp__[*,2])), lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,abs(imaginary ( kPerp__[*,2] )), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,abs(real_part(kPerp__[*,3])), lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,abs(imaginary ( kPerp__[*,3] )), lineStyle = 6, sym_index = 3, /over
-
-		;	iPlot, r,real_part(kR[*,0]), lineStyle = 6, sym_index = 4, /zoom_on_reSize, $
-		;		/view_next
-		;	iPlot, r,imaginary ( kR[*,0] ), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,real_part(kR[*,1]), lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,imaginary ( kR[*,1] ), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,real_part(kR[*,2]), lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,imaginary ( kR[*,2] ), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,real_part(kR[*,3]), lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,imaginary ( kR[*,3] ), lineStyle = 6, sym_index = 3, /over
-
-		;	iPlot, r,abs(real_part(kR[*,0])), lineStyle = 6, sym_index = 4, /zoom_on_reSize, $
-		;		/view_next, /ylog, yRange = [1,1e4]
-		;	iPlot, r,abs(imaginary ( kR[*,0] )), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,abs(real_part(kR[*,1])), lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,abs(imaginary ( kR[*,1] )), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,abs(real_part(kR[*,2])), lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,abs(imaginary ( kR[*,2] )), lineStyle = 6, sym_index = 3, /over
-		;	iPlot, r,abs(real_part(kR[*,3])), lineStyle = 6, sym_index = 4, /over
-		;	iPlot, r,abs(imaginary ( kR[*,3] )), lineStyle = 6, sym_index = 3, /over
-
-	
-		;endif
-
     endelse
-
-;	;Seperate visualisation of the dispersion relation
-
-	;kPerpSq1_re	= plotLog10 ( real_part ( kPerpSq1 ) )
-	;kPerpSq1_im	= plotLog10 ( imaginary ( kPerpSq1 ) )
-	;kPerpSq2_re	= plotLog10 ( real_part ( kPerpSq2 ) )
-	;kPerpSq2_im	= plotLog10 ( imaginary ( kPerpSq2 ) )
-
-	;
-	;iPlot, r, kPerpSq1_re, $
-	;	/zoom_on_resize
-	;iPlot, r, kPerpSq1_im, $
-	;	/over, $
-	;	lineStyle = 2
-	;iPlot, r, kPerpSq2_re, $
-	;	/over, $
-	;	color = blue
-	;iPlot, r, kPerpSq2_im, $
-	;	/over, $
-	;	color = blue, $
-	;	lineStyle = 2
-
 
 ;	Calculate dielectric tensor
 
@@ -540,6 +439,9 @@ pro rsfwc_1d, $
 
     endelse
 
+	epsilonNoPol	= epsilon
+	epsilonNoPol_	= epsilon_
+
 ;	Generic dielectric for arbitrary magnetic field direction
 
 	bUnit_cyl	= [ [ bR / bMag ], $	
@@ -555,7 +457,7 @@ pro rsfwc_1d, $
 	bUnit_car	= dblArr ( nR, 3 )
 	bUnit_car_	= dblArr ( nR-1, 3 )
 
-	for i = 0, nR - 1 do begin
+	for i = 0L, nR - 1L do begin
 
 		;	Here the rotation from cylindrical to cartesian and
 		;	its inverse is not used since for phi = 0, the 
@@ -572,81 +474,54 @@ pro rsfwc_1d, $
 
 		bUnit_car[i,*]	= bUnit_cyl[i,*]	
 
-		;	build rotation matrices for dependant on b field
-
-		;	y towards z
-		rotTh1	=	aTan ( bUnit_car[i,1], bUnit_car[i,2] ) 
-		rot_x	= [ [ 1, 0, 0], $
-					[ 0, cos ( rotTh1 ), sin ( rotTh1 ) ], $
-					[ 0, -sin ( rotTh1 ), cos ( rotTh1 ) ] ]
-		inv_rot_x	= transpose ( rot_x )
-
-		;	z towards x
-		rotTh2	=	aTan ( bUnit_car[i,2], bUnit_car[i,0] ) 
-		rot_y	= [ [ cos ( rotTh2 ), 0, -sin ( rotTh2 ) ], $
-					[ 0, 1, 0 ], $
-					[ sin ( rotTh2 ), 0, cos ( rotTh2 ) ] ]
-		inv_rot_y	= transpose ( rot_y )
-
-		;	x towards y
-		rotTh3	=	aTan ( bUnit_car[i,0], bUnit_car[i,1] ) 
-		rot_z	= [ [ cos ( rotTh3 ), -sin ( rotTh3 ), 0 ], $
-					[ sin ( rotTh3 ), cos ( rotTh3 ), 0 ], $
-					[ 1, 0, 1 ] ]
-		inv_rot_z	= transpose ( rot_z )
-	
-		print, rotth1*!radeg, rotth2*!radeg, rotth3*!radeg
-		;	build dielectric in x,y,z with z assumed along b
-
-		epsilon_stix	= [ [ stixS[i], II * stixD[i], 0 ], $
-							[ -II * stixD[i], stixS[i], 0 ], $
-							[ 0, 0, stixP[i] ] ]
-
-		;	rotate
-
-		epsilon[*,*,i]	= rot_x ## epsilon_stix ## inv_rot_x 
-		epsilon[*,*,i]	= rot_y ## epsilon[*,*,i] ## inv_rot_y
-		epsilon[*,*,i]	= rot_z ## epsilon[*,*,i] ## inv_rot_z
+		epsilon_stix	= [ [ stixS[i], II * stixD[i], 0d0 ], $
+							[ -II * stixD[i], stixS[i], 0d0 ], $
+							[ 0d0, 0d0, stixP[i] ] ]
 
 		;;	rotate to cylindrical
 		;epsilon[*,*,i]	=	car2cyl ## epsilon_car ## cyl2car
 
+		epsilon[*,*,i]	= rotateEpsilon ( epsilon_stix, bUnit_car[i,*] )
 
 		;	same for 1/2 grid
 
 		if i lt nR - 1 then begin
 
 			bUnit_car_[i,*]	= bUnit_cyl_[i,*]	
+	
+			epsilon_stix_	= [ [ stixS_[i], II * stixD_[i], 0d0 ], $
+								[ -II * stixD_[i], stixS_[i], 0d0 ], $
+								[ 0d0, 0d0, stixP_[i] ] ]
 
-			rotTh1_	=	-aTan ( bUnit_car_[i,1], bUnit_car_[i,2] ) 
-			rot_x_	= [ [ 1, 0, 0], $
-						[ 0, cos ( rotTh1_ ), sin ( rotTh1_ ) ], $
-						[ 0, -sin ( rotTh1_ ), cos ( rotTh1_ ) ] ]
-			inv_rot_x_	= invert ( rot_x_ )
+			epsilon_[*,*,i]	= rotateEpsilon ( epsilon_stix_, bUnit_car_[i,*] )
 
-			rotTh2_	=	aTan ( bUnit_car_[i,0], bUnit_car_[i,2] ) 
-			rot_y_	= [ [ cos ( rotTh2_ ), 0, -sin ( rotTh2_ ) ], $
-						[ 0, 1, 0 ], $
-						[ sin ( rotTh2_ ), 0, cos ( rotTh2_ ) ] ]
-			inv_rot_y_	= invert ( rot_y_ )
-
-			epsilon_stix_	= [ [ stixS_[i], II * stixD_[i], 0 ], $
-								[ -II * stixD_[i], stixS_[i], 0 ], $
-								[ 0, 0, stixP_[i] ] ]
-
-			epsilon_[*,*,i]	= rot_x_ ## epsilon_stix_ ## inv_rot_x_
-			epsilon_[*,*,i]	= rot_y_ ## epsilon_[*,*,i] ## inv_rot_y_
 
 		endif
 	
 	endfor
 
+;	Check epsilon for NaNs
+
+	iiNaN	= where ( epsilon ne epsilon, iiNaNCnt )
+	if iiNaNCnt gt 0 then begin
+
+		print, '______________________________'
+		print, 'ERROR: NaN detected in epsilon'
+		iiNeg	= where ( specData.n le 0, iiNegCnt )
+		if iiNegCnt gt 0 then begin
+			
+			print, '_____________________________'	
+			print, 'NEGATIVE DENSITY DETECTED :-('
+
+		endif
+		stop	
+	endif
 
 ;	Generalised dispersion analysis
 
 	kR__	= complexArr ( nR, 4 )
 	print, 'Running generalised dispersion calculation ...'
-	for i=0,nR-1 do begin
+	for i=0L,nR-1L do begin
 		
 		k4	= wReal^2/c^2 * epsilon[0,0,i]
 		k3	= wReal^2/c^2 $
@@ -1039,7 +914,7 @@ stop
 		kRFFT	= findgen ( fftWidth * osf ) / ( fftWidth * osf * dr ) * ( 2 * !pi )
 		eTmp	= complexArr ( fftWidth * osf )
 
-		for i=0,nFFT-1 do begin
+		for i=0L,nFFT-1L do begin
 		
 			iiLow	= i*fftStep-fftWidth/2
 			iiHig	= i*fftStep+fftWidth/2-1
@@ -1064,7 +939,7 @@ stop
 		nLevs	= 21	
 		levels	= 10.0^fIndGen ( nLevs )/1e10
 		colors	= 255 - ( bytScl ( fIndGen(nLevs), top = 253 ) + 1 )
-		kMax	= 300 
+		kMax	= 1000 
 		iiPlotk	= where ( kRFFT gt 0 and kRFFT le kMax )
 		iContour, fftData2D[*,iiPlotk]/max(fftData2D), rFFTData, kRFFT[iiPlotk], $
 			yRange = [1,kMax], $
