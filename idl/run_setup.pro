@@ -1,6 +1,4 @@
 pro run_setup, $
-	useEqdsk = useEqdsk, $
-	useProfiles = useProfiles, $
 	runData = runData, $
 	specData = specData
 
@@ -31,10 +29,10 @@ pro run_setup, $
 
  	plotRunData	= 1
  	plotDispersionGeneral 	= 1
- 	plotDispersionJaeger	= 0
+ 	plotDispersionJaeger	= 1
  	plotDispersionNoPol		= 0
 
-	runBench = 1
+	runBench = 0
 	if runBench then begin
 
 		restore, 'bench/bench_smithe_icw.sav'
@@ -48,20 +46,26 @@ pro run_setup, $
 		r0	= 0.67d0
 		aWall	= 0.22 
 
-		rMin	= 0.51;r0 - aWall*0.95
-		rMax	= 0.84;r0 + aWall*0.95
+		rMin	= r0 - aWall*0.95
+		rMax	= r0 + aWall*0.95
    		b0	= 5.85d0
 		bR_frac	= 0.15
 		bz_frac	= 0.0	
-		ionSpecZ	= [ 1, 2, 1 ]
+		ionSpecZ	= [ 1, 2, 1]
 		ionSpecAmu	= [ 2, 3, 1 ]
-		nMax		= [ 0.88d20, 0.23d20, 0.66d20 ]
-		damping = 0.03
+		nMax		= [ 0.88, 0.23, 0.66 ] * 1d20
+		damping = 0.00
 		freq	= 80.5e6
 		nPhi = 10.0
-		kz = 0.0
+		kz = 0.1
 		nR	= 4096L
-		antLoc	= 0.51
+		antLoc	= 1.8
+
+		useEqdsk = 0
+		useProfiles = 0
+		poloidalScale = 1
+		zSlice	= 0.8
+		profile1 = 1
 
 ;		-----------------------------
 
@@ -73,6 +77,9 @@ pro run_setup, $
 		;	half grid variables are _
 		r_	= r[1:*] - dR / 2
 
+		z	= r * 0 + zSlice
+		z_	= r_ * 0 + zSlice
+
 ;		Setup plasma and field profiles
 
 		bPhi	= dblArr(nR) + b0 / r * r0
@@ -83,15 +90,12 @@ pro run_setup, $
 		bz		= dblArr ( nR ) + bPhi * bz_frac 
 		bz_		= dblArr ( nR-1 ) + bPhi * bz_frac 
 
-		if keyword_set ( useEqdsk ) then begin
+		if useEqdsk then begin
 
 			nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'
 			eqdsk	= readgeqdsk ( nstx_eqdsk )
 			
-			zSlice	= 0.0
-			z	= r * 0 + zSlice
-			z_	= r_ * 0 + zSlice
-
+		
 			bR  = interpolate ( eqdsk.bR, $
 					( r - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
     		    ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
@@ -120,7 +124,7 @@ pro run_setup, $
 		
 		endif 
 
-		if keyword_set ( poloidalScale ) then begin
+		if poloidalScale ne 1 then begin
 
 			print, 'Scaling poloidal field components'
 			bR	= bR * poloidalScale
@@ -147,8 +151,15 @@ pro run_setup, $
 
 		for i=0,nSpec do begin
 
-			nProfile	= 1.0 - ( abs ( r - r0 ) / aWall )^2
-			nProfile_	= 1.0 - ( abs ( r_ - r0 ) / aWall )^2
+			nProfile	= r * 0 + 1
+			nProfile_	= r_* 0 + 1
+
+			if profile1 then begin
+
+				nProfile	= 1.0 - ( abs ( r - r0 ) / aWall )^2 
+				nProfile_	= 1.0 - ( abs ( r_ - r0 ) / aWall )^2
+	
+			endif
 
 			; ions
 			if i lt nSpec then begin
@@ -163,19 +174,19 @@ pro run_setup, $
 
 				specData[i].q 		= -e
 				specData[i].m 		= me
-				specData[i].n 		= total ( specData[0:nSpec-1].n $
-										* transpose(rebin(ionSpecZ,nSpec,nR)), 2 ) 
-				specData[i].n_		= total ( specData[0:nSpec-1].n_ $
-										* transpose(rebin(ionSpecZ,nSpec,nR-1)), 2 ) 
+				if nSpec gt 1 then begin
+					specData[i].n 		= total ( specData[0:nSpec-1].n $
+											* transpose(rebin(ionSpecZ,nSpec,nR)), 2 ) 
+					specData[i].n_		= total ( specData[0:nSpec-1].n_ $
+											* transpose(rebin(ionSpecZ,nSpec,nR-1)), 2 ) 
+				endif else begin
+					specData[i].n 		= specData[0:nSpec-1].n $
+											* transpose(rebin(ionSpecZ,nSpec,nR)) 
+					specData[i].n_		= specData[0:nSpec-1].n_ $
+											* transpose(rebin(ionSpecZ,nSpec,nR-1)) 
+				endelse
 
 			endelse
-
-			specData[i].wp	= sqrt ( specData[i].n * specData[i].q^2 $
-    	                        / ( specData[i].m*e0 ))
-			specData[i].wc	= specData[i].q * bMag / specData[i].m
-			specData[i].wp_	= sqrt ( specData[i].n_ * specData[i].q^2 $
-    	                        / ( specData[i].m*e0 ))
-			specData[i].wc_	= specData[i].q * bMag_ / specData[i].m
 
 		endFor
 
@@ -201,7 +212,7 @@ pro run_setup, $
     	   
 		;	import density profiles 
 
-		if keyword_set ( useProfiles ) then begin
+		if useProfiles then begin
 
 			nstx_profile	= '../profiles/dlg_profiles_x1.00.nc' 
 			cdfId = ncdf_open ( nstx_profile, /noWrite ) 
@@ -227,10 +238,24 @@ pro run_setup, $
     		    ( z_ - min ( xMap_z2d ) ) / (max(xMap_z2d)-min(xMap_z2d)) * (nY-1.0), $
 				cubic = -0.5 )
 
-			specData[0].n	= ne_
-			specData[0].n_	= ne__
-    	
+			specData[1].n	= ne_
+			specData[1].n_	= ne__
+    
+			specData[0].n	= ne_ / ionSpecAmu[0]
+			specData[0].n_	= ne__ / ionSpecAmu[0]
+ 	
 		endif
+
+		for i = 0, nSpec do begin
+
+			specData[i].wp	= sqrt ( specData[i].n * specData[i].q^2 $
+    	                        / ( specData[i].m*e0 ))
+			specData[i].wc	= specData[i].q * bMag / specData[i].m
+			specData[i].wp_	= sqrt ( specData[i].n_ * specData[i].q^2 $
+    	                        / ( specData[i].m*e0 ))
+			specData[i].wc_	= specData[i].q * bMag_ / specData[i].m
+
+		endfor
 
 		runData = { bField : [ [bR], [bPhi], [bz] ], $
 					bField_ : [ [bR_], [bPhi_], [bz_] ], $

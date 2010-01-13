@@ -100,7 +100,7 @@ pro plot_solution, r, r_, antLoc, dR, nR, $
 		nLevs	= 21	
 		levels	= 10.0^fIndGen ( nLevs )/1e10
 		colors	= 255 - ( bytScl ( fIndGen(nLevs), top = 253 ) + 1 )
-		kMax	= 1000 
+		kMax	= 500 
 		iiPlotk	= where ( kRFFT gt 0 and kRFFT le kMax )
 		iContour, fftData2D[*,iiPlotk]/max(fftData2D), rFFTData, kRFFT[iiPlotk], $
 			yRange = [1,kMax], $

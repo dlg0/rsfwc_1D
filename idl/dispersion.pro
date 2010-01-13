@@ -98,7 +98,7 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData
 						+ c^2 * runData.kz^3 * ( epsilon[0,2,i] + epsilon[2,0,i] ) $
 						+ runData.kz * ( c^2 * kPhi[i]^2 * ( epsilon[0,2,i] + epsilon[2,0,i] ) $
 							+ wReal^2 * ( epsilon[0,1,i] * epsilon[1,2,i] $
-										- epsilon[1,1,i] * ( epsilon[0,2,i] * epsilon[2,0,i] ) $
+										- epsilon[1,1,i] * ( epsilon[0,2,i] + epsilon[2,0,i] ) $
 										+ epsilon[1,0,i] * epsilon[2,1,i] ) ) $
 						+ kPhi[i] * ( wReal^2 * ( epsilon[1,2,i] * epsilon[2,0,i] $
 												+ epsilon[0,2,i] * epsilon[2,1,i] ) $
@@ -167,7 +167,7 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData
 
 	if  plotDispersionJaeger then begin
 
-		iPlot, runData.r, kPerp__[*,0], sym_index = 4, lineStyle = 6
+		iPlot, runData.r, kPerp__[*,0], sym_index = 4, lineStyle = 6, yRange = [-500, 500]
 		iPlot, runData.r, kPerp__[*,1], sym_index = 4, lineStyle = 6, /over
 		iPlot, runData.r, kPerp__[*,2], sym_index = 4, lineStyle = 6, /over
 		iPlot, runData.r, kPerp__[*,3], sym_index = 4, lineStyle = 6, /over
