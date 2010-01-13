@@ -9,48 +9,54 @@ pro plot_solution, r, r_, antLoc, dR, nR, $
 		eMag	= sqrt ( abs(er)^2 + abs(ePhi)^2 + abs(ez)^2 )
     
         iPlot, r, eR, $
-            view_number = 4, $
             title = 'eR', $
-			over = panel
+			id = solution, $
+			view_grid = [1,3], $
+			/zoom_on_resize, $
+			/stretch_to_fit
         iPlot, r, imaginary ( eR ), $
-			view_number = 4, $
-            over = panel, $
+			view_number = 1, $
+            over = solution, $
             color = transpose ( ct12[8*16-1,*] )
 		iPlot, [antLoc,antLoc], [-max(abs(eR)),max(abs(eR))], $
 			transparency = 80, $
 			thick = 10, $
-			over = panel, $
+			over = solution, $
 			yRange = [ -mean ( eMag ), mean ( eMag ) ] * 2
 	
     	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ePhi,0], $
             psym = -4, $
-            view_number = 5, $
+            view_number = 2, $
             title = 'ePhi', $
-			over = panel
+			over = solution, $
+			/stretch_to_fit
+
     	iPlot, r_, imaginary(ePhi), $
             psym = -4, $
-            over = panel, $
-			view_number = 5, $
+            over = solution, $
+			view_number = 2, $
             color = transpose ( ct12[8*16-1,*] )
 		iPlot, [antLoc,antLoc], [-max(abs(ePhi)),max(abs(ePhi))], $
 			transparency = 80, $
 			thick = 10, $
-			over = panel, $
+			over = solution, $
 			yRange = [ -mean ( eMag ), mean ( eMag ) ] * 2
 
     	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,ez,0], $
             psym = -4, $
-            view_number = 6, $
+            view_number = 3, $
             title = 'ez', $
-			over = panel
+			over = solution, $
+			/stretch_to_fit
+
     	iPlot, [r_[0]-dr,r_,r_[nR-2]+dr], [0,imaginary(ez),0], $
             psym = -4, $
-            over = panel, $
+            over = solution, $
             color = transpose ( ct12[8*16-1,*] )
 		iPlot, [antLoc,antLoc], [-max(abs(ez)),max(abs(ez))], $
 			transparency = 80, $
 			thick = 10, $
-			over = panel, $
+			over = solution, $
 			yRange = [ -mean ( eMag ), mean ( eMag ) ] * 2
 
 		print, 'FFTing solution ...'
@@ -98,21 +104,16 @@ pro plot_solution, r, r_, antLoc, dR, nR, $
 		iiPlotk	= where ( kRFFT gt 0 and kRFFT le kMax )
 		iContour, fftData2D[*,iiPlotk]/max(fftData2D), rFFTData, kRFFT[iiPlotk], $
 			yRange = [1,kMax], $
-			view_number = 3, $
 			xRange = [min(r),max(r)], $
 			rgb_indices = colors, $
 			rgb_table = 1, $
 			/fill, $
 			c_value = levels, $
 			/zoom_on_resize, $
-			over = panel
+			id = spectrum, $
+			/stretch_to_fit
 
 
-		iPlot, [antLoc,antLoc], [1,1e3], $
-			transparency = 80, $
-			thick = 10, $
-			over = panel
-	
 
 		if keyword_set ( divD ) then begin
 

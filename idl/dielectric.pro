@@ -42,12 +42,12 @@ pro dielectric, runData, stixVars, $
 
 		;	Generic dielectric for arbitrary magnetic field direction
 	
-		bUnit_cyl	= [ [ runData.bField[0] / runData.bMag ], $	
-						[ runData.bField[1] / runData.bMag ], $
-						[ runData.bField[2] / runData.bMag ] ]
-		bUnit_cyl_	= [ [ runData.bField_[0] / runData.bMag_ ], $	
-						[ runData.bField_[1] / runData.bMag_ ], $
-						[ runData.bField_[2] / runData.bMag_ ] ]
+		bUnit_cyl	= [ [ runData.bField[*,0] / runData.bMag ], $	
+						[ runData.bField[*,1] / runData.bMag ], $
+						[ runData.bField[*,2] / runData.bMag ] ]
+		bUnit_cyl_	= [ [ runData.bField_[*,0] / runData.bMag_ ], $	
+						[ runData.bField_[*,1] / runData.bMag_ ], $
+						[ runData.bField_[*,2] / runData.bMag_ ] ]
 	
 		;	rotate to cartesian
 	

@@ -6,7 +6,6 @@ pro rsfwc_1d, $
 	ePhi = ePhi, $
 	ez = ez, $
     plot = plot, $
-    bandStorage = bandStorage, $
 	divD = divD, $
 	rFull = r, rHalf = r_, $
 	kR1 = kR1, kR2 = kR2
@@ -16,6 +15,7 @@ pro rsfwc_1d, $
 ;	Parameters
 
 	common constants, e, me, mi, c, e0, u0, II
+
 	e	= 1.60217646d-19
 	me	= 9.10938188d-31
    	mi	= 1.67262158d-27
@@ -24,37 +24,37 @@ pro rsfwc_1d, $
 	u0	=	4d0 * !dpi * 10d0^(-7) 
 	II	= dcomplex ( 0, 1 )
 
-;	Run setup
+	common switches, $
+		dielectric_freeSpace, $
+		dielectric_noPoloidal, $
+		dispersion_freeSpace, $
+		dispersion_jaegerPRL, $
+		bandStorage	
 
-	run_setup, runData = runData
+	common plotSwitches, $
+		plotDispersionGeneral, $
+		plotDispersionJaeger, $
+		plotDispersionNoPol
+
+	run_setup, runData = runData, specData = specData
 
  	wReal	= runData.freq * 2 * !pi 
 	w	= dcomplexArr ( runData.nR ) + wReal
 	;iiDamped	= where ( r gt 1.4 )
 	w[*]	= complex ( wReal, wReal * runData.damping )
 
-;	Get stix variables
-
-	stixVariables, wReal, runData, stixVars = stixVars
-
-;	Calculate dielectric
+	stixVariables, wReal, runData, specData, stixVars = stixVars
 
 	dielectric, runData, stixVars, $
 		epsilonFull = epsilon, $
 		epsilonHalf = epsilon_
 
-;	Dispersion analysis
-
-	dispersion, wReal, epsilon, stixVars, runData
-
-;	Fill matrix
+	dispersion, wReal, epsilon, stixVars, runData, specData
 
 	matFill, runData.nR, runData.nPhi, runData.kz, $
 		runData.r, runData.r_, epsilon, epsilon_, w, runData.dR, $
 		aMat = aMat, nAll = nAll, nuca = nuca, nlca = nlca
 
-;	Anntenna 
- 
 	antLoc  = min ( runData.r_ )
 
 	if antLoc gt runData.rMax or antLoc lt runData.rMin then begin
@@ -65,9 +65,6 @@ pro rsfwc_1d, $
     iiAnt   = where ( abs ( runData.r_ - antLoc ) eq min ( abs ( runData.r_ - antLoc ) ) )
 	rhs		= complexArr ( nAll )
 	rhs[iiAnt*3+2]	= -II * wReal * u0 ( runData.r_[0] * runData.dr ) * 20d0
-	;rhs[iiAnt*3]	= II * w * u0 / ( r_[0] * dr ) * 1d0/2
-	;rhs[iiAnt*3+3]	= II * w * u0 / ( r_[0] * dr ) * 1d0/2
-
 
 ;	Solve matrix
 

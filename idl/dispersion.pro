@@ -1,7 +1,8 @@
-pro dispersion, wReal, epsilon, stixVars, runData
+pro dispersion, wReal, epsilon, stixVars, runData, specData
 
 	common switches
 	common constants
+	common plotSwitches
 
 	kPar	= runData.nPhi / runData.r
 	nPar	= kPar * c / wReal
@@ -134,49 +135,60 @@ pro dispersion, wReal, epsilon, stixVars, runData
 
 	endfor
 
-	iPlot, runData.r, kR__[*,0], sym_index = 4, lineStyle = 6
-	iPlot, runData.r, kR__[*,1], sym_index = 4, lineStyle = 6, /over
-	iPlot, runData.r, kR__[*,2], sym_index = 4, lineStyle = 6, /over
-	iPlot, runData.r, kR__[*,3], sym_index = 4, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kR__[*,0]), sym_index = 3, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kR__[*,1]), sym_index = 3, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kR__[*,2]), sym_index = 3, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kR__[*,3]), sym_index = 3, lineStyle = 6, /over
+	if plotDispersionGeneral then begin
 
-		range	= max ( abs( abs ( kR__ ) ) )
-		for i = 1, runData.nSpec - 1 do begin
-			for harm = 1, 2 do begin
-
-			iiRes	= where ( abs ( runData.specData[i].wc*harm - wReal ) $
-						eq min ( abs ( runData.specData[i].wc*harm - wReal ) ) )
-
-			if iiRes ne 0 and iiRes ne runData.nR-1 then begin
-
-				print, 'Cyclotron resonance found'
-				iPlot, [ runData.r[iiRes], runData.r[iiRes] ], [ -range, range ],$
-					thick = 10, trans = 50, /over
-
-			endif			
-			endfor
-		endfor
+		iPlot, runData.r, kR__[*,0], sym_index = 4, lineStyle = 6, yRange = [-500,500]
+		iPlot, runData.r, kR__[*,1], sym_index = 4, lineStyle = 6, /over
+		iPlot, runData.r, kR__[*,2], sym_index = 4, lineStyle = 6, /over
+		iPlot, runData.r, kR__[*,3], sym_index = 4, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kR__[*,0]), sym_index = 3, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kR__[*,1]), sym_index = 3, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kR__[*,2]), sym_index = 3, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kR__[*,3]), sym_index = 3, lineStyle = 6, /over
 	
+			range	= max ( abs( abs ( kR__ ) ) )
+			for i = 0, runData.nSpec - 1 do begin
+				for harm = 1, 2 do begin
+	
+				iiRes	= where ( abs ( specData[i].wc*harm - wReal ) $
+							eq min ( abs ( specData[i].wc*harm - wReal ) ) )
+	
+				if iiRes ne 0 and iiRes ne runData.nR-1 then begin
+	
+					print, 'Cyclotron resonance found'
+					iPlot, [ runData.r[iiRes], runData.r[iiRes] ], [ -range, range ],$
+						thick = 10, trans = 50, /over
+	
+				endif			
+				endfor
+			endfor
 
-	iPlot, runData.r, kPerp__[*,0], sym_index = 4, lineStyle = 6
-	iPlot, runData.r, kPerp__[*,1], sym_index = 4, lineStyle = 6, /over
-	iPlot, runData.r, kPerp__[*,2], sym_index = 4, lineStyle = 6, /over
-	iPlot, runData.r, kPerp__[*,3], sym_index = 4, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kPerp__[*,0]), sym_index = 3, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kPerp__[*,1]), sym_index = 3, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kPerp__[*,2]), sym_index = 3, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kPerp__[*,3]), sym_index = 3, lineStyle = 6, /over
+	endif	
 
-	iPlot, runData.r, kPerp0[*,0], sym_index = 4, lineStyle = 6
-	iPlot, runData.r, kPerp0[*,1], sym_index = 4, lineStyle = 6, /over
-	iPlot, runData.r, kPerp0[*,2], sym_index = 4, lineStyle = 6, /over
-	iPlot, runData.r, kPerp0[*,3], sym_index = 4, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kPerp0[*,0]), sym_index = 3, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kPerp0[*,1]), sym_index = 3, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kPerp0[*,2]), sym_index = 3, lineStyle = 6, /over
-	iPlot, runData.r, imaginary(kPerp0[*,3]), sym_index = 3, lineStyle = 6, /over
+	if  plotDispersionJaeger then begin
+
+		iPlot, runData.r, kPerp__[*,0], sym_index = 4, lineStyle = 6
+		iPlot, runData.r, kPerp__[*,1], sym_index = 4, lineStyle = 6, /over
+		iPlot, runData.r, kPerp__[*,2], sym_index = 4, lineStyle = 6, /over
+		iPlot, runData.r, kPerp__[*,3], sym_index = 4, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kPerp__[*,0]), sym_index = 3, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kPerp__[*,1]), sym_index = 3, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kPerp__[*,2]), sym_index = 3, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kPerp__[*,3]), sym_index = 3, lineStyle = 6, /over
+
+	endif
+
+	if plotDispersionNoPol then begin
+
+		iPlot, runData.r, kPerp0[*,0], sym_index = 4, lineStyle = 6
+		iPlot, runData.r, kPerp0[*,1], sym_index = 4, lineStyle = 6, /over
+		iPlot, runData.r, kPerp0[*,2], sym_index = 4, lineStyle = 6, /over
+		iPlot, runData.r, kPerp0[*,3], sym_index = 4, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kPerp0[*,0]), sym_index = 3, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kPerp0[*,1]), sym_index = 3, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kPerp0[*,2]), sym_index = 3, lineStyle = 6, /over
+		iPlot, runData.r, imaginary(kPerp0[*,3]), sym_index = 3, lineStyle = 6, /over
+
+	endif
 
 end

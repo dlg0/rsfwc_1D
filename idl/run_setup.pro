@@ -1,40 +1,43 @@
 pro run_setup, $
 	useEqdsk = useEqdsk, $
 	useProfiles = useProfiles, $
-	runData = runData
+	runData = runData, $
+	specData = specData
 
 	common constants
+	common switches
+	common plotSwitches
 
 ;	Variables
 
 	r0	= 0.67d0
 	aWall	= 0.22 
 
-	rMin	= r0 - aWall*0.95
-	rMax	= r0 + aWall*0.95
+	rMin	= 0.51;r0 - aWall*0.95
+	rMax	= 0.84;r0 + aWall*0.95
    	b0	= 5.85d0
-	bR_frac	= 0.1
+	bR_frac	= 0.15
 	bz_frac	= 0.0	
-	ionSpecAmu	= [ 2, 3, 1 ]
 	ionSpecZ	= [ 1, 2, 1 ]
-	damping = 0.0
-	freq	= 80.5d6
-	nPhi = 10
-	kz = 0
-	nR	= 256L
-
-	common switches, $
-		dielectric_freeSpace, $
-		dielectric_noPoloidal, $
-		dispersion_freeSpace, $
-		dispersion_jaegerPRL, $
-		bandStorage	
+	ionSpecAmu	= [ 2, 3, 1 ]
+	nMax		= [ 0.88d20, 0.23d20, 0.66d20 ]
+	damping = 0.03
+	freq	= 80.5e6
+	nPhi = 10.0
+	kz = 0.0
+	nR	= 4096L
 
 	dielectric_freeSpace = 0
 	dielectric_noPoloidal = 0
 	dispersion_freeSpace = 0
 	dispersion_jaegerPRL = 0
+	
 	bandStorage = 1
+
+	plotRunData	= 1
+	plotDispersionGeneral 	= 1
+	plotDispersionJaeger	= 0
+	plotDispersionNoPol		= 0
 
 ;	Grid
 
@@ -115,8 +118,6 @@ pro run_setup, $
 				n : dblArr ( nR ), $
 				n_ : dblArr ( nR - 1 ) }, nSpec + 1 )
 
-	nMax	= 2.0d20
-
 	for i=0,nSpec do begin
 
 		nProfile	= 1.0 - ( abs ( r - r0 ) / aWall )^2
@@ -127,16 +128,18 @@ pro run_setup, $
 
 			specData[i].q 		= ionSpecZ[i] * e
 			specData[i].m 		= ionSpecAmu[i] * mi
-			specData[i].n 		= nMax* nProfile
-			specData[i].n_		= nMax* nProfile_
+			specData[i].n 		= nMax[i] * nProfile
+			specData[i].n_		= nMax[i] * nProfile_
 
 		; electrons for charge neutrality
 		endif else begin
 
 			specData[i].q 		= -e
 			specData[i].m 		= me
-			specData[i].n 		= total ( specData[0:nSpec-1].n * ionSpecZ ) 
-			specData[i].n_		= total ( specData[0:nSpec-1].n_ * ionSpecZ ) 
+			specData[i].n 		= total ( specData[0:nSpec-1].n $
+									* transpose(rebin(ionSpecZ,nSpec,nR)), 2 ) 
+			specData[i].n_		= total ( specData[0:nSpec-1].n_ $
+									* transpose(rebin(ionSpecZ,nSpec,nR-1)), 2 ) 
 
 		endelse
 
@@ -202,11 +205,10 @@ pro run_setup, $
     
 	endif
 
-	runData = { specData : specData, $
-				bField : [ [bR], [bPhi], [bz] ], $
+	runData = { bField : [ [bR], [bPhi], [bz] ], $
 				bField_ : [ [bR_], [bPhi_], [bz_] ], $
 				bMag : bMag, $
-				bMag_ : bMag, $
+				bMag_ : bMag_, $
 				nR : nR, $
 				r : r, $
 				r_ : r_, $
@@ -232,25 +234,24 @@ pro run_setup, $
 	blue	= transpose ( ct12[8*16-1,*] )
 	green	= transpose ( ct12[2*16-1,*] )
 
-    if keyword_set ( plot ) then begin 
-	    iPlot, r, bPhi, $
-            view_grid = [3,2], $
+    if plotRunData then begin 
+	    iPlot, r, runData.bField[*,1], $
+            view_grid = [2,1], $
             title = 'bPhi', $
             /zoom_on_resize, $
-			id = panel
-	    iPlot, r, bR, $
+			id = runDataPlot 
+	    iPlot, r, runData.bField[*,0], $
 			/over, $
 			color = red
-	    iPlot, r, bz, $
+	    iPlot, r, runData.bField[*,2], $
 			/over, $
 			color = blue
-	    iPlot, r, specData[0].n, $
+	    iPlot, r, specData[nSpec].n, $
             /view_next, $
-            title = 'density 0', $
-			/yLog, $
-			yRange = [1e17,1e20]
-	    iPlot, r, specData[1].n, $
-            /over
+            title = 'density 0'
+		for i=0,nSpec-1 do $
+	    iPlot, r, specData[i].n, $
+            /over 
     endif
 
 
