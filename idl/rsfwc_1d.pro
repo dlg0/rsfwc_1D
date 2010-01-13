@@ -55,16 +55,16 @@ pro rsfwc_1d, $
 		runData.r, runData.r_, epsilon, epsilon_, w, runData.dR, $
 		aMat = aMat, nAll = nAll, nuca = nuca, nlca = nlca
 
-	antLoc  = min ( runData.r_ )
-
-	if antLoc gt runData.rMax or antLoc lt runData.rMin then begin
-		print, 'ERROR: antenna outside domain, please correct.'
-		stop
+	if runData.antLoc gt runData.rMax or runData.antLoc lt runData.rMin then begin
+		print, 'ADJUSTING: Antenna location was ', runData.antLoc
+		if runData.antLoc lt min ( runData.r_ ) then runData.antLoc = min ( runData.r_ )
+		if runData.antLoc gt max ( runData.r_ ) then runData.antLoc = max ( runData.r_ )
+		print, 'ADJUSTING: Antenna location is now ', runData.antLoc
 	endif
 
-    iiAnt   = where ( abs ( runData.r_ - antLoc ) eq min ( abs ( runData.r_ - antLoc ) ) )
+    iiAnt   = where ( abs ( runData.r_ - runData.antLoc ) eq min ( abs ( runData.r_ - runData.antLoc ) ) )
 	rhs		= complexArr ( nAll )
-	rhs[iiAnt*3+2]	= -II * wReal * u0 ( runData.r_[0] * runData.dr ) * 20d0
+	rhs[iiAnt*3+2]	= -II * wReal * u0 ( runData.r_[0] * runData.dr ) 
 
 ;	Solve matrix
 
@@ -128,7 +128,7 @@ pro rsfwc_1d, $
 
 	endif
 
-	plot_solution, runData.r, runData.r_, antLoc, runData.dR, runData.nR, $
+	plot_solution, runData.r, runData.r_, runData.antLoc, runData.dR, runData.nR, $
 		eR, ePhi, ez
 
 	close, /all
