@@ -46,25 +46,25 @@ pro run_setup, $
 		r0	= 0.67d0
 		aWall	= 0.22 
 
-		rMin	= r0 - aWall*0.95
-		rMax	= r0 + aWall*0.95
+		rMin	= 0.4;r0 - aWall*0.95
+		rMax	= 1.5;r0 + aWall*0.95
    		b0	= 5.85d0
 		bR_frac	= 0.15
 		bz_frac	= 0.0	
-		ionSpecZ	= [ 1, 2, 1]
-		ionSpecAmu	= [ 2, 3, 1 ]
+		ionSpecZ	= [ 2 ];, 2, 1]
+		ionSpecAmu	= [ 4 ];, 3, 1 ]
 		nMax		= [ 0.88, 0.23, 0.66 ] * 1d20
-		damping = 0.00
-		freq	= 80.5e6
-		nPhi = 10.0
-		kz = 0.1
+		damping = 0.05
+		freq	= 30.0e6
+		nPhi = -22.0
+		kz = 80.0
 		nR	= 4096L
-		antLoc	= 1.8
+		antLoc	= 1.25
 
-		useEqdsk = 0
-		useProfiles = 0
+		useEqdsk = 1
+		useProfiles = 1
 		poloidalScale = 1
-		zSlice	= 0.8
+		zSlice	= 1.0
 		profile1 = 1
 
 ;		-----------------------------
@@ -241,8 +241,8 @@ pro run_setup, $
 			specData[1].n	= ne_
 			specData[1].n_	= ne__
     
-			specData[0].n	= ne_ / ionSpecAmu[0]
-			specData[0].n_	= ne__ / ionSpecAmu[0]
+			specData[0].n	= ne_ / ionSpecZ[0]
+			specData[0].n_	= ne__ / ionSpecZ[0]
  	
 		endif
 
