@@ -1,20 +1,25 @@
 pro run_setup, $
 	runData = runData, $
-	specData = specData
+	specData = specData, $
+	kz = kz, $
+	nMax = nMax
 
 	common constants
 	common switches
 	common plotSwitches
+	common writeSwitches
 
 	common dlg_colors, ct12, $
 		red, $
 		blue, $
-		green
+		green, $
+		purple
 
 	loadct, 12, /sil, rgb_table = ct12
 	red	= transpose ( ct12[12*16-1,*] )
 	blue	= transpose ( ct12[8*16-1,*] )
 	green	= transpose ( ct12[2*16-1,*] )
+	purple	= transpose ( ct12[9*16-1,*] )
 
 ;	Calculation method switches
 
@@ -22,6 +27,7 @@ pro run_setup, $
  	dielectric_noPoloidal = 0
  	dispersion_freeSpace = 0
  	dispersion_jaegerPRL = 0
+	dispersion_generalised = 1
  	
  	bandStorage = 1
 
@@ -29,45 +35,48 @@ pro run_setup, $
 
  	plotRunData	= 1
  	plotDispersionGeneral 	= 1
- 	plotDispersionJaeger	= 1
+ 	plotDispersionJaeger	= 0
  	plotDispersionNoPol		= 0
+	plotSolution = 1
 
-	runBench = 0
-	if runBench then begin
+;	File write switches
 
-		restore, 'bench/bench_smithe_icw.sav'
-
-	endif else begin
+	writeDispersionTxt = 0
 
 ;		----------------------------
+;	Variables
 
-;		Variables
+	r0	= 0.67d0
+	aWall	= 0.22 
 
-		r0	= 0.67d0
-		aWall	= 0.22 
+	rMin	= 0.2;r0 - aWall*0.99
+	rMax	= 1.7;r0 + aWall*0.99
+   	b0	= 5.85d0
+	bR_frac	= 0.0
+	bz_frac	= 0.0	
+	ionSpecZ	= [ 2 ]
+	ionSpecAmu	= [ 2 ]
+	if not keyword_set ( nMax ) then nMax = [ 5.5 ] * 1d18
+	damping = 0.04
+	freq	= 30.0e6
+	nPhi = -22.0
+	if not keyword_set ( kz ) then kz = 98.5
+	nR	= 1024L
+	antLoc	= 1.2
 
-		rMin	= 0.4;r0 - aWall*0.95
-		rMax	= 1.5;r0 + aWall*0.95
-   		b0	= 5.85d0
-		bR_frac	= 0.15
-		bz_frac	= 0.0	
-		ionSpecZ	= [ 2 ];, 2, 1]
-		ionSpecAmu	= [ 4 ];, 3, 1 ]
-		nMax		= [ 0.88, 0.23, 0.66 ] * 1d20
-		damping = 0.05
-		freq	= 30.0e6
-		nPhi = -22.0
-		kz = 80.0
-		nR	= 4096L
-		antLoc	= 1.25
+	useEqdsk = 1
+	useProfiles = 0
+	poloidalScale = 1.0
+	zSlice	= 1.0 
+	profile1 = 0
 
-		useEqdsk = 1
-		useProfiles = 1
-		poloidalScale = 1
-		zSlice	= 1.0
-		profile1 = 1
+;	-----------------------------
 
-;		-----------------------------
+
+
+;	Benchmarking cases
+
+;	@smithe
 
 
 ;		Grid
@@ -121,7 +130,14 @@ pro run_setup, $
 					( r_ - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
     		    ( z_ - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
 				cubic = -0.5 )
-		
+
+			;for i=0,5000 do begin
+			;	bPhi	= smooth ( bPhi, nR / 10, /edge ) 
+			;	bPhi_	= smooth ( bPhi_, nR / 10, /edge ) 
+			;endfor
+			;bPhi	= bPhi * 0.5
+			;bPhi_	= bPhi_ * 0.5
+	
 		endif 
 
 		if poloidalScale ne 1 then begin
@@ -192,8 +208,8 @@ pro run_setup, $
 
 		;;	sinusoidal density gradient
 
-		;gradSize = 0.1
-		;gradStart	= 1.2
+		;gradSize = 0.3
+		;gradStart	= 0.85
 		;gradFreq	= 1 / (2*gradSize)
 		;ne_profile	= fltArr ( nR ) 
 		;ii1	= where ( r lt gradStart )
@@ -201,14 +217,13 @@ pro run_setup, $
 		;ne_profile[*]	= -1
 		;ne_profile[ii1]	= 1
 		;ne_profile[ii2]	= cos ( 2*!pi*gradFreq*(r[ii2]-gradStart) )
-		;ne_profile	= (ne_profile + 1) * 50e17 + nMax
+		;ne_profile	= (ne_profile + 1) * 25e17 + nMax[0]
 
 		;specData[0].n	= ne_profile
 		;specData[0].n_	= ((specData[0].n)[0:nR-2] + (specData[0].n)[1:nR-1])/2
-		
+		;
 		;specData[1].n 		= specData[0].n / 2
 		;specData[1].n_		= specData[0].n_ / 2
-
     	   
 		;	import density profiles 
 
@@ -237,6 +252,13 @@ pro run_setup, $
 					( r_ - min(xMap_R2d) ) / (max(xMap_R2d)-min(xMap_R2d)) * (nX-1.0), $
     		    ( z_ - min ( xMap_z2d ) ) / (max(xMap_z2d)-min(xMap_z2d)) * (nY-1.0), $
 				cubic = -0.5 )
+
+			;for i=0,100 do begin
+			;	ne_	= smooth ( ne_, nR / 10, /edge )
+			;	ne__	= smooth ( ne__, nR / 10, /edge )
+			;endfor
+			;ne_	= ne_ * 1.5
+			;ne__	= ne__ * 1.5
 
 			specData[1].n	= ne_
 			specData[1].n_	= ne__
@@ -299,9 +321,5 @@ pro run_setup, $
     	        /over 
     	endif
 
-		;	Create a benchmark save file from this data
-
-		;save, specData, runData, fileName =  
-	endelse
 
 end

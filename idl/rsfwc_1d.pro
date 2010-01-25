@@ -5,20 +5,19 @@ pro rsfwc_1d, $
     eR = eR, $
 	ePhi = ePhi, $
 	ez = ez, $
-    plot = plot, $
 	divD = divD, $
-	rFull = r, rHalf = r_, $
-	kR1 = kR1, kR2 = kR2
-
-	if not keyword_set ( band ) then band = 1
+	rFull = rFull, rHalf = rHalf, $
+	jR = jR, jPhi = jPhi, jz = jz, $
+	kz = kz, $
+	nMax = nMax
 
 ;	Parameters
 
 	common constants, e, me, mi, c, e0, u0, II
 
 	e	= 1.60217646d-19
-	me	= 9.10938188d-31
    	mi	= 1.67262158d-27
+	me	= 9.10938188d-31
 	c	= 299792458d0	
 	e0	=	8.854187817d-12 
 	u0	=	4d0 * !dpi * 10d0^(-7) 
@@ -27,6 +26,7 @@ pro rsfwc_1d, $
 	common switches, $
 		dielectric_freeSpace, $
 		dielectric_noPoloidal, $
+		dispersion_generalised, $
 		dispersion_freeSpace, $
 		dispersion_jaegerPRL, $
 		bandStorage	
@@ -34,11 +34,28 @@ pro rsfwc_1d, $
 	common plotSwitches, $
 		plotDispersionGeneral, $
 		plotDispersionJaeger, $
-		plotDispersionNoPol
+		plotDispersionNoPol, $
+		plotSolution
 
-	run_setup, runData = runData, specData = specData
+	common writeSwitches, $
+		writeDispersionTxt
 
- 	wReal	= runData.freq * 2 * !pi 
+	common dlg_colors, ct12, $
+		red, $
+		blue, $
+		green, $
+		purple
+
+	run_setup, $
+		runData = runData, $
+		specData = specData, $
+		kz = kz, $
+		nMax = nMax
+
+	rFull 	= runData.r
+	rHalf	= runData.r_
+
+ 	wReal	= runData.freq * 2d0 * !dpi 
 	w	= dcomplexArr ( runData.nR ) + wReal
 	;iiDamped	= where ( r gt 1.4 )
 	w[*]	= complex ( wReal, wReal * runData.damping )
@@ -49,7 +66,8 @@ pro rsfwc_1d, $
 		epsilonFull = epsilon, $
 		epsilonHalf = epsilon_
 
-	dispersion, wReal, epsilon, stixVars, runData, specData
+	dispersion, wReal, epsilon, stixVars, runData, specData, $
+		kR = kR, kPhi = kPhi, kz = kz
 
 	matFill, runData.nR, runData.nPhi, runData.kz, $
 		runData.r, runData.r_, epsilon, epsilon_, w, runData.dR, $
@@ -62,9 +80,17 @@ pro rsfwc_1d, $
 		print, 'ADJUSTING: Antenna location is now ', runData.antLoc
 	endif
 
-    iiAnt   = where ( abs ( runData.r_ - runData.antLoc ) eq min ( abs ( runData.r_ - runData.antLoc ) ) )
+    iiAnt   = where ( abs ( runData.r_ - runData.antLoc ) $
+						eq min ( abs ( runData.r_ - runData.antLoc ) ) )
 	rhs		= complexArr ( nAll )
-	rhs[iiAnt*3+2]	= -II * wReal * u0 ( runData.r_[0] * runData.dr ) 
+
+	if not keyword_set ( jR ) then jR = 0
+	if not keyword_set ( jPhi ) then jPhi = 0
+	if not keyword_set ( jz ) then jz = 1
+
+	rhs[iiAnt*3+2]	= -II * wReal * u0 * runData.dr * jz
+	rhs[iiAnt*3+1]	= -II * wReal * u0 * runData.dr * jPhi 
+	rhs[iiAnt*3]	= -II * wReal * u0 * runData.dr * jR 
 
 ;	Solve matrix
 
@@ -128,8 +154,137 @@ pro rsfwc_1d, $
 
 	endif
 
-	plot_solution, runData.r, runData.r_, runData.antLoc, runData.dR, runData.nR, $
-		eR, ePhi, ez
+	;	Calculate the magnetic wave field
 
+	hR		= complexArr ( runData.nR-1 )
+	hPhi	= complexArr ( runData.nR )
+	hz		= complexArr ( runData.nR )
+
+	for i=0,runData.nR-1 do begin
+
+		if i lt runData.nR-1 then $
+			hR[i]	= -II * runData.kz * ePhi[i] + II * runData.nPhi * ez[i] / runData.r_[i]
+
+		if i gt 0 and i lt runData.nR-1 then begin
+		
+			hPhi[i]	= II * runData.kz * eR[i] - ( ez[i] - ez[i-1] ) / runData.dR 
+			hz[i]	= ( -II * runData.nPhi * eR[i] $
+						+ ( runData.r_[i]*ePhi[i] $
+							- runData.r_[i-1]*ePhi[i-1] ) / runData.dR ) $
+					 	/ runData.r[i]
+	
+		endif
+
+	endfor
+
+	hR		= hR / ( II * wReal * u0 )
+	hPhi	= hPhi / ( II * wReal * u0 )
+	hz		= hz / ( II * wReal * u0 )
+
+
+	if plotSolution then $
+	plot_solution, runData.antLoc, runData.dR, runData.nR, $
+		eR, ePhi, ez, $
+		kR = kR, r_kR = runData.r, $
+		r1 = runData.r, r2 = runData.r_, r3 = runData.r_
+
+	;if plotSolution then $
+	;plot_solution, runData.antLoc, runData.dR, runData.nR, $
+	;	hR, hPhi, hz, $
+	;	kR = kR, r_kR = runData.r, $
+	;	r1 = runData.r_, r2 = runData.r, r3 = runData.r
+
+	;	Determine the longitudinal / transvers nature of the solution
+
+	if dispersion_generalised then begin
+
+		ePhiFull	= complexArr ( runData.nR )
+		ezFull		= complexArr ( runData.nR )
+	
+		for i=1,runData.nR-2 do begin
+	
+			ePhiFull[i]	=  ( ePhi[i] + ePhi[i-1] ) / 2.0
+			ezFull[i]	=  ( ez[i] + ez[i-1] ) / 2.0
+	
+		endfor
+	
+		kMag1	= sqrt ( real_part ( kR[*,0])^2 + kPhi^2 + kz^2 )
+		eMag	= sqrt ( abs(eR)^2 + abs(ePhiFull)^2 + abs(ezFull)^2 )
+		kDotE1	= real_part ( kR[*,0] ) * abs ( eR ) $
+					+ kPhi * abs ( ePhiFull ) $
+					+ kz * abs ( ezFull ) 
+		theta1	= aCos ( kDotE1 / ( kMag1 * eMag ) )
+	
+		kMag2	= sqrt ( real_part ( kR[*,1])^2 + kPhi^2 + kz^2 )
+		kDotE2	= real_part ( kR[*,1] ) * abs ( eR ) $
+					+ kPhi * abs ( ePhiFull ) $
+					+ kz * abs ( ezFull ) 
+		theta2	= aCos ( kDotE2 / ( kMag2 * eMag ) )
+	
+		kMag3	= sqrt ( real_part ( kR[*,2])^2 + kPhi^2 + kz^2 )
+		kDotE3	= real_part ( kR[*,2] ) * abs ( eR ) $
+					+ kPhi * abs ( ePhiFull ) $
+					+ kz * abs ( ezFull ) 
+		theta3	= aCos ( kDotE3 / ( kMag3 * eMag ) )
+	
+		kMag4	= sqrt ( real_part ( kR[*,3])^2 + kPhi^2 + kz^2 )
+		kDotE4	= real_part ( kR[*,3] ) * abs ( eR ) $
+					+ kPhi * abs ( ePhiFull ) $
+					+ kz * abs ( ezFull ) 
+		theta4	= aCos ( kDotE4 / ( kMag4 * eMag ) )
+	
+		iPlot, runData.r, theta1 * !radeg, $
+			sym_index = 4, lineStyle = 6, color = blue, $
+			yRange = [0,180]
+		iPlot, runData.r, theta2 * !radeg, $
+			/over, sym_index = 4, lineStyle = 6, color = green
+		iPlot, runData.r, theta3 * !radeg, $
+			/over, sym_index = 4, lineStyle = 6, color = red
+		iPlot, runData.r, theta4 * !radeg, $
+			/over, sym_index = 4, lineStyle = 6, color = purple
+
+	endif
+
+	;	Write text file for comparison with GCC
+
+	outData	= replicate ( { r : 0.0 , $
+				eR : complex ( 0.0, 0.0 ), $
+				ePhi : complex ( 0.0, 0.0 ), $
+				ez : complex ( 0.0, 0.0 ) }, n_elements ( runData.r ) )
+
+	outData.r 		= runData.r
+	outData.eR		= eR
+	outData[0:n_elements(ePhi)-1].ePhi	= ePhi
+	outData[0:n_elements(ePhi)-1].ez		= ez
+
+
+	openw, lun, 'dlg_solution.txt', /get_lun
+	for i=0,n_elements(runData.r)-1 do $
+		printf, lun, outData[i], $
+			format = '(f8.5,2x,6(e12.4,2x))'
+	close, lun
+	
 	close, /all
+
+
+	;dt	= 1.0/wReal* 0.05
+	;rng	= max ( abs ( [eR,ePhi,ez] ) )
+	;for i=0,10000L do begin
+	;	t	= i * dt
+	;	plot, runData.r, real_part ( eR ) * cos ( wReal * t ) $
+	;			+ imaginary ( eR ) * sin ( wReal * t ), $
+	;		yRange = [-rng*1.5,rng*1.5]
+	;	oplot, runData.r_, real_part ( ePhi ) * cos ( wReal * t ) $
+	;			+ imaginary ( ePhi ) * sin ( wReal * t ), $
+	;			lineStyle = 1
+	;	oplot, runData.r_, real_part ( ez ) * cos ( wReal * t ) $
+	;			+ imaginary ( ez ) * sin ( wReal * t ), $
+	;			lineStyle = 2
+	;	oPlot, [runData.antLoc, runData.antLoc ], $
+	;			[-rng,rng], thick = 3
+	;	oPlot, runData.r, specData[0].n * rng / max ( specData[0].n )
+	;	wait, 0.025
+
+	;endfor
+
 end
