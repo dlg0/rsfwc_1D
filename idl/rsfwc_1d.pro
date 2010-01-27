@@ -9,7 +9,15 @@ pro rsfwc_1d, $
 	rFull = rFull, rHalf = rHalf, $
 	jR = jR, jPhi = jPhi, jz = jz, $
 	kz = kz, $
-	nMax = nMax
+	nMax = nMax, $
+	nFac = nFac, $
+	iiAnt = iiAnt, $
+	gradSize = gradSize, $
+	dispersionOnly = dispersionOnly, $
+	kR = kR, $
+	freq = freq, $
+	rOut = rOut, $
+	specData = specData
 
 ;	Parameters
 
@@ -35,7 +43,9 @@ pro rsfwc_1d, $
 		plotDispersionGeneral, $
 		plotDispersionJaeger, $
 		plotDispersionNoPol, $
-		plotSolution
+		plotSolution, $
+		plotMovie, $
+		plotFrequencies
 
 	common writeSwitches, $
 		writeDispersionTxt
@@ -50,10 +60,14 @@ pro rsfwc_1d, $
 		runData = runData, $
 		specData = specData, $
 		kz = kz, $
-		nMax = nMax
+		nMax = nMax, $
+		nFac = nFac, $
+		gradSize = gradSize, $
+		freq = freq
 
 	rFull 	= runData.r
 	rHalf	= runData.r_
+	rOut	= rFull
 
  	wReal	= runData.freq * 2d0 * !dpi 
 	w	= dcomplexArr ( runData.nR ) + wReal
@@ -68,6 +82,8 @@ pro rsfwc_1d, $
 
 	dispersion, wReal, epsilon, stixVars, runData, specData, $
 		kR = kR, kPhi = kPhi, kz = kz
+
+	if keyword_set ( dispersionOnly ) then return
 
 	matFill, runData.nR, runData.nPhi, runData.kz, $
 		runData.r, runData.r_, epsilon, epsilon_, w, runData.dR, $
@@ -188,11 +204,11 @@ pro rsfwc_1d, $
 		kR = kR, r_kR = runData.r, $
 		r1 = runData.r, r2 = runData.r_, r3 = runData.r_
 
-	;if plotSolution then $
-	;plot_solution, runData.antLoc, runData.dR, runData.nR, $
-	;	hR, hPhi, hz, $
-	;	kR = kR, r_kR = runData.r, $
-	;	r1 = runData.r_, r2 = runData.r, r3 = runData.r
+	if plotSolution then $
+	plot_solution, runData.antLoc, runData.dR, runData.nR, $
+		hR, hPhi, hz, $
+		kR = kR, r_kR = runData.r, $
+		r1 = runData.r_, r2 = runData.r, r3 = runData.r
 
 	;	Determine the longitudinal / transvers nature of the solution
 
@@ -209,28 +225,28 @@ pro rsfwc_1d, $
 		endfor
 	
 		kMag1	= sqrt ( real_part ( kR[*,0])^2 + kPhi^2 + kz^2 )
-		eMag	= sqrt ( abs(eR)^2 + abs(ePhiFull)^2 + abs(ezFull)^2 )
-		kDotE1	= real_part ( kR[*,0] ) * abs ( eR ) $
-					+ kPhi * abs ( ePhiFull ) $
-					+ kz * abs ( ezFull ) 
+		eMag	= sqrt ( real_part(eR)^2 + real_part(ePhiFull)^2 + real_part(ezFull)^2 )
+		kDotE1	= real_part ( kR[*,0] ) * real_part ( eR ) $
+					+ kPhi * real_part ( ePhiFull ) $
+					+ kz * real_part ( ezFull ) 
 		theta1	= aCos ( kDotE1 / ( kMag1 * eMag ) )
 	
 		kMag2	= sqrt ( real_part ( kR[*,1])^2 + kPhi^2 + kz^2 )
-		kDotE2	= real_part ( kR[*,1] ) * abs ( eR ) $
-					+ kPhi * abs ( ePhiFull ) $
-					+ kz * abs ( ezFull ) 
+		kDotE2	= real_part ( kR[*,1] ) * real_part ( eR ) $
+					+ kPhi * real_part ( ePhiFull ) $
+					+ kz * real_part ( ezFull ) 
 		theta2	= aCos ( kDotE2 / ( kMag2 * eMag ) )
 	
 		kMag3	= sqrt ( real_part ( kR[*,2])^2 + kPhi^2 + kz^2 )
-		kDotE3	= real_part ( kR[*,2] ) * abs ( eR ) $
-					+ kPhi * abs ( ePhiFull ) $
-					+ kz * abs ( ezFull ) 
+		kDotE3	= real_part ( kR[*,2] ) * real_part ( eR ) $
+					+ kPhi * real_part ( ePhiFull ) $
+					+ kz * real_part ( ezFull ) 
 		theta3	= aCos ( kDotE3 / ( kMag3 * eMag ) )
 	
 		kMag4	= sqrt ( real_part ( kR[*,3])^2 + kPhi^2 + kz^2 )
-		kDotE4	= real_part ( kR[*,3] ) * abs ( eR ) $
-					+ kPhi * abs ( ePhiFull ) $
-					+ kz * abs ( ezFull ) 
+		kDotE4	= real_part ( kR[*,3] ) * real_part ( eR ) $
+					+ kPhi * real_part ( ePhiFull ) $
+					+ kz * real_part ( ezFull ) 
 		theta4	= aCos ( kDotE4 / ( kMag4 * eMag ) )
 	
 		iPlot, runData.r, theta1 * !radeg, $
@@ -242,6 +258,25 @@ pro rsfwc_1d, $
 			/over, sym_index = 4, lineStyle = 6, color = red
 		iPlot, runData.r, theta4 * !radeg, $
 			/over, sym_index = 4, lineStyle = 6, color = purple
+
+		eMag	= sqrt ( real_part(eR)^2 + real_part(ePhiFull)^2 + real_part(ezFull)^2 )
+		eDotB	= real_part(eR) * runData.bField[*,0] $
+					+ real_part(ePhiFull) * runData.bField[*,1] $
+					+ real_part(ezFull) * runData.bField[*,2]
+		thetaA	= aCos ( eDotB / ( eMag * runData.bMag ) )
+
+		eMag	= sqrt ( imaginary(eR)^2 + imaginary(ePhiFull)^2 + imaginary(ezFull)^2 )
+		eDotB	= imaginary(eR) * runData.bField[*,0] $
+					+ imaginary(ePhiFull) * runData.bField[*,1] $
+					+ imaginary(ezFull) * runData.bField[*,2]
+		thetaB	= aCos ( eDotB / ( eMag * runData.bMag ) )
+
+
+		iPlot, runData.r, thetaA * !radeg, $
+			yRange = [0,180]		
+		iPlot, runData.r, thetaB * !radeg, $
+			/over	
+
 
 	endif
 
@@ -267,24 +302,27 @@ pro rsfwc_1d, $
 	close, /all
 
 
-	;dt	= 1.0/wReal* 0.05
-	;rng	= max ( abs ( [eR,ePhi,ez] ) )
-	;for i=0,10000L do begin
-	;	t	= i * dt
-	;	plot, runData.r, real_part ( eR ) * cos ( wReal * t ) $
-	;			+ imaginary ( eR ) * sin ( wReal * t ), $
-	;		yRange = [-rng*1.5,rng*1.5]
-	;	oplot, runData.r_, real_part ( ePhi ) * cos ( wReal * t ) $
-	;			+ imaginary ( ePhi ) * sin ( wReal * t ), $
-	;			lineStyle = 1
-	;	oplot, runData.r_, real_part ( ez ) * cos ( wReal * t ) $
-	;			+ imaginary ( ez ) * sin ( wReal * t ), $
-	;			lineStyle = 2
-	;	oPlot, [runData.antLoc, runData.antLoc ], $
-	;			[-rng,rng], thick = 3
-	;	oPlot, runData.r, specData[0].n * rng / max ( specData[0].n )
-	;	wait, 0.025
+	if plotMovie then begin
 
-	;endfor
+		dt	= 1.0/wReal* 0.05
+		rng	= max ( abs ( [eR,ePhi,ez] ) )
+		for i=0,10000L do begin
+			t	= i * dt
+			plot, runData.r, real_part ( eR ) * cos ( wReal * t ) $
+					+ imaginary ( eR ) * sin ( wReal * t ), $
+				yRange = [-rng*1.5,rng*1.5]
+			oplot, runData.r_, real_part ( ePhi ) * cos ( wReal * t ) $
+					+ imaginary ( ePhi ) * sin ( wReal * t ), $
+					lineStyle = 1
+			oplot, runData.r_, real_part ( ez ) * cos ( wReal * t ) $
+					+ imaginary ( ez ) * sin ( wReal * t ), $
+					lineStyle = 2
+			oPlot, [runData.antLoc, runData.antLoc ], $
+					[-rng,rng], thick = 3
+			oPlot, runData.r, specData[0].n * rng / max ( specData[0].n )
+			wait, 0.025
 
+		endfor
+
+	endif
 end

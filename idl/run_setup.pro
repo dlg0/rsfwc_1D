@@ -2,7 +2,10 @@ pro run_setup, $
 	runData = runData, $
 	specData = specData, $
 	kz = kz, $
-	nMax = nMax
+	nMax = nMax, $
+	nFac = nfac, $
+	gradSize = gradSize, $
+	freq = freq
 
 	common constants
 	common switches
@@ -33,11 +36,13 @@ pro run_setup, $
 
 ;	Plotting switches
 
- 	plotRunData	= 1
- 	plotDispersionGeneral 	= 1
+ 	plotRunData	= 0
+ 	plotDispersionGeneral 	= 0
  	plotDispersionJaeger	= 0
  	plotDispersionNoPol		= 0
-	plotSolution = 1
+	plotSolution = 0
+	plotMovie	= 0
+	plotFrequencies = 0
 
 ;	File write switches
 
@@ -49,25 +54,27 @@ pro run_setup, $
 	r0	= 0.67d0
 	aWall	= 0.22 
 
-	rMin	= 0.2;r0 - aWall*0.99
-	rMax	= 1.7;r0 + aWall*0.99
+	rMin	= 1.08;r0 - aWall*0.99
+	rMax	= 1.14;r0 + aWall*0.99
    	b0	= 5.85d0
 	bR_frac	= 0.0
 	bz_frac	= 0.0	
 	ionSpecZ	= [ 2 ]
 	ionSpecAmu	= [ 2 ]
-	if not keyword_set ( nMax ) then nMax = [ 5.5 ] * 1d18
-	damping = 0.04
-	freq	= 30.0e6
-	nPhi = -22.0
-	if not keyword_set ( kz ) then kz = 98.5
-	nR	= 1024L
-	antLoc	= 1.2
+	if not keyword_set ( nMax ) then nMax = [ 0.3 ] * 1d18
+	if not keyword_set ( nFac ) then nFac = 1.0 
+	damping = 0.00
+	if not keyword_set ( freq ) then freq = 30.0e6
+	nPhi = -15.0
+	if not keyword_set ( kz ) then kz = 0.0;63.6 
+	nR	= 32L
+	antLoc	= 1.0
 
 	useEqdsk = 1
-	useProfiles = 0
-	poloidalScale = 1.0
-	zSlice	= 1.0 
+	useProfiles = 1
+	poloidalScale = 1d-5
+	zSlice	= -0.95 
+	sliceSlope = 0.0
 	profile1 = 0
 
 ;	-----------------------------
@@ -86,8 +93,8 @@ pro run_setup, $
 		;	half grid variables are _
 		r_	= r[1:*] - dR / 2
 
-		z	= r * 0 + zSlice
-		z_	= r_ * 0 + zSlice
+		z	= r * sliceSlope + zSlice
+		z_	= r_ * sliceSlope + zSlice
 
 ;		Setup plasma and field profiles
 
@@ -135,9 +142,25 @@ pro run_setup, $
 			;	bPhi	= smooth ( bPhi, nR / 10, /edge ) 
 			;	bPhi_	= smooth ( bPhi_, nR / 10, /edge ) 
 			;endfor
-			;bPhi	= bPhi * 0.5
-			;bPhi_	= bPhi_ * 0.5
-	
+			;bPhi	= bPhi * 0.6
+			;bPhi_	= bPhi_ * 0.6
+
+			;;	z towards x
+			;rotTh2	=	-aTan ( max(r)-min(r), max(z)-min(z) )
+			;rot_y	= [ [ cos ( rotTh2 ), 0, -sin ( rotTh2 ) ], $
+			;			[ 0, 1, 0 ], $
+			;			[ sin ( rotTh2 ), 0, cos ( rotTh2 ) ] ]
+			;inv_rot_y	= transpose ( rot_y )
+
+			;bVec	= rot_y ## [ [bR],[bPhi],[bz] ]
+			;bVec_	= rot_y ## [ [bR_],[bPhi_],[bz_] ]
+
+			;bR	= bVec[*,0]
+			;bz	= bVec[*,2]
+
+			;bR_	= bVec_[*,0]
+			;bz_	= bVec_[*,2]
+
 		endif 
 
 		if poloidalScale ne 1 then begin
@@ -163,7 +186,9 @@ pro run_setup, $
 					wc : dblArr ( nR ), $
 					wc_ : dblArr ( nR - 1 ), $
 					n : dblArr ( nR ), $
-					n_ : dblArr ( nR - 1 ) }, nSpec + 1 )
+					n_ : dblArr ( nR - 1 ), $
+					wLH : dblArr ( nR ), $
+					wUH : dblArr ( nR ) }, nSpec + 1 )
 
 		for i=0,nSpec do begin
 
@@ -208,22 +233,25 @@ pro run_setup, $
 
 		;;	sinusoidal density gradient
 
-		;gradSize = 0.3
-		;gradStart	= 0.85
+		;if not keyword_set ( gradSize ) then gradSize = 0.21 ;0.26
+		;gradEnd		= 1.2
 		;gradFreq	= 1 / (2*gradSize)
+		;nGrad	= fix(gradSize / ( dR ) + 1)
 		;ne_profile	= fltArr ( nR ) 
-		;ii1	= where ( r lt gradStart )
-		;ii2	= where ( r ge gradStart and r lt gradStart+gradSize )
+		;r_grad	= fIndGen ( nGrad ) * dR
+		;ii1	= where ( r lt gradEnd )
+		;ii3	= where ( abs ( r - gradEnd ) eq min ( abs ( r - gradEnd ) ) ) + 1
 		;ne_profile[*]	= -1
 		;ne_profile[ii1]	= 1
-		;ne_profile[ii2]	= cos ( 2*!pi*gradFreq*(r[ii2]-gradStart) )
-		;ne_profile	= (ne_profile + 1) * 25e17 + nMax[0]
+		;ne_profile[ii3[0]-nGrad:ii3[0]-1]	= $
+		;	cos ( 2*!pi*gradFreq*r_grad )
+		;ne_profile	= (ne_profile + 1) * 40e17 + nMax[0]
 
-		;specData[0].n	= ne_profile
-		;specData[0].n_	= ((specData[0].n)[0:nR-2] + (specData[0].n)[1:nR-1])/2
+		;specData[1].n	= ne_profile
+		;specData[1].n_	= ((specData[1].n)[0:nR-2] + (specData[1].n)[1:nR-1])/2
 		;
-		;specData[1].n 		= specData[0].n / 2
-		;specData[1].n_		= specData[0].n_ / 2
+		;specData[0].n 		= specData[1].n / ionSpecZ[0]
+		;specData[0].n_		= specData[1].n_ / ionSpecZ[0]
     	   
 		;	import density profiles 
 
@@ -257,15 +285,27 @@ pro run_setup, $
 			;	ne_	= smooth ( ne_, nR / 10, /edge )
 			;	ne__	= smooth ( ne__, nR / 10, /edge )
 			;endfor
-			;ne_	= ne_ * 1.5
-			;ne__	= ne__ * 1.5
 
+			if keyword_set ( nFac ) then begin
+				ne_	= ne_ * nFac 
+				ne__	= ne__ * nFac
+			endif
+
+			;iplot, r, specData[1].n, thick = 2, trans = 50
+			;iPlot, r, specData[0].n, thick = 2, /over, trans = 50
+		
 			specData[1].n	= ne_
 			specData[1].n_	= ne__
     
 			specData[0].n	= ne_ / ionSpecZ[0]
 			specData[0].n_	= ne__ / ionSpecZ[0]
- 	
+
+			;iPlot, r, ne_, /over
+			;iplot, r, ne_ / ionSPecZ[0], /over
+ 
+			;iPlot, eqdsk.rbbbs, eqdsk.zbbbs, /iso
+			;iPlot, r, z, /over
+;stop	
 		endif
 
 		for i = 0, nSpec do begin
@@ -277,7 +317,28 @@ pro run_setup, $
     	                        / ( specData[i].m*e0 ))
 			specData[i].wc_	= specData[i].q * bMag_ / specData[i].m
 
+		
 		endfor
+
+		for i = 0, nSpec - 1 do begin
+
+			specData[i].wLH	= sqrt ( specData[i].wc^2 $
+				+ specData[i].wp^2 / ( 1.0 + specData[nSpec].wp^2 / specData[nSpec].wc^2 ) )
+			;specData[i].wLH	= sqrt ( specData[i].wc * abs(specData[nSpec].wc) $
+			;	* ( specData[nSpec].wp^2 + specData[nSpec].wc * specData[i].wc) $
+			;	/ ( specData[nSpec].wp^2 + specData[nSpec].wc^2 ) )
+			;specData[i].wLH	= ( 1d0 / (specData[i].wc * abs(specData[nSpec].wc)) $
+			;					+ 1d0/(specData[i].wp^2) )^(-0.5)
+			specData[i].wUH	= sqrt ( specData[nSpec].wp^2 + specData[nSpec].wc^2 ) 
+	
+		endfor
+
+		if plotFrequencies then begin
+			iplot, abs(specData[1].wp), /ylog, thick = 3, insert_legend = 1, name = 'wpe' 
+			iplot, abs(specData[1].wc), /over, thick = 3, lineStyle = 2, insert_legend = 1, name = 'wce'
+			iplot, abs(specData[0].wp), /over, insert_legend = 1, name = 'wpi'
+			iplot, abs(specData[0].wc), /over, lineStyle = 2, insert_legend = 1, name = 'wci'
+		endif
 
 		runData = { bField : [ [bR], [bPhi], [bz] ], $
 					bField_ : [ [bR_], [bPhi_], [bz_] ], $
