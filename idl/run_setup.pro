@@ -65,7 +65,7 @@ pro run_setup, $
 	if not keyword_set ( nFac ) then nFac = 1.0 
 	damping = 0.00
 	if not keyword_set ( freq ) then freq = 30.0e6
-	nPhi = -15.0
+	nPhi = 0.0
 	if not keyword_set ( kz ) then kz = 0.0;63.6 
 	nR	= 32L
 	antLoc	= 1.0

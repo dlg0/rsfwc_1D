@@ -17,7 +17,8 @@ pro rsfwc_1d, $
 	kR = kR, $
 	freq = freq, $
 	rOut = rOut, $
-	specData = specData
+	specData = specData, $
+	stixVars = stixVars
 
 ;	Parameters
 
