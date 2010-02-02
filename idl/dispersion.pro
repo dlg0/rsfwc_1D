@@ -138,29 +138,42 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 		c_	= [ k0, k1, k2, k3, k4 ]
 		kR__[i,*]	= imsl_zeroPoly ( c_, /double, /jenkins ) 
 
-
 	endfor
 
 	kz__	= fltArr ( runData.nR ) + runData.kz
 
 	if plotDispersionGeneral then begin
 
-		iPlot, runData.r, kR__[*,0], sym_index = 4, lineStyle = 6, $
-			yRange = [-500,500], view_grid = [2,1], color = blue, $
+		kRPlot	= real_part ( kR__ )
+		iiNeg	= where ( kRPlot lt 0 )
+		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg] 
+		kRPlot	= ( kRPlot )^(1d0/4d0)
+		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
+
+		iPlot, runData.r, kRPlot[*,0], sym_index = 4, lineStyle = 6, $
+			view_grid = [2,1], color = blue, $
 			/strech_to_fit, /zoom_on_resize
-		iPlot, runData.r, kR__[*,1], sym_index = 4, lineStyle = 6, /over, color = green
-		iPlot, runData.r, kR__[*,2], sym_index = 4, lineStyle = 6, /over, color = red
-		iPlot, runData.r, kR__[*,3], sym_index = 4, lineStyle = 6, /over, color = purple
-		iPlot, runData.r, imaginary(kR__[*,0]), $
+		iPlot, runData.r, kRPlot[*,1], sym_index = 4, lineStyle = 6, /over, color = green
+		iPlot, runData.r, kRPlot[*,2], sym_index = 4, lineStyle = 6, /over, color = red
+		iPlot, runData.r, kRPlot[*,3], sym_index = 4, lineStyle = 6, /over, color = purple
+
+		kRPlot_	= kRPlot
+		kRPlot	= imaginary ( kR__ )
+		iiNeg	= where ( kRPlot lt 0 )
+		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg] 
+		kRPlot	= ( kRPlot )^(1d0/4d0)
+		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
+
+		iPlot, runData.r, kRPlot[*,0], $
 			sym_index = 3, lineStyle = 6, /over, color = blue
-		iPlot, runData.r, imaginary(kR__[*,1]), $
+		iPlot, runData.r, kRPlot[*,1], $
 			sym_index = 3, lineStyle = 6, /over, color = green
-		iPlot, runData.r, imaginary(kR__[*,2]), $
+		iPlot, runData.r, kRPlot[*,2], $
 			sym_index = 3, lineStyle = 6, /over, color = red
-		iPlot, runData.r, imaginary(kR__[*,3]), $
+		iPlot, runData.r, kRPlot[*,3], $
 			sym_index = 3, lineStyle = 6, /over, color = purple
 	
-			range	= max ( abs( abs ( kR__ ) ) )
+			range	= max ( abs( [kRPlot,kRPlot_] ) )
 			for i = 0, runData.nSpec - 1 do begin
 				for harm = 1, 15 do begin
 	

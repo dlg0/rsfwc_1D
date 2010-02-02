@@ -1,11 +1,13 @@
 pro run_setup, $
 	runData = runData, $
 	specData = specData, $
-	kz = kz, $
+	in_kz = kz, $
 	nMax = nMax, $
 	nFac = nfac, $
 	gradSize = gradSize, $
-	freq = freq
+	freq = freq, $
+	poloidalScale = poloidalScale, $
+	nPhi = nPhi
 
 	common constants
 	common switches
@@ -54,8 +56,8 @@ pro run_setup, $
 	r0	= 0.67d0
 	aWall	= 0.22 
 
-	rMin	= 1.08;r0 - aWall*0.99
-	rMax	= 1.14;r0 + aWall*0.99
+	rMin	= 1.05;0.5;1.08;r0 - aWall*0.99
+	rMax	= 1.1;1.7;1.14;r0 + aWall*0.99
    	b0	= 5.85d0
 	bR_frac	= 0.0
 	bz_frac	= 0.0	
@@ -63,17 +65,17 @@ pro run_setup, $
 	ionSpecAmu	= [ 2 ]
 	if not keyword_set ( nMax ) then nMax = [ 0.3 ] * 1d18
 	if not keyword_set ( nFac ) then nFac = 1.0 
-	damping = 0.00
+	damping = 0.02
 	if not keyword_set ( freq ) then freq = 30.0e6
-	nPhi = 0.0
-	if not keyword_set ( kz ) then kz = 0.0;63.6 
-	nR	= 32L
-	antLoc	= 1.0
+	if not keyword_set ( nPhi ) then nPhi = -13.0;-22.0
+	if not keyword_set ( kz ) then kz = 51.5;63.6 
+	nR	= 8L
+	antLoc	= 1.3
 
 	useEqdsk = 1
 	useProfiles = 1
-	poloidalScale = 1d-5
-	zSlice	= -0.95 
+	if not keyword_set ( poloidalScale ) then poloidalScale = 1.0 
+	zSlice	= 1.0 
 	sliceSlope = 0.0
 	profile1 = 0
 

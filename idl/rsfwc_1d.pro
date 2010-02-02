@@ -8,17 +8,22 @@ pro rsfwc_1d, $
 	divD = divD, $
 	rFull = rFull, rHalf = rHalf, $
 	jR = jR, jPhi = jPhi, jz = jz, $
-	kz = kz, $
+	in_kz = in_kz, $
 	nMax = nMax, $
 	nFac = nFac, $
 	iiAnt = iiAnt, $
 	gradSize = gradSize, $
 	dispersionOnly = dispersionOnly, $
 	kR = kR, $
+	kPhi = kPhi, $
+	out_kz = out_kz, $
 	freq = freq, $
 	rOut = rOut, $
 	specData = specData, $
-	stixVars = stixVars
+	stixVars = stixVars, $
+	runData = runData, $
+	poloidalScale = poloidalScale, $
+	nPhi = nPhi
 
 ;	Parameters
 
@@ -60,11 +65,13 @@ pro rsfwc_1d, $
 	run_setup, $
 		runData = runData, $
 		specData = specData, $
-		kz = kz, $
+		in_kz = in_kz, $
 		nMax = nMax, $
 		nFac = nFac, $
 		gradSize = gradSize, $
-		freq = freq
+		freq = freq, $
+		nPhi = nPhi, $
+		poloidalScale = poloidalScale
 
 	rFull 	= runData.r
 	rHalf	= runData.r_
@@ -83,6 +90,8 @@ pro rsfwc_1d, $
 
 	dispersion, wReal, epsilon, stixVars, runData, specData, $
 		kR = kR, kPhi = kPhi, kz = kz
+
+	;out_kz = kz
 
 	if keyword_set ( dispersionOnly ) then return
 
@@ -205,11 +214,11 @@ pro rsfwc_1d, $
 		kR = kR, r_kR = runData.r, $
 		r1 = runData.r, r2 = runData.r_, r3 = runData.r_
 
-	if plotSolution then $
-	plot_solution, runData.antLoc, runData.dR, runData.nR, $
-		hR, hPhi, hz, $
-		kR = kR, r_kR = runData.r, $
-		r1 = runData.r_, r2 = runData.r, r3 = runData.r
+	;if plotSolution then $
+	;plot_solution, runData.antLoc, runData.dR, runData.nR, $
+	;	hR, hPhi, hz, $
+	;	kR = kR, r_kR = runData.r, $
+	;	r1 = runData.r_, r2 = runData.r, r3 = runData.r
 
 	;	Determine the longitudinal / transvers nature of the solution
 
@@ -252,7 +261,7 @@ pro rsfwc_1d, $
 	
 		iPlot, runData.r, theta1 * !radeg, $
 			sym_index = 4, lineStyle = 6, color = blue, $
-			yRange = [0,180]
+			yRange = [0,180], window_title = 'k dot E angle'
 		iPlot, runData.r, theta2 * !radeg, $
 			/over, sym_index = 4, lineStyle = 6, color = green
 		iPlot, runData.r, theta3 * !radeg, $
@@ -274,7 +283,8 @@ pro rsfwc_1d, $
 
 
 		iPlot, runData.r, thetaA * !radeg, $
-			yRange = [0,180]		
+			yRange = [0,180], $
+			window_title = 'e dot B angle'		
 		iPlot, runData.r, thetaB * !radeg, $
 			/over	
 

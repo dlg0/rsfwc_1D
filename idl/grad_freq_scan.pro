@@ -3,15 +3,15 @@ pro grad_freq_scan
 	@load_colors
 
 	nn	= 50.0
-	nkz	= 10.0
+	nkz	= 50.0
 	ng	= 10.0
 
 	;mag	= fltArr ( nn, nkz )
 	mag	= fltArr ( ng, nkz )
 
 
-	kzStart	= 63.0
-	kzEnd	= 66.0
+	kzStart	= 50.0
+	kzEnd	= 100.0
 	kzStep	= ( kzEnd - kzStart ) / nkz
 
 	nStart	= 1.0 * 1d17
@@ -34,7 +34,7 @@ pro grad_freq_scan
 		rsfwc_1d, eR = eR, rFull = r, rHalf = r_, $
 			ez = ez, ePhi = ePhi, $
 			;nMax = i * nStep + nStart, $
-			kz = k * kzStep + kzStart,$
+			in_kz = k * kzStep + kzStart,$
 			;gradSize = j * gStep + gStart, $
 			iiAnt = iiAnt
 
