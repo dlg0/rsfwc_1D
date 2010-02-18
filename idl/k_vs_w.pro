@@ -39,7 +39,7 @@ pro k_vs_w, $
 	S	= complexArr ( nf )
 	P	= complexArr ( nf )
 
-	rSlice	= 1.075;1.11
+	rSlice	= 1.175;1.11
 
 	;w	= ( fIndGen ( nf ) * df + fStart ) * 2 * !pi
 

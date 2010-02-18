@@ -1,4 +1,4 @@
-pro stixVariables, wReal, runData, specData, $
+pro stixVariables, wReal, specData, $
 	stixVars = stixVars
 
 	stixR	= 1d0 - total ( specData.wp^2 / ( wReal * ( wReal + specData.wc ) ),2)
