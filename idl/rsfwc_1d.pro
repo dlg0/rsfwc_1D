@@ -28,31 +28,8 @@ pro rsfwc_1d, $
 ;	Parameters
 
     @constants
-
-	common switches, $
-		dielectric_freeSpace, $
-		dielectric_noPoloidal, $
-		dispersion_generalised, $
-		dispersion_freeSpace, $
-		dispersion_jaegerPRL, $
-		bandStorage	
-
-	common plotSwitches, $
-		plotDispersionGeneral, $
-		plotDispersionJaeger, $
-		plotDispersionNoPol, $
-		plotSolution, $
-		plotMovie, $
-		plotFrequencies
-
-	common writeSwitches, $
-		writeDispersionTxt
-
-	common dlg_colors, ct12, $
-		red, $
-		blue, $
-		green, $
-		purple
+    @switches
+    @load_colors
 
 	run_setup, $
 		runData = runData, $

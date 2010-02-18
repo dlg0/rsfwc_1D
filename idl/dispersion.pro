@@ -7,11 +7,10 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 	common dlg_colors
 	common writeSwitches
 
-	kPar	= runData.nPhi / runData.r
-	nPar	= kPar * c / wReal
-
     if dispersion_freeSpace then begin
 
+        kPar	= runData.nPhi / runData.r
+	    nPar	= kPar * c / wReal
         k   = wReal / c
         kPer1   = sqrt ( k^2 - kPar^2 )
         kPer2   = kPer1 * 0
@@ -19,7 +18,13 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
             title = 'free space dispersion', $
             /view_next
 
-    endif else begin
+    endif 
+    
+    if dispersion_noPoloidal then begin
+
+        kR__	= complexArr ( runData.nR, 4 )
+        kPar	= runData.nPhi / runData.r
+	    nPar	= kPar * c / wReal
 
 		kPerp0	= complexArr ( runData.nR, 4 )
 		for i=0L,runData.nR-1L do begin
@@ -33,9 +38,13 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 			c4	= stixVars.stixS[i]
 			c_	= [ c0, c1, c2, c3, c4 ]
 			kPerp0[i,*]	= imsl_zeroPoly ( c_, /double ) * wReal / c
+			kR__[i,*]	= imsl_zeroPoly ( c_, /double ) * wReal / c
 
 		endfor
-	
+
+    endif    
+
+    if dispersion_jaegerPRL then begin
 
 		;	poloidal field dispersion analysis
 
@@ -79,7 +88,7 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 		kR2	= -sqrt ( -sqrtArg)
 
 
-    endelse
+    endif
 
 
 	if dispersion_generalised then begin
@@ -87,7 +96,7 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 ;	Generalised dispersion analysis
 
 	kR__	= complexArr ( runData.nR, 4 )
-	print, 'Running generalised dispersion calculation ...'
+	;print, 'Running generalised dispersion calculation ...'
 	for i=0L,runData.nR-1L do begin
 		
 		k4	= wReal^2/c^2 * epsilon[0,0,i]

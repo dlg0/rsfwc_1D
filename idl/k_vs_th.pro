@@ -2,70 +2,20 @@ pro k_vs_th
 
     @constants
 
-    ionSpecZ    = [ 1 ]
-    ionSpecAmu  = [ 2 ]
+    ionSpecZ    = [ 2 ]
+    ionSpecAmu  = [ 4 ]
 
     nIonSpec	= n_elements ( ionSpecZ )
 
-	specData	= replicate ( $
-			{ 	q : 0d0, $
-				m : 0d0, $
-				wp : 0.0, $
-				wc : 0.0, $
-				n : 0.0, $
-				wLH : 0.0, $
-				wUH : 0.0 }, nIonSpec + 1 )
-
-
-    nMax     = [ 2.7e18 ]
+    nMax     = [ 5.7e18 ]
     bMag   = 0.53
 
-	for i=0,nIonSpec do begin
+    create_specData, ionSpecZ, ionSpecAmu, nMax, bMag, $
+        specData = specData 
 
-		; ions
-		if i lt nIonSpec then begin
-
-			specData[i].q 		= ionSpecZ[i] * e
-			specData[i].m 		= ionSpecAmu[i] * mi
-			specData[i].n 		= nMax[i] 
-
-		; electrons for charge neutrality
-		endif else begin
-
-			specData[i].q 		= -e
-			specData[i].m 		= me
-			if nIonSpec gt 1 then begin
-				specData[i].n 		= total ( specData[0:nIonSpec-1].n $
-										* ionSpecZ ) 
-			endif else begin
-				specData[i].n 		= specData[0:nIonSpec-1].n $
-										* ionSpecZ 
-			endelse
-
-		endelse
-
-	endFor
-
-
-    for i = 0, nIonSpec do begin
-
-		specData[i].wp	= sqrt ( specData[i].n * specData[i].q^2 $
-                            / ( specData[i].m*e0 ))
-		specData[i].wc	= specData[i].q * bMag / specData[i].m
-	
-	endfor
-
-	for i = 0, nIonSpec - 1 do begin
-
-		specData[i].wLH	= sqrt ( specData[i].wc^2 $
-			+ specData[i].wp^2 / ( 1.0 + specData[nIonSpec].wp^2 / specData[nIonSpec].wc^2 ) )
-		specData[i].wUH	= sqrt ( specData[nIonSpec].wp^2 + specData[nIonSpec].wc^2 ) 
-	
-	endfor
-
-
-    nFreq   = 500
-	freq	= 10d0^(fIndGen(nFreq)/(nFreq-1)*5+6)
+    nFreq   = 1 
+	;freq	= 10d0^(fIndGen(nFreq)/(nFreq-1)*5+6)
+    freq    = 30d6
     fNorm   = specData[0].wc / ( 2 * !pi )
 
     iiNSTX  = where ( abs ( freq - 30d6 ) eq min ( abs ( freq - 30d6 ) ) )
@@ -85,20 +35,18 @@ pro k_vs_th
 
         wReal   = 2d0 * !dpi * freq[f]
 
-	    stixR	= 1d0 - total ( specData.wp^2 / ( wReal * ( wReal + specData.wc ) ))
-	    stixL	= 1d0 - total ( specData.wp^2 / ( wReal * ( wReal - specData.wc ) ))
-	    stixS	= 0.5d0 * ( stixR + stixL )
-	    stixD	= 0.5d0 * ( stixR - stixL )
-	    stixP	= 1d0 - total ( specData.wp^2 / wReal^2 )
-    
+        stixVariables, wReal, specData, $
+	        stixVars = stixVars, /noHalf
+
         for i = 0, nTheta-1 do begin
 
-            AA   = stixS * sin ( thetaArr[i] * !dtor )^2 + stixP * cos ( thetaArr[i] * !dtor )^2
-            BB   = stixR * stixL * sin ( thetaArr[i] * !dtor )^2 + stixP * stixS * ( 1d0 + cos ( thetaArr[i]*!dtor )^2 )
-            CC   = stixP * stixR * stixL
+            AA   = stixVars.stixS * sin ( thetaArr[i] * !dtor )^2 + stixVars.stixP * cos ( thetaArr[i] * !dtor )^2
+            BB   = stixVars.stixR * stixVars.stixL * sin ( thetaArr[i] * !dtor )^2 $
+                    + stixVars.stixP * stixVars.stixS * ( 1d0 + cos ( thetaArr[i]*!dtor )^2 )
+            CC   = stixVars.stixP * stixVars.stixR * stixVars.stixL
 
             c_	= [ CC, -BB, AA ]
-	        ksqTmp	= imsl_zeroPoly ( c_, /double ) * wReal / c
+	        ksqTmp	= imsl_zeroPoly ( c_, /double ) * wReal^2 / c^2
 
             kSq1[f,i]    = ksqTmp[0]
             kSq2[f,i]    = ksqTmp[1]
@@ -115,6 +63,8 @@ pro k_vs_th
 
     u1  = sqrt(uSq1);wReal / ( sqrt(kSq1) * c )
     u2  = sqrt(uSq2);wReal / ( sqrt(kSq2) * c )
+    u1  = 1.0 / sqrt(kSq1); * wReal / c
+    u2  = 1.0 / sqrt(kSq2); * wReal / c
 
    
     ;loadct, 13, file = 'davect.tbl', /sil, rgb_table = ct1
@@ -163,9 +113,9 @@ pro k_vs_th
 
     iPlot, real_part(u1[iiNSTX,*]), thetaArr*!dtor, /polar, color = red, /iso
     iPlot, imaginary(u1[iiNSTX,*]), thetaArr*!dtor, /polar, /over, color = red, lineStyle = 2
-    iPlot, (u2[iiNSTX,*]), thetaArr*!dtor, /polar, /over, color = blue
+    iPlot, real_part(u2[iiNSTX,*]), thetaArr*!dtor, /polar, /over, color = blue
     iPlot, imaginary(u2[iiNSTX,*]), thetaArr*!dtor, /polar, /over, color = blue, lineStyle = 2
-    iPlot, [0.05,0.05], [0,0], /polar, /over, color = black, sym_index = 4, sym_thick = 4
+    ;iPlot, [0.05,0.05], [0,0], /polar, /over, color = black, sym_index = 4, sym_thick = 4
 
     ;   CMA diagram
 

@@ -9,6 +9,7 @@ pro dielectric, runData, stixVars, $
 
 
 	epsilon		= dcomplexArr ( 3, 3, runData.nR )
+    if keyword_set(epsilonHalf) then $
 	epsilon_	= dcomplexArr ( 3, 3, runData.nR-1 )
 
     if dielectric_freeSpace then begin
@@ -17,9 +18,11 @@ pro dielectric, runData, stixVars, $
         epsilon[1,1,*]  = complex ( 1, 0 )
         epsilon[2,2,*]  = complex ( 1, 0 )
 
+        if keyword_set(epsilonHalf) then begin
         epsilon_[0,0,*]  = complex ( 1, 0 )
         epsilon_[1,1,*]  = complex ( 1, 0 )
         epsilon_[2,2,*]  = complex ( 1, 0 )
+        endif
 
     endif else if dielectric_noPoloidal then begin
 
@@ -29,11 +32,13 @@ pro dielectric, runData, stixVars, $
 	    epsilon[2,0,*]	= II * stixVars.stixD
 	    epsilon[2,2,*]	= stixVars.stixS
 
+        if keyword_set(epsilonHalf) then begin
 	    epsilon_[0,0,*]	= stixVars.stixS_
 	    epsilon_[0,2,*]	= -II * stixVars.stixD_
 	    epsilon_[1,1,*]	= stixVars.stixP_
 	    epsilon_[2,0,*]	= II * stixVars.stixD_
 	    epsilon_[2,2,*]	= stixVars.stixS_
+        endif
 
 		;epsilonNoPol	= epsilon
 		;epsilonNoPol_	= epsilon_
@@ -45,14 +50,18 @@ pro dielectric, runData, stixVars, $
 		bUnit_cyl	= [ [ runData.bField[*,0] / runData.bMag ], $	
 						[ runData.bField[*,1] / runData.bMag ], $
 						[ runData.bField[*,2] / runData.bMag ] ]
+
+        if keyword_set(epsilonHalf) then begin
 		bUnit_cyl_	= [ [ runData.bField_[*,0] / runData.bMag_ ], $	
 						[ runData.bField_[*,1] / runData.bMag_ ], $
 						[ runData.bField_[*,2] / runData.bMag_ ] ]
+        endif
 	
 		;	rotate to cartesian
 	
 		phi	= 0d0
 		bUnit_car	= dblArr ( runData.nR, 3 )
+        if keyword_set(epsilonHalf) then $
 		bUnit_car_	= dblArr ( runData.nR-1, 3 )
 	
 		for i = 0L, runData.nR - 1L do begin
@@ -82,7 +91,8 @@ pro dielectric, runData, stixVars, $
 			epsilon[*,*,i]	= rotateEpsilon ( epsilon_stix, bUnit_car[i,*] )
 	
 			;	same for 1/2 grid
-	
+
+            if keyword_set(epsilonHalf) then begin    
 			if i lt runData.nR - 1 then begin
 	
 				bUnit_car_[i,*]	= bUnit_cyl_[i,*]	
@@ -95,6 +105,7 @@ pro dielectric, runData, stixVars, $
 	
 	
 			endif
+            endif
 		
 		endfor
 

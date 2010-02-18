@@ -1,3 +1,9 @@
+common dlg_colors, ct12, $
+	red, $
+	blue, $
+	green, $
+	purple
+
 
 loadct, 12, /sil, rgb_table = ct12
 
