@@ -2,13 +2,55 @@ pro k_vs_th
 
     @constants
 
-    ionSpecZ    = [ 2 ]
-    ionSpecAmu  = [ 4 ]
+    ionSpecZ    = [ 1 ]
+    ionSpecAmu  = [ 2 ]
 
     nIonSpec	= n_elements ( ionSpecZ )
 
-    nMax     = [ 5.7e18 ]
-    bMag   = 0.53
+	r   	= 1.6
+    z       = 0.0
+	
+    nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'
+	eqdsk	= readgeqdsk ( nstx_eqdsk )
+	
+	bR  = interpolate ( eqdsk.bR, $
+			( r - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
+        ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
+		cubic = -0.5 )
+    bPhi  = interpolate ( eqdsk.bPhi, $
+			( r - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
+        ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
+		cubic = -0.5 )
+    bz  = interpolate ( eqdsk.bz, $
+			( r - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
+        ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
+		cubic = -0.5 )
+
+    r0  = 1.0
+    b0  = 0.53
+    bPhi    = b0 / r * r0
+    bR  = 0.1 * bPhi
+    bz  = 0.1 * bPhi
+ 
+    bMag    = sqrt ( bR^2 + bPhi^2 + bz^2 )
+
+    nstx_profile	= '../profiles/dlg_profiles_x1.00.nc' 
+	cdfId = ncdf_open ( nstx_profile, /noWrite ) 
+    ncdf_varGet, cdfId, 'ne', xMap_ne
+    ncdf_varGet, cdfId, 'r2d', xMap_R2D
+    ncdf_varGet, cdfId, 'z2d', xMap_z2D
+    nCdf_close, cdfId
+         
+    nX  = n_elements ( xMap_R2D[*,0] )
+    nY  = n_elements ( xMap_R2D[0,*] )
+
+	ne_  = interpolate ( xMap_ne, $
+			( r - min(xMap_R2d) ) / (max(xMap_R2d)-min(xMap_R2d)) * (nX-1.0), $
+        ( z - min ( xMap_z2d ) ) / (max(xMap_z2d)-min(xMap_z2d)) * (nY-1.0), $
+		cubic = -0.5 )
+
+    nMax    = [ ne_ / ionSpecZ[0] ]
+    nMax    = 2d18
 
     create_specData, ionSpecZ, ionSpecAmu, nMax, bMag, $
         specData = specData 
@@ -22,7 +64,7 @@ pro k_vs_th
 
     sTh = 0.0
     eTh = 360.0 
-    nTheta  = 360 
+    nTheta  = 3600 
     dTh = (eTh-sTh)/(nTheta-1)
     thetaArr   = sTh + fIndGen ( nTheta ) * dTh
 
@@ -111,10 +153,13 @@ pro k_vs_th
 
     @load_colors
 
-    iPlot, real_part(u1[iiNSTX,*]), thetaArr*!dtor, /polar, color = red, /iso
+    iPlot, real_part(u1[iiNSTX,*]), thetaArr*!dtor, /polar, color = red
     iPlot, imaginary(u1[iiNSTX,*]), thetaArr*!dtor, /polar, /over, color = red, lineStyle = 2
     iPlot, real_part(u2[iiNSTX,*]), thetaArr*!dtor, /polar, /over, color = blue
     iPlot, imaginary(u2[iiNSTX,*]), thetaArr*!dtor, /polar, /over, color = blue, lineStyle = 2
+
+    save, u1, u2, iinstx, thetaarr, file = 'u1u2.sav'
+    
     ;iPlot, [0.05,0.05], [0,0], /polar, /over, color = black, sym_index = 4, sym_thick = 4
 
     ;   CMA diagram

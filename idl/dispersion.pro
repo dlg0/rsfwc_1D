@@ -96,6 +96,8 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 ;	Generalised dispersion analysis
 
 	kR__	= complexArr ( runData.nR, 4 )
+	kPhi	= runData.nPhi / runData.r
+
 	;print, 'Running generalised dispersion calculation ...'
 	for i=0L,runData.nR-1L do begin
 		
@@ -153,10 +155,11 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 
 	if plotDispersionGeneral then begin
 
+        nonLinearSF = 1.0
 		kRPlot	= real_part ( kR__ )
 		iiNeg	= where ( kRPlot lt 0 )
 		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg] 
-		kRPlot	= ( kRPlot )^(1d0/4d0)
+		kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
 		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
 
 		iPlot, runData.r, kRPlot[*,0], sym_index = 4, lineStyle = 6, $
@@ -170,7 +173,7 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 		kRPlot	= imaginary ( kR__ )
 		iiNeg	= where ( kRPlot lt 0 )
 		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg] 
-		kRPlot	= ( kRPlot )^(1d0/4d0)
+		kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
 		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
 
 		iPlot, runData.r, kRPlot[*,0], $

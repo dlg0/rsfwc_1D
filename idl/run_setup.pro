@@ -31,18 +31,18 @@ pro run_setup, $
  	dielectric_freeSpace = 0
  	dielectric_noPoloidal = 0
  	dispersion_freeSpace = 0
- 	dispersion_jaegerPRL = 0
+ 	dispersion_jaegerPRL = 1
 	dispersion_generalised = 1
  	
  	bandStorage = 1
 
 ;	Plotting switches
 
- 	plotRunData	= 0
- 	plotDispersionGeneral 	= 0
- 	plotDispersionJaeger	= 0
+ 	plotRunData	= 1
+ 	plotDispersionGeneral 	= 1
+ 	plotDispersionJaeger	= 1
  	plotDispersionNoPol		= 0
-	plotSolution = 0
+	plotSolution = 1
 	plotMovie	= 0
 	plotFrequencies = 0
 
@@ -56,24 +56,24 @@ pro run_setup, $
 	r0	= 1.0d0
 	aWall	= 0.22 
 
-	rMin	= 1.15;0.5;1.08;r0 - aWall*0.99
-	rMax	= 1.2;1.7;1.14;r0 + aWall*0.99
-   	b0	= 0.55d0
-	bR_frac	= 0.0
+	rMin	= 0.2;0.5;1.08;r0 - aWall*0.99
+	rMax	= 1.8;1.7;1.14;r0 + aWall*0.99
+   	b0	= 0.525718819
+	bR_frac	= 0.1
 	bz_frac	= 0.0	
-	ionSpecZ	= [ 2 ]
-	ionSpecAmu	= [ 4 ]
-	if not keyword_set ( nMax ) then nMax = [ 0.3 ] * 1d18
+	ionSpecZ	= [ 1 ]
+	ionSpecAmu	= [ 2 ]
+	if not keyword_set ( nMax ) then nMax = [ 2.0 ] * 1d18
 	if not keyword_set ( nFac ) then nFac = 1.0 
 	damping = 0.06
 	if not keyword_set ( freq ) then freq = 30.0e6
-	if not keyword_set ( nPhi ) then nPhi = 0.0;-13.0;-22.0
-	if not keyword_set ( in_kz ) then kz = 00.0 else kz = in_kz;51.5;63.6 
-	nR	= 8L
+	if not keyword_set ( nPhi ) then nPhi = 13.0;-22.0
+	if not keyword_set ( in_kz ) then kz = 20.0 else kz = in_kz;51.5;63.6 
+	nR	= 512L
 	antLoc	= 1.6
 
-	useEqdsk = 1
-	useProfiles = 1
+	useEqdsk = 0
+	useProfiles = 0
 	if not keyword_set ( poloidalScale ) then poloidalScale = 1.0
 	zSlice	= 1.0 
 	sliceSlope = 0.0
@@ -113,7 +113,7 @@ pro run_setup, $
 			nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'
 			eqdsk	= readgeqdsk ( nstx_eqdsk )
 			
-		
+
 			bR  = interpolate ( eqdsk.bR, $
 					( r - eqdsk.rleft ) / eqdsk.rdim * (eqdsk.nW-1.0), $
     		    ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
