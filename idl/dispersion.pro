@@ -95,7 +95,7 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 
 ;	Generalised dispersion analysis
 
-	kR__	= complexArr ( runData.nR, 4 )
+	kR__	= dcomplexArr ( runData.nR, 4 )
 	kPhi	= runData.nPhi / runData.r
 
 	;print, 'Running generalised dispersion calculation ...'

@@ -7,10 +7,10 @@ pro k_vs_k
     dispersion_generalised = 1
     dispersion_noPoloidal = 0
 
-    ionSpecZ    = [ 1 ]
-    ionSpecAmu  = [ 2 ]
+    ionSpecZ    = [ 1.0 ]
+    ionSpecAmu  = [ 2.0 ]
 
-    r   	= 1.6
+    r   	= 1.3
     z       = 0.0
 	freq	= 30d6 
     wReal   = 2.0 * !pi * freq
@@ -35,9 +35,8 @@ pro k_vs_k
     b0  = 0.53
     bPhi    = b0 / r * r0
     bR  = 0.1 * bPhi
-    bz  = 0.1 * bPhi
+    bz  = 0.0 * bPhi
 
-    print, bz
     bMag    = sqrt ( bR^2 + bPhi^2 + bz^2 )
 
     nstx_profile	= '../profiles/dlg_profiles_x1.00.nc' 
@@ -69,21 +68,21 @@ pro k_vs_k
 				nR : 1, $
 				r : r, $
                 kz : 0.0, $
-				nPhi : 0 }
+				nPhi : 0.0 }
 
     dielectric, runData, stixVars, $
 	    epsilonFull = epsilon, /noHalfGrid
 
-    n_nPhi  = 2 
-    s_nPhi  = 13.0
-    e_nPhi  = 13.0
+    n_nPhi  = 2.0 
+    s_nPhi  = 0.0
+    e_nPhi  = 0.0
     d_nPhi  = ( e_nPhi - s_nPhi ) / n_nPhi 
     nPhi    = fIndGen ( n_nPhi ) * d_nPhi + s_nPhi
 	;nPhi	= 10d0^(fIndGen(n_nPhi)/(n_nPhi-1)*10-9)
 
     n_kz  = 2 
-    s_kz  =  10.0
-    e_kz  =  10.0
+    s_kz  =  0.0
+    e_kz  =  0.0
     d_kz  = ( e_kz - s_kz ) / n_kz
     kz    = fIndGen ( n_kz ) * d_kz + s_kz
 
@@ -123,36 +122,48 @@ pro k_vs_k
 	        kDotB	= ( real_part(kRAll[i,j,*]) * bR + kPhiAll[i,j,*] * bPhi + kz[j] * bz )
 	        theta_re[i,j,*]	= aCos ( kDotB / ( kMag_re[i,j,*] * bMag ) )
 
-            kMag_im[i,j,*]	= sqrt ( imaginary(kRAll[i,j,*])^2+kPhiAll[i,j,*]^2+kz[j]^2 )
+            kMag_im[i,j,*]	= sqrt( imaginary(kRAll[i,j,*])^2+kPhiAll[i,j,*]^2+kz[j]^2 )
 	        kDotB	= ( imaginary(kRAll[i,j,*]) * bR + kPhiAll[i,j,*] * bPhi + kz[j] * bz )
 	        theta_im[i,j,*]	= aCos ( kDotB / ( kMag_im[i,j,*] * bMag ) )
 
             kMag[i,j,*]	= sqrt ( kRAll[i,j,*]^2+kPhiAll[i,j,*]^2+kz[j]^2 )
-            for mm=0,3 do begin
-                thisKRSgn   = real_part(kRAll[i,j,mm]) / abs(real_part(kRAll[i,j,mm]))
-                thisKR  = sqrt(real_part(kRAll[i,j,mm]^2))*thisKRSgn
-	            kDotB	= transpose ( [ thisKR, kPhiAll[i,j,mm], kz[j] ] ) # [ bR, bPhi, bz ]
-	            theta[i,j,mm]	= aCos ( kDotB / ( real_part(kMag[i,j,mm]) * bMag ) )
-            endfor
+            kDotB	= ( (kRAll[i,j,*]) * bR + kPhiAll[i,j,*] * bPhi + kz[j] * bz )
+            theta[i,j,*]	= aCos ( kDotB / ( kMag[i,j,*] * bMag ) )
 
             close, /all
 
         endfor
 	endfor
-
+   
     restore, 'u1u2.sav'
     magRange  = max ( abs ( [u1[iiNSTX,*], u2[iiNSTX,*] ] ) )
-    xRange  = [-magRange, magRange]*1.2
+    xRange  = [-magRange, magRange]*1.0
     yRange  = xRange
+    device, decomposed = 0
+    loadct, 12
+    !p.background = 255
     window, 0, xSize = 800, ySize = 800
-    Plot, real_part(u1[iiNSTX,*]), thetaArr*!dtor, /polar, /iso, xRange = xRange, yRange = yRange, xStyl = 1, yStyle=1
-    oPlot, imaginary(u1[iiNSTX,*]), thetaArr*!dtor, /polar, lineStyle = 2
-    oPlot, real_part(u2[iiNSTX,*]), thetaArr*!dtor, /polar
-    oPlot, imaginary(u2[iiNSTX,*]), thetaArr*!dtor, /polar, lineStyle = 2
-    
-    oplot, 1/kMag, theta, /polar, psym = 4, symSize = 2
-    oPlot, 1/kMag_re, real_part(theta_re), /polar, psym = 5
-    oPlot, 1/kMag_im, real_part(theta_im), /polar, psym = 6
+    plot, real_part(u1[iiNSTX,*]), thetaArr*!dtor, $
+            /polar, /iso, xRange = xRange, yRange = yRange, xStyl = 1, yStyle=1, color = 0
+    oPlot, imaginary(u1[iiNSTX,*]), thetaArr*!dtor, /polar, lineStyle = 2, color = 0
+    oPlot, real_part(u2[iiNSTX,*]), thetaArr*!dtor, /polar, color = 0
+    oPlot, imaginary(u2[iiNSTX,*]), thetaArr*!dtor, /polar, lineStyle = 2, color = 0
+   
+    oplot, real_part(1/kMag), theta, /polar, psym = 4, symSize = 1, color = 12*16-1, thick = 3
+    oplot, imaginary(1/kMag), (theta), /polar, psym = 6, symSize = 1, color = 12*16-1, thick = 3
+    oPlot, 1/kMag_re, real_part(theta_re), /polar, psym = 5, color = 8*16-1, thick = 2
+    oPlot, 1/kMag_im, real_part(theta_im), /polar, psym = 6, color = 3*16-1, thick = 2
+
+    ;   Calculate the nPhi/kz enforcement surface
+
+    kRScan  = (fIndGen(1001)/1000-0.5)*2000
+    kMagScan    = sqrt(kRScan^2+(s_nPhi/r)^2+s_kz^2)
+    kDotB   = kRScan * bR + (s_nPhi/r) * bPhi + s_kz * bz
+    thetaScan   = aCos ( kDotB / ( kMagScan * bMag ) )
+    kPerScan    = sqrt(kMagScan^2-(kDotB/bMag)^2)
+
+    oPlot, 1/kMagScan, thetaScan, /polar, color = 0, lineStyle = 1
+    oPlot, 1/kMagScan, -thetaScan, /polar, color = 0, lineStyle = 1
 
     ;window, 1, xSize = 600, ySize = 600
     ;plot, 1/imaginary(kMag[*,*,0]), (theta2[*,*,0]), psym =4, /polar, /iso, xRange = xRange, yRange = yRange

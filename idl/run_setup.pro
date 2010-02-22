@@ -31,18 +31,18 @@ pro run_setup, $
  	dielectric_freeSpace = 0
  	dielectric_noPoloidal = 0
  	dispersion_freeSpace = 0
- 	dispersion_jaegerPRL = 1
+ 	dispersion_jaegerPRL = 0
 	dispersion_generalised = 1
  	
  	bandStorage = 1
 
 ;	Plotting switches
 
- 	plotRunData	= 1
+ 	plotRunData	= 0
  	plotDispersionGeneral 	= 1
- 	plotDispersionJaeger	= 1
+ 	plotDispersionJaeger	= 0
  	plotDispersionNoPol		= 0
-	plotSolution = 1
+	plotSolution = 0
 	plotMovie	= 0
 	plotFrequencies = 0
 
@@ -58,7 +58,7 @@ pro run_setup, $
 
 	rMin	= 0.2;0.5;1.08;r0 - aWall*0.99
 	rMax	= 1.8;1.7;1.14;r0 + aWall*0.99
-   	b0	= 0.525718819
+   	b0	= 0.53
 	bR_frac	= 0.1
 	bz_frac	= 0.0	
 	ionSpecZ	= [ 1 ]
@@ -68,7 +68,7 @@ pro run_setup, $
 	damping = 0.06
 	if not keyword_set ( freq ) then freq = 30.0e6
 	if not keyword_set ( nPhi ) then nPhi = 13.0;-22.0
-	if not keyword_set ( in_kz ) then kz = 20.0 else kz = in_kz;51.5;63.6 
+	if not keyword_set ( in_kz ) then kz = 10.0 else kz = in_kz;51.5;63.6 
 	nR	= 512L
 	antLoc	= 1.6
 
