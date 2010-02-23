@@ -26,6 +26,8 @@ function readGeqdsk, fileName, $
 	bFactor = bFactor, $
 	bPolFactor = bPolFactor
 
+    @constants
+
 ;   Read in data from g-eqdsk file
 
 openr, lun, fileName, /get_lun
@@ -157,6 +159,23 @@ bMag    = sqrt ( bR^2 + bPhi^2 + bz^2 )
 buR = bR / bMag
 buPhi   = bPhi / bMag
 buZ = bZ / bMag
+
+
+pPrime_spline   = spl_init ( fluxGrid, pPrime )
+fPrime_spline   = spl_init ( fluxGrid, ffprim )
+
+pPrime_Rz   = reform ( spl_interp ( fluxGrid, pPrime, pPrime_spline, psizr[*] ), nW, nH )
+fPrime_Rz   = reform ( spl_interp ( fluxGrid, ffprim, fPrime_spline, psizr[*] ), nW, nH )
+
+R2D = rebin ( R, nW, nH )
+z2D = transpose ( rebin ( z, nH, nW ) )
+
+JT_Rz   = R2D * pPrime_Rz + fPrime_Rz / R2D / u0
+
+iiAxis = where ( abs ( R2d - rmaxis ) eq min ( abs ( R2d - rmaxis ) ) $
+        and abs ( z2d - zmaxis ) eq min ( abs ( z2d - zmaxis ) ) )
+
+JT_axis = JT_Rz[iiAxis]
 
 ;   Find points inside the boundary
 
@@ -475,7 +494,8 @@ endif else begin
 	            APhi : APhi, $
 	            buR : buR, $
 	            buPhi : buPhi, $
-	            buZ : buZ }
+	            buZ : buZ, $
+                Jt_axis : Jt_axis }
 
 endelse
 

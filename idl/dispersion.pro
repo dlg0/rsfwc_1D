@@ -157,10 +157,10 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 
         nonLinearSF = 1.0
 		kRPlot	= real_part ( kR__ )
-		iiNeg	= where ( kRPlot lt 0 )
-		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg] 
+		iiNeg	= where ( kRPlot lt 0, iiNegCnt )
+		if iiNegCnt gt 0 then kRPlot[iiNeg] = -1.0 * kRPlot[iiNeg] 
 		kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
-		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
+		if iiNegCnt gt 0 then kRPlot[iiNeg] = -1.0 * kRPlot[iiNeg]
 
 		iPlot, runData.r, kRPlot[*,0], sym_index = 4, lineStyle = 6, $
 			view_grid = [2,1], color = blue, $

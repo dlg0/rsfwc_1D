@@ -50,32 +50,33 @@ pro run_setup, $
 
 	writeDispersionTxt = 0
 
-;		----------------------------
+
 ;	Variables
+;	----------------------------
 
 	r0	= 1.0d0
 	aWall	= 0.22 
 
-	rMin	= 0.2;0.5;1.08;r0 - aWall*0.99
-	rMax	= 1.8;1.7;1.14;r0 + aWall*0.99
+	rMin	= 0.7;0.5;1.08;r0 - aWall*0.99
+	rMax	= 1.3;1.7;1.14;r0 + aWall*0.99
    	b0	= 0.53
 	bR_frac	= 0.1
 	bz_frac	= 0.0	
-	ionSpecZ	= [ 1 ]
-	ionSpecAmu	= [ 2 ]
+	ionSpecZ	= [ 2 ]
+	ionSpecAmu	= [ 4 ]
 	if not keyword_set ( nMax ) then nMax = [ 2.0 ] * 1d18
 	if not keyword_set ( nFac ) then nFac = 1.0 
 	damping = 0.06
 	if not keyword_set ( freq ) then freq = 30.0e6
-	if not keyword_set ( nPhi ) then nPhi = 13.0;-22.0
-	if not keyword_set ( in_kz ) then kz = 10.0 else kz = in_kz;51.5;63.6 
+	if not keyword_set ( nPhi ) then nPhi = -5.0;-22.0
+	if not keyword_set ( in_kz ) then kz = 0.0 else kz = in_kz;51.5;63.6 
 	nR	= 512L
 	antLoc	= 1.6
 
-	useEqdsk = 0
-	useProfiles = 0
+	useEqdsk = 1
+	useProfiles = 1
 	if not keyword_set ( poloidalScale ) then poloidalScale = 1.0
-	zSlice	= 1.0 
+	zSlice	= 1.06 
 	sliceSlope = 0.0
 	profile1 = 0
 

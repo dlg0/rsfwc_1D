@@ -2,13 +2,13 @@ pro k_vs_th
 
     @constants
 
-    ionSpecZ    = [ 1 ]
-    ionSpecAmu  = [ 2 ]
+    ionSpecZ    = [ 2 ]
+    ionSpecAmu  = [ 4 ]
 
     nIonSpec	= n_elements ( ionSpecZ )
 
-	r   	= 1.3
-    z       = 0.0
+	r   	= 0.95
+    z       = 1.06
 	
     nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'
 	eqdsk	= readgeqdsk ( nstx_eqdsk )
@@ -26,11 +26,11 @@ pro k_vs_th
         ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
 		cubic = -0.5 )
 
-    r0  = 1.0
-    b0  = 0.53
-    bPhi    = b0 / r * r0
-    bR  = 0.1 * bPhi
-    bz  = 0.0 * bPhi
+    ;r0  = 1.0
+    ;b0  = 0.53
+    ;bPhi    = b0 / r * r0
+    ;bR  = 0.1 * bPhi
+    ;bz  = 0.0 * bPhi
  
     bMag    = sqrt ( bR^2 + bPhi^2 + bz^2 )
 
@@ -50,7 +50,7 @@ pro k_vs_th
 		cubic = -0.5 )
 
     nMax    = [ ne_ / ionSpecZ[0] ]
-    nMax    = 2d18
+    ;nMax    = 2d18
 
     create_specData, ionSpecZ, ionSpecAmu, nMax, bMag, $
         specData = specData 
