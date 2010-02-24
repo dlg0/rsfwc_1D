@@ -123,7 +123,8 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 										* ( c^2 * kPhi[i]^2 - wReal^2 * epsilon[2,2,i] ) ) )
 		k0	= wReal^2/c^6 * ( c^4 * kPhi[i]^4 * epsilon[1,1,i] $
 							+ c^4 * runData.kz * kPhi[i]^3 * ( epsilon[1,2,i] + epsilon[2,1,i] ) $
-							+ c^2 * runData.kz * kPhi[i] * ( c^2 * runData.kz^2 * ( epsilon[1,2,i] + epsilon[2,1,i] ) $
+							+ c^2 * runData.kz * kPhi[i] $
+                                * ( c^2 * runData.kz^2 * ( epsilon[1,2,i] + epsilon[2,1,i] ) $
 									+ wReal^2 * ( epsilon[0,2,i] * epsilon[1,0,i] $
 													+ epsilon[0,1,i] * epsilon[2,0,i] $
 													- epsilon[0,0,i] * $
@@ -146,6 +147,7 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 											- epsilon[1,1,i] * $
 												( epsilon[0,0,i] + epsilon[2,2,i] ) ) ) ) 
 
+        print, k0, k1, k2, k3, k4
 		c_	= [ k0, k1, k2, k3, k4 ]
 		kR__[i,*]	= imsl_zeroPoly ( c_, /double, /jenkins ) 
 

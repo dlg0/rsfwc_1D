@@ -7,11 +7,11 @@ pro k_vs_k
     dispersion_generalised = 1
     dispersion_noPoloidal = 0
 
-    ionSpecZ    = [ 2.0 ]
-    ionSpecAmu  = [ 4.0 ]
+    ionSpecZ    = [ 1.0 ]
+    ionSpecAmu  = [ 2.0 ]
 
-    r   	= 0.95
-    z       = 1.06
+    r   	= 1.00
+    z       = 0.00
 	freq	= 30d6 
     wReal   = 2.0 * !pi * freq
 
@@ -31,11 +31,11 @@ pro k_vs_k
         ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
 		cubic = -0.5 )
 
-    ;r0  = 1.0
-    ;b0  = 0.53
-    ;bPhi    = b0 / r * r0
-    ;bR  = 0.1 * bPhi
-    ;bz  = 0.0 * bPhi
+    r0  = 1.0
+    b0  = 0.53
+    bPhi    = b0 / r * r0
+    bR  = 0.5 * bPhi
+    bz  = 0.5 * bPhi
 
     bMag    = sqrt ( bR^2 + bPhi^2 + bz^2 )
 
@@ -55,7 +55,7 @@ pro k_vs_k
 		cubic = -0.5 )
 
     nMax    = [ ne_ / ionSpecZ[0] ]
-    ;nMax    = 2.0d18
+    nMax    = 2.0d18
 
     create_specData, ionSpecZ, ionSpecAmu, nMax, bMag, $
         specData = specData 
@@ -74,8 +74,8 @@ pro k_vs_k
 	    epsilonFull = epsilon, /noHalfGrid
 
     n_nPhi  = 2.0 
-    s_nPhi  = -5.0
-    e_nPhi  = -5.0
+    s_nPhi  = 0.0
+    e_nPhi  = 0.0
     d_nPhi  = ( e_nPhi - s_nPhi ) / n_nPhi 
     nPhi    = fIndGen ( n_nPhi ) * d_nPhi + s_nPhi
 	;nPhi	= 10d0^(fIndGen(n_nPhi)/(n_nPhi-1)*10-9)
@@ -181,7 +181,9 @@ pro k_vs_k
     !p.background = 255
     window, 0, xSize = 800, ySize = 800
     plot, real_part(u1[iiNSTX,*]), thetaArr*!dtor, $
-            /polar, /iso, xRange = xRange, yRange = yRange, xStyl = 1, yStyle=1, color = 0
+            /polar, /iso, xRange = xRange, yRange = yRange, $
+            xStyl = 1, yStyle=1, color = 0, $
+            xTickLen = 1, yTickLen = 1, xTickInterval = 0.02, yTickInterval=0.02
     oPlot, imaginary(u1[iiNSTX,*]), thetaArr*!dtor, /polar, lineStyle = 2, color = 0
     oPlot, real_part(u2[iiNSTX,*]), thetaArr*!dtor, /polar, color = 0
     oPlot, imaginary(u2[iiNSTX,*]), thetaArr*!dtor, /polar, lineStyle = 2, color = 0

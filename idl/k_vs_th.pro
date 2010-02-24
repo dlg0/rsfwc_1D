@@ -2,13 +2,13 @@ pro k_vs_th
 
     @constants
 
-    ionSpecZ    = [ 2 ]
-    ionSpecAmu  = [ 4 ]
+    ionSpecZ    = [ 1.0 ]
+    ionSpecAmu  = [ 2.0 ]
 
     nIonSpec	= n_elements ( ionSpecZ )
 
-	r   	= 0.95
-    z       = 1.06
+	r   	= 1.0
+    z       = 0.00
 	
     nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'
 	eqdsk	= readgeqdsk ( nstx_eqdsk )
@@ -26,11 +26,11 @@ pro k_vs_th
         ( z - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
 		cubic = -0.5 )
 
-    ;r0  = 1.0
-    ;b0  = 0.53
-    ;bPhi    = b0 / r * r0
-    ;bR  = 0.1 * bPhi
-    ;bz  = 0.0 * bPhi
+    r0  = 1.0
+    b0  = 0.53
+    bPhi    = b0 / r * r0
+    bR  = 0.5 * bPhi
+    bz  = 0.5 * bPhi
  
     bMag    = sqrt ( bR^2 + bPhi^2 + bz^2 )
 
@@ -50,7 +50,7 @@ pro k_vs_th
 		cubic = -0.5 )
 
     nMax    = [ ne_ / ionSpecZ[0] ]
-    ;nMax    = 2d18
+    nMax    = 2d18
 
     create_specData, ionSpecZ, ionSpecAmu, nMax, bMag, $
         specData = specData 
@@ -82,7 +82,8 @@ pro k_vs_th
 
         for i = 0, nTheta-1 do begin
 
-            AA   = stixVars.stixS * sin ( thetaArr[i] * !dtor )^2 + stixVars.stixP * cos ( thetaArr[i] * !dtor )^2
+            AA   = stixVars.stixS * sin ( thetaArr[i] * !dtor )^2 $
+                    + stixVars.stixP * cos ( thetaArr[i] * !dtor )^2
             BB   = stixVars.stixR * stixVars.stixL * sin ( thetaArr[i] * !dtor )^2 $
                     + stixVars.stixP * stixVars.stixS * ( 1d0 + cos ( thetaArr[i]*!dtor )^2 )
             CC   = stixVars.stixP * stixVars.stixR * stixVars.stixL
@@ -108,7 +109,6 @@ pro k_vs_th
     u1  = 1.0 / sqrt(kSq1); * wReal / c
     u2  = 1.0 / sqrt(kSq2); * wReal / c
 
-   
     ;loadct, 13, file = 'davect.tbl', /sil, rgb_table = ct1
     ;cSF = 253.0/(nTheta/4)    
     ;device, decomposed = 0
@@ -159,7 +159,7 @@ pro k_vs_th
     iPlot, imaginary(u2[iiNSTX,*]), thetaArr*!dtor, /polar, /over, color = blue, lineStyle = 2
 
     save, u1, u2, iinstx, thetaarr, file = 'u1u2.sav'
-    
+  stop 
     ;iPlot, [0.05,0.05], [0,0], /polar, /over, color = black, sym_index = 4, sym_thick = 4
 
     ;   CMA diagram
