@@ -10,8 +10,8 @@ pro k_vs_k
     ionSpecZ    = [ 1.0 ]
     ionSpecAmu  = [ 2.0 ]
 
-    r   	= 1.00
-    z       = 0.00
+    r   	= 1.4
+    z       = -0.5
 	freq	= 30d6 
     wReal   = 2.0 * !pi * freq
 
@@ -34,8 +34,8 @@ pro k_vs_k
     r0  = 1.0
     b0  = 0.53
     bPhi    = b0 / r * r0
-    bR  = 0.5 * bPhi
-    bz  = 0.5 * bPhi
+    bR  = 0.1 * bPhi
+    bz  = 0.0 * bPhi
 
     bMag    = sqrt ( bR^2 + bPhi^2 + bz^2 )
 
@@ -74,8 +74,8 @@ pro k_vs_k
 	    epsilonFull = epsilon, /noHalfGrid
 
     n_nPhi  = 2.0 
-    s_nPhi  = 0.0
-    e_nPhi  = 0.0
+    s_nPhi  = 1.0
+    e_nPhi  = 1.0
     d_nPhi  = ( e_nPhi - s_nPhi ) / n_nPhi 
     nPhi    = fIndGen ( n_nPhi ) * d_nPhi + s_nPhi
 	;nPhi	= 10d0^(fIndGen(n_nPhi)/(n_nPhi-1)*10-9)
@@ -99,8 +99,11 @@ pro k_vs_k
     kPar   = complexArr ( n_nPhi, n_kz, 4 )
     kPer   = complexArr ( n_nPhi, n_kz, 4 )
     kMag   = complexArr ( n_nPhi, n_kz, 4 )
+    kMag_   = complexArr ( n_nPhi, n_kz, 4 )
     theta   = complexArr ( n_nPhi, n_kz, 4 )
     thetaC   = complexArr ( n_nPhi, n_kz, 4 )
+    theta_   = complexArr ( n_nPhi, n_kz, 4 )
+
 
     kPhiAll = fltArr ( n_nPhi, n_kz, 4 )
     kzAll = fltArr ( n_nPhi, n_kz, 4 )
@@ -167,6 +170,11 @@ pro k_vs_k
  
             endfor
 
+            kMag_[i,j,*]	= sqrt( (kRAll[i,j,*])^2+kPhiAll[i,j,*]^2+kz[j]^2 )
+	        kDotB	= ( (kRAll[i,j,*]) * bR + kPhiAll[i,j,*] * bPhi + kz[j] * bz )
+	        theta_[i,j,*]	= aCos ( kDotB / ( kMag[i,j,*] * bMag ) )
+
+
             close, /all
 
         endfor
@@ -188,8 +196,8 @@ pro k_vs_k
     oPlot, real_part(u2[iiNSTX,*]), thetaArr*!dtor, /polar, color = 0
     oPlot, imaginary(u2[iiNSTX,*]), thetaArr*!dtor, /polar, lineStyle = 2, color = 0
    
-    oplot, real_part(1/kMag), theta, /polar, psym = 4, symSize = 1, color = 12*16-1, thick = 3
-    oplot, imaginary(1/kMag), imaginary(theta), /polar, psym = 6, symSize = 1, color = 12*16-1, thick = 3
+    oplot, real_part(1/kMag_), real_part(theta_), /polar, psym = 4, symSize = 1, color = 12*16-1, thick = 3
+    ;oplot, imaginary(1/kMag), imaginary(theta), /polar, psym = 6, symSize = 1, color = 12*16-1, thick = 3
     oPlot, 1/kMag_re, real_part(theta_re), /polar, psym = 5, color = 8*16-1, thick = 2
     oPlot, 1/kMag_im, real_part(theta_im), /polar, psym = 6, color = 3*16-1, thick = 2
 
@@ -203,6 +211,19 @@ pro k_vs_k
 
     oPlot, 1/kMagScan, thetaScan, /polar, color = 0, lineStyle = 1
     oPlot, 1/kMagScan, -thetaScan, /polar, color = 0, lineStyle = 1
+
+
+    ;;   Calculate the special kR values
+
+    ;kRScan  = real_part(krall)+imaginary(krall)
+    ;kMagScan    = sqrt(kRScan^2+(s_nPhi/r)^2+s_kz^2)
+    ;kDotB   = kRScan * bR + (s_nPhi/r) * bPhi + s_kz * bz
+    ;thetaScan   = aCos ( kDotB / ( kMagScan * bMag ) )
+    ;kPerScan    = sqrt(kMagScan^2-(kDotB/bMag)^2)
+
+    ;oPlot, 1/kMagScan, thetaScan, /polar, color = 0, psym = 5, thick = 2
+    ;oPlot, 1/kMagScan, -thetaScan, /polar, color = 0, psym = 5, thick = 2
+
 
     ;window, 1, xSize = 600, ySize = 600
     ;plot, 1/imaginary(kMag[*,*,0]), (theta2[*,*,0]), psym =4, /polar, /iso, xRange = xRange, yRange = yRange

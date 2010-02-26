@@ -7,8 +7,8 @@ pro k_vs_th
 
     nIonSpec	= n_elements ( ionSpecZ )
 
-	r   	= 1.0
-    z       = 0.00
+	r   	= 1.4
+    z       = -0.50
 	
     nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'
 	eqdsk	= readgeqdsk ( nstx_eqdsk )
@@ -29,8 +29,8 @@ pro k_vs_th
     r0  = 1.0
     b0  = 0.53
     bPhi    = b0 / r * r0
-    bR  = 0.5 * bPhi
-    bz  = 0.5 * bPhi
+    bR  = 0.1 * bPhi
+    bz  = 0.0 * bPhi
  
     bMag    = sqrt ( bR^2 + bPhi^2 + bz^2 )
 

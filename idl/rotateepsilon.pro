@@ -42,7 +42,8 @@ function rotateEpsilon, epsilonIn, bUnit_car
 ;	;	sign.
 ;
 
-    ;   Try a different rotation approach
+;   Try a different rotation approach
+;   ---------------------------------
 
     ;   get vector perp to both z axis and b
 
@@ -59,11 +60,6 @@ function rotateEpsilon, epsilonIn, bUnit_car
     checkTh = aCos ( perpDotB / ( perpMag * bUnitMag ) ) * !radeg
 
     perpUnit    = perp / perpMag
-    @load_colors
-    iPlot, [0,bUnit_car[0]],[0,bUnit_car[1]],[0,bUnit_car[2]], $
-           thick = 4, color = blue, /iso
-    iPlot, [0,perp[0]],[0,perp[1]],[0,perp[2]], thick = 4, /over, color = green
-
 
     ;   get angle between z axis and b
 
@@ -85,7 +81,15 @@ function rotateEpsilon, epsilonIn, bUnit_car
     inv_rotQ    = transpose ( rotQ )
 
     testRot = rotQ ## zaxis
-    iPlot, [0,testRot[0]],[0,testRot[1]],[0,testRot[2]], thick = 4, /over
+
+    ;@load_colors
+    ;iPlot, [0,bUnit_car[0]],[0,bUnit_car[1]],[0,bUnit_car[2]], $
+    ;       thick = 4, color = blue, /iso
+    ;iPlot, [0,perp[0]],[0,perp[1]],[0,perp[2]], thick = 4, /over, color = green
+    ;iPlot, [0,testRot[0]],[0,testRot[1]],[0,testRot[2]], thick = 4, /over
+
+
+
 
 ;	testVec	= [ [ 0d0 ], [ 0d0 ], [ 1d0 ] ]
 ;	print, 'Test0', testVec[*]
