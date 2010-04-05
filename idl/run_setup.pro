@@ -86,7 +86,7 @@ pro run_setup, $
 
 ;	Benchmarking cases
 
-;	@smithe
+	@smithe
 
 
 ;		Grid
