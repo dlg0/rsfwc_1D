@@ -4,7 +4,7 @@
  	dielectric_freeSpace = 0
  	dielectric_noPoloidal = 0
  	dispersion_freeSpace = 0
- 	dispersion_jaegerPRL = 0
+ 	dispersion_jaegerPRL = 1
 	dispersion_generalised = 1
  	
  	bandStorage = 1
@@ -12,8 +12,8 @@
 ;	Plotting switches
 
  	plotRunData	= 0
- 	plotDispersionGeneral 	= 0
- 	plotDispersionJaeger	= 0
+ 	plotDispersionGeneral 	= 1
+ 	plotDispersionJaeger	= 1
  	plotDispersionNoPol		= 0
 	plotSolution = 1
 

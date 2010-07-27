@@ -79,7 +79,12 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 		for i = 0L, runData.nR - 1L do begin	
 	
 			c_	= [ c0[i], c1[i], c2[i], c3[i], c4[i] ]
-			kPerp__[i,*]	= imsl_zeroPoly ( c_, /double ) * wReal / c
+
+			if noIMSL then begin
+				kPerp__[i,*]	= fz_roots ( c_, /double ) * wReal / c
+			endif else begin
+				kPerp__[i,*]	= imsl_zeroPoly ( c_, /double ) * wReal / c
+			endelse
 
 		endfor
 
@@ -147,9 +152,14 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 											- epsilon[1,1,i] * $
 												( epsilon[0,0,i] + epsilon[2,2,i] ) ) ) ) 
 
-        print, k0, k1, k2, k3, k4
+        ;print, k0, k1, k2, k3, k4
 		c_	= [ k0, k1, k2, k3, k4 ]
-		kR__[i,*]	= imsl_zeroPoly ( c_, /double, /jenkins ) 
+
+		if noIMSL then begin
+			kR__[i,*]	= fz_roots ( c_, /double ) 
+		endif else begin
+			kR__[i,*]	= imsl_zeroPoly ( c_, /double, /jenkins ) 
+		endelse
 
 	endfor
 

@@ -5,7 +5,8 @@
 		dispersion_freeSpace, $
 		dispersion_jaegerPRL, $
         dispersion_noPoloidal, $
-		bandStorage	
+		bandStorage, $
+		noIMSL
 
 	common plotSwitches, $
 		plotDispersionGeneral, $
@@ -25,6 +26,7 @@
 		dispersion_jaegerPRL = 0
         dispersion_noPoloidal = 0
 		bandStorage	= 1
+		noIMSL = 1
 
 		plotDispersionGeneral = 0
 		plotDispersionJaeger = 0
