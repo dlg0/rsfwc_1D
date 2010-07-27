@@ -86,7 +86,8 @@ pro run_setup, $
 
 ;	Benchmarking cases
 
-	@smithe
+	;@smithe
+	@steffi
 
 
 ;		Grid
@@ -109,6 +110,27 @@ pro run_setup, $
 		bz		= dblArr ( nR ) + bPhi * bz_frac 
 		bz_		= dblArr ( nR-1 ) + bPhi * bz_frac 
 
+		if linearDevice then begin
+
+			rm = 0.3
+			rm0 = r0 - rm
+
+			bPhi = b0 / (r-rm0) * (r[0]-rm0)
+			bPhi_ = b0 / (r_-rm0) * (r[0]-rm0)
+
+			bPhi = bPhi + reverse(bPhi) 
+			bPhi_ = bPhi_ + reverse(bPhi_)
+
+			bPhi = bPhi / bPhi[0] * b0
+			bPhi_ = bPhi_ / bPhi[0] * b0
+
+			bR		= dblArr ( nR ) + bPhi * bR_frac 
+			bR_		= dblArr ( nR-1 ) + bPhi * bR_frac 
+			bz		= dblArr ( nR ) + bPhi * bz_frac 
+			bz_		= dblArr ( nR-1 ) + bPhi * bz_frac 
+
+		endif
+stop
 		if useEqdsk then begin
 
 			nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'

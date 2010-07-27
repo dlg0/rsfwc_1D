@@ -183,10 +183,10 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 
 		kRPlot_	= kRPlot
 		kRPlot	= imaginary ( kR__ )
-		iiNeg	= where ( kRPlot lt 0 )
-		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg] 
+		iiNeg	= where ( kRPlot lt 0, iiNegCnt )
+		if iiNegCnt gt 0 then kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg] 
 		kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
-		kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
+		if iiNegCnt gt 0 then kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
 
 		iPlot, runData.r, kRPlot[*,0], $
 			sym_index = 3, lineStyle = 6, /over, color = blue
@@ -198,19 +198,24 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 			sym_index = 3, lineStyle = 6, /over, color = purple
 	
 			range	= max ( abs( [kRPlot,kRPlot_] ) )
-			for i = 0, runData.nSpec - 1 do begin
+			for i = 0, runData.nSpec do begin
 				for harm = 1, 15 do begin
 	
-				iiRes	= where ( abs ( specData[i].wc*harm - wReal ) $
-							eq min ( abs ( specData[i].wc*harm - wReal ) ) )
+				iiRes	= where ( abs ( abs(specData[i].wc*harm) - wReal ) $
+							eq min ( abs ( abs(specData[i].wc*harm) - wReal ) ) )
+
+					for jj=0,n_elements(iiRes)-1 do begin	
+						if iiRes[jj] ne 0 and iiRes[jj] ne runData.nR-1 $
+						and iiRes[jj] ne runData.nR/2 $
+						and iiRes[jj] ne runData.nR/2-1 $
+						then begin
 	
-				if iiRes ne 0 and iiRes ne runData.nR-1 then begin
+							print, harm, 'th Cyclotron resonance found at ', runData.r[iiRes[jj]]
+							iPlot, [ runData.r[iiRes[jj]], runData.r[iiRes[jj]] ], [ -range, range ],$
+								thick = 6, trans = 80, /over
 	
-					print, 'Cyclotron resonance found'
-					iPlot, [ runData.r[iiRes], runData.r[iiRes] ], [ -range, range ],$
-						thick = 6, trans = 80, /over
-	
-				endif			
+						endif			
+					endfor
 				endfor
 			endfor
 
@@ -295,7 +300,7 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 
 	if  plotDispersionJaeger then begin
 
-		iPlot, runData.r, kPerp__[*,0], sym_index = 4, lineStyle = 6, yRange = [-500, 500]
+		iPlot, runData.r, kPerp__[*,0], sym_index = 4, lineStyle = 6;, yRange = [-500, 500]
 		iPlot, runData.r, kPerp__[*,1], sym_index = 4, lineStyle = 6, /over
 		iPlot, runData.r, kPerp__[*,2], sym_index = 4, lineStyle = 6, /over
 		iPlot, runData.r, kPerp__[*,3], sym_index = 4, lineStyle = 6, /over
