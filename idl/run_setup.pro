@@ -130,7 +130,7 @@ pro run_setup, $
 			bz_		= dblArr ( nR-1 ) + bPhi * bz_frac 
 
 		endif
-stop
+
 		if useEqdsk then begin
 
 			nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'
