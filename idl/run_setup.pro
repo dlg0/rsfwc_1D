@@ -65,6 +65,7 @@ pro run_setup, $
 	ionSpecZ	= [ 2 ]
 	ionSpecAmu	= [ 4 ]
 	if not keyword_set ( nMax ) then nMax = [ 2.0 ] * 1d18
+	if not keyword_set ( nLim ) then nLim = !NULL 
 	if not keyword_set ( nFac ) then nFac = 1.0 
 	damping = 0.06
 	if not keyword_set ( freq ) then freq = 30.0e6
@@ -86,8 +87,8 @@ pro run_setup, $
 
 ;	Benchmarking cases
 
-	;@smithe
-	@steffi
+	@smithe
+	;@steffi
 
 
 ;		Grid
@@ -220,11 +221,17 @@ pro run_setup, $
 			nProfile	= r * 0 + 1
 			nProfile_	= r_* 0 + 1
 
-			if profile1 then begin
+			if profile1 and i lt nSpec then begin
 
-				nProfile	= 1.0 - ( abs ( r - r0 ) / aWall )^2 
-				nProfile_	= 1.0 - ( abs ( r_ - r0 ) / aWall )^2
-	
+				;nProfile	= 1.0 - ( abs ( r - r0 ) / aWall )^2 
+				;nProfile_	= 1.0 - ( abs ( r_ - r0 ) / aWall )^2
+
+				if nLim ne !NULL then scaleFac = (nMax[i]-nLim[i])/aWall^2
+    			if nLim eq !NULL then scaleFac = (nMax[i])/aWall^2
+                    
+                nProfile  = ( nMax[i]-scaleFac*(r-r0)^2 )  / nMax[i]
+                nProfile_  = ( nMax[i]-scaleFac*(r_-r0)^2 )  / nMax[i]
+
 			endif
 
 			; ions

@@ -37,19 +37,19 @@
 		bz_frac	= 0.0	
 		ionSpecZ	= [ 1 ]
 		ionSpecAmu	= [ 1 ]
-		nMax		= [ 1.0 ] * 1d8
-		damping = 0.05
-		freq	= 28.0e9
+		nMax		= [ 1.0 ] * 1d18
+		damping = 0.00
+		freq	= 28.0d9
 		nPhi = 0.0
 		kz = 0.0
-		nR	= 256L
+		nR	= 1024L
 		antLoc	= 0.0 
 
 		useEqdsk = 0
 		useProfiles = 0
 		poloidalScale = 1.0
 		zSlice	= 0.0
-		profile1 = 1
+		profile1 = 0
 
 ;		-----------------------------
 

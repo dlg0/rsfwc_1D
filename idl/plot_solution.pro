@@ -20,10 +20,10 @@ pro plot_solution, antLoc, dR, nR, $
 			view_number = 1, $
             over = solution, $
             color = transpose ( ct12[8*16-1,*] )
-        iPlot, r1, abs ( e1 ), $
-			view_number = 1, $
-            over = solution, $
-            color = red
+        ;iPlot, r1, abs ( e1 ), $
+		;	view_number = 1, $
+        ;    over = solution, $
+        ;    color = red
 	
 		iPlot, [antLoc,antLoc], [-max(abs(e1)),max(abs(e1))], $
 			transparency = 80, $
@@ -43,11 +43,11 @@ pro plot_solution, antLoc, dR, nR, $
             over = solution, $
 			view_number = 2, $
             color = transpose ( ct12[8*16-1,*] )
-    	iPlot, r2, abs(e2), $
-            psym = -4, $
-            over = solution, $
-			view_number = 2, $
-            color = red 
+    	;iPlot, r2, abs(e2), $
+        ;    psym = -4, $
+        ;    over = solution, $
+		;	view_number = 2, $
+        ;    color = red 
 		iPlot, [antLoc,antLoc], [-max(abs(e2)),max(abs(e2))], $
 			transparency = 80, $
 			thick = 10, $
@@ -65,10 +65,10 @@ pro plot_solution, antLoc, dR, nR, $
             psym = -4, $
             over = solution, $
             color = transpose ( ct12[8*16-1,*] )
-    	iPlot, r3, abs(e3), $
-            psym = -4, $
-            over = solution, $
-            color = red 
+    	;iPlot, r3, abs(e3), $
+        ;    psym = -4, $
+        ;    over = solution, $
+        ;    color = red 
 		iPlot, [antLoc,antLoc], [-max(abs(e3)),max(abs(e3))], $
 			transparency = 80, $
 			thick = 10, $

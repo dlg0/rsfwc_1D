@@ -83,9 +83,16 @@ pro rsfwc_1d, $
 	if not keyword_set ( jPhi ) then jPhi = 0
 	if not keyword_set ( jz ) then jz = 1
 
-	rhs[iiAnt*3+2]	= -II * wReal * u0 * runData.dr * jz
-	rhs[iiAnt*3+1]	= -II * wReal * u0 * runData.dr * jPhi 
-	rhs[iiAnt*3]	= -II * wReal * u0 * runData.dr * jR 
+	antSigX = 0.1
+    jZ = exp ( -( (runData.r_-runData.antLoc)^2/antSigX^2 ) )
+	jR	= jZ * 0
+	jPhi = jZ * 0
+               
+   	for i=0,runData.nR-2 do begin
+		rhs[i*3+2]	= -II * wReal * u0 * jz[i]
+		rhs[i*3+1]	= -II * wReal * u0 * jPhi[i]
+		rhs[i*3]	= -II * wReal * u0 * jR[i]
+	endfor
 
 ;	Solve matrix
 
@@ -259,6 +266,30 @@ pro rsfwc_1d, $
 
 
 	endif
+
+
+	; Calculate plasma current
+	; ------------------------
+
+	identAll	= rebin ( identity(3),3,3,n_elements(epsilon) )
+	sigma	= (epsilon - identAll)*wReal*e0/II
+	jP	= sigma ## [[er],[ephifull],[ezfull]]
+
+	jP_r_total	= jP[*,0]
+	jP_t_total	= jP[*,1]
+	jP_z_total	= jP[*,2]
+
+	e_r	= eR
+	e_t	= ePhiFull
+	e_z	= eZFull
+
+	save, $
+		jP_r_total, jP_t_total, jP_z_total, $
+		e_r, e_t, e_z, $
+		fileName = 'solutionVals.sav'
+
+	stop
+
 
 	;	Write text file for comparison with GCC
 
