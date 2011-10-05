@@ -1,4 +1,4 @@
-pro dispersion, wReal, epsilon, stixVars, runData, specData, $
+pro dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 	kR = kR__, kPhi = kPhi, kz = kz__
 
 	common switches
@@ -174,12 +174,17 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 		kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
 		if iiNegCnt gt 0 then kRPlot[iiNeg] = -1.0 * kRPlot[iiNeg]
 
-		iPlot, runData.r, kRPlot[*,0], sym_index = 4, lineStyle = 6, $
-			view_grid = [2,1], color = blue, $
-			/strech_to_fit, /zoom_on_resize
-		iPlot, runData.r, kRPlot[*,1], sym_index = 4, lineStyle = 6, /over, color = green
-		iPlot, runData.r, kRPlot[*,2], sym_index = 4, lineStyle = 6, /over, color = red
-		iPlot, runData.r, kRPlot[*,3], sym_index = 4, lineStyle = 6, /over, color = purple
+		;iPlot, runData.r, kRPlot[*,0], sym_index = 4, lineStyle = 6, $
+		;	view_grid = [2,1], color = blue, $
+		;	/strech_to_fit, /zoom_on_resize
+		;iPlot, runData.r, kRPlot[*,1], sym_index = 4, lineStyle = 6, /over, color = green
+		;iPlot, runData.r, kRPlot[*,2], sym_index = 4, lineStyle = 6, /over, color = red
+		;iPlot, runData.r, kRPlot[*,3], sym_index = 4, lineStyle = 6, /over, color = purple
+
+		p1=plot(runData.r, kRPlot[*,0], thick = 2.0, color = blue, title='dispersion')
+		p2=plot(runData.r, kRPlot[*,1], thick = 2.0, /over, color = green)
+		p3=plot(runData.r, kRPlot[*,2], thick = 2.0, /over, color = red)
+		p4=plot(runData.r, kRPlot[*,3], thick = 2.0, /over, color = purple)
 
 		kRPlot_	= kRPlot
 		kRPlot	= imaginary ( kR__ )
@@ -188,14 +193,10 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 		kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
 		if iiNegCnt gt 0 then kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
 
-		iPlot, runData.r, kRPlot[*,0], $
-			sym_index = 3, lineStyle = 6, /over, color = blue
-		iPlot, runData.r, kRPlot[*,1], $
-			sym_index = 3, lineStyle = 6, /over, color = green
-		iPlot, runData.r, kRPlot[*,2], $
-			sym_index = 3, lineStyle = 6, /over, color = red
-		iPlot, runData.r, kRPlot[*,3], $
-			sym_index = 3, lineStyle = 6, /over, color = purple
+		p5=plot(runData.r, kRPlot[*,0], lineStyle = 5, /over, color = blue)
+		p6=plot(runData.r, kRPlot[*,1], lineStyle = 5, /over, color = green)
+		p7=plot(runData.r, kRPlot[*,2], lineStyle = 5, /over, color = red)
+		p8=plot(runData.r, kRPlot[*,3], lineStyle = 5, /over, color = purple)
 	
 			range	= max ( abs( [kRPlot,kRPlot_] ) )
 			for i = 0, runData.nSpec do begin
@@ -211,88 +212,80 @@ pro dispersion, wReal, epsilon, stixVars, runData, specData, $
 						then begin
 	
 							print, harm, 'th Cyclotron resonance found at ', runData.r[iiRes[jj]]
-							iPlot, [ runData.r[iiRes[jj]], runData.r[iiRes[jj]] ], [ -range, range ],$
-								thick = 6, trans = 80, /over
+							p9=plot( [ runData.r[iiRes[jj]], runData.r[iiRes[jj]] ], [ -range, range ],$
+								thick = 6, trans = 80, /over )
 	
 						endif			
 					endfor
 				endfor
 			endfor
 
-		
-		kMag1	= sqrt ( real_part ( kR__[*,0])^2 + kPhi^2 + kz__^2 )
-		kDotB1	= real_part(kR__[*,0]) * runData.bField[*,0] $
-					+ kPhi * runData.bField[*,1] $
-					+ kz__ * runData.bField[*,2]
-		theta1	= aCos ( kDotB1 / ( kMag1 * runData.bMag ) )
-
-		kMag1_	= sqrt ( imaginary ( kR__[*,0])^2 + kPhi^2 + kz__^2 )
-		kDotB1_	= imaginary(kR__[*,0]) * runData.bField[*,0] $
-					+ kPhi * runData.bField[*,1] $
-					+ kz__ * runData.bField[*,2]
-		theta1_	= aCos ( kDotB1_ / ( kMag1_ * runData.bMag ) )
-
-
-		kMag2	= sqrt ( real_part ( kR__[*,1])^2 + kPhi^2 + kz__^2 )
-		kDotB2	= real_part(kR__[*,1]) * runData.bField[*,0] $
-					+ kPhi * runData.bField[*,1] $
-					+ kz__ * runData.bField[*,2]
-		theta2	= aCos ( kDotB2 / ( kMag2 * runData.bMag ) )
-
-		kMag2_	= sqrt ( imaginary ( kR__[*,1])^2 + kPhi^2 + kz__^2 )
-		kDotB2_	= imaginary(kR__[*,1]) * runData.bField[*,0] $
-					+ kPhi * runData.bField[*,1] $
-					+ kz__ * runData.bField[*,2]
-		theta2_	= aCos ( kDotB2_ / ( kMag2_ * runData.bMag ) )
-
-
-		kMag3	= sqrt ( real_part ( kR__[*,2])^2 + kPhi^2 + kz__^2 )
-		kDotB3	= real_part(kR__[*,2]) * runData.bField[*,0] $
-					+ kPhi * runData.bField[*,1] $
-					+ kz__ * runData.bField[*,2]
-		theta3	= aCos ( kDotB3 / ( kMag3 * runData.bMag ) )
-
-		kMag3_	= sqrt ( imaginary ( kR__[*,2])^2 + kPhi^2 + kz__^2 )
-		kDotB3_	= imaginary(kR__[*,2]) * runData.bField[*,0] $
-					+ kPhi * runData.bField[*,1] $
-					+ kz__ * runData.bField[*,2]
-		theta3_	= aCos ( kDotB3_ / ( kMag3_ * runData.bMag ) )
-
-
-		kMag4	= sqrt ( real_part ( kR__[*,3])^2 + kPhi^2 + kz__^2 )
-		kDotB4	= real_part(kR__[*,3]) * runData.bField[*,0] $
-					+ kPhi * runData.bField[*,1] $
-					+ kz__ * runData.bField[*,2]
-		theta4	= aCos ( kDotB4 / ( kMag4 * runData.bMag ) )
-
-		kMag4_	= sqrt ( imaginary ( kR__[*,3])^2 + kPhi^2 + kz__^2 )
-		kDotB4_	= imaginary(kR__[*,3]) * runData.bField[*,0] $
-					+ kPhi * runData.bField[*,1] $
-					+ kz__ * runData.bField[*,2]
-		theta4_	= aCos ( kDotB4_ / ( kMag4_ * runData.bMag ) )
-
-
-		iPlot, runData.r, theta1 * !radeg, $
-			/view_next, sym_index = 4, lineStyle = 6, color = blue, $
-			yRange = [0,180]
-		iPlot, runData.r, theta1_ * !radeg, $
-			/over, sym_index = 3, lineStyle = 6, color = blue
-
-		iPlot, runData.r, theta2 * !radeg, $
-			/over, sym_index = 4, lineStyle = 6, color = green
-		iPlot, runData.r, theta2_ * !radeg, $
-			/over, sym_index = 3, lineStyle = 6, color = green
 	
-		iPlot, runData.r, theta3 * !radeg, $
-			/over, sym_index = 4, lineStyle = 6, color = red
-		iPlot, runData.r, theta3_ * !radeg, $
-			/over, sym_index = 3, lineStyle = 6, color = red
+		if plotKdotB then begin	
+			kMag1	= sqrt ( real_part ( kR__[*,0])^2 + kPhi^2 + kz__^2 )
+			kDotB1	= real_part(kR__[*,0]) * runData.bField[*,0] $
+						+ kPhi * runData.bField[*,1] $
+						+ kz__ * runData.bField[*,2]
+			theta1	= aCos ( kDotB1 / ( kMag1 * runData.bMag ) )
 
-		iPlot, runData.r, theta4 * !radeg, $
-			/over, sym_index = 4, lineStyle = 6, color = purple
-		iPlot, runData.r, theta4_ * !radeg, $
-			/over, sym_index = 3, lineStyle = 6, color = purple
+			kMag1_	= sqrt ( imaginary ( kR__[*,0])^2 + kPhi^2 + kz__^2 )
+			kDotB1_	= imaginary(kR__[*,0]) * runData.bField[*,0] $
+						+ kPhi * runData.bField[*,1] $
+						+ kz__ * runData.bField[*,2]
+			theta1_	= aCos ( kDotB1_ / ( kMag1_ * runData.bMag ) )
 
+
+			kMag2	= sqrt ( real_part ( kR__[*,1])^2 + kPhi^2 + kz__^2 )
+			kDotB2	= real_part(kR__[*,1]) * runData.bField[*,0] $
+						+ kPhi * runData.bField[*,1] $
+						+ kz__ * runData.bField[*,2]
+			theta2	= aCos ( kDotB2 / ( kMag2 * runData.bMag ) )
+
+			kMag2_	= sqrt ( imaginary ( kR__[*,1])^2 + kPhi^2 + kz__^2 )
+			kDotB2_	= imaginary(kR__[*,1]) * runData.bField[*,0] $
+						+ kPhi * runData.bField[*,1] $
+						+ kz__ * runData.bField[*,2]
+			theta2_	= aCos ( kDotB2_ / ( kMag2_ * runData.bMag ) )
+
+
+			kMag3	= sqrt ( real_part ( kR__[*,2])^2 + kPhi^2 + kz__^2 )
+			kDotB3	= real_part(kR__[*,2]) * runData.bField[*,0] $
+						+ kPhi * runData.bField[*,1] $
+						+ kz__ * runData.bField[*,2]
+			theta3	= aCos ( kDotB3 / ( kMag3 * runData.bMag ) )
+
+			kMag3_	= sqrt ( imaginary ( kR__[*,2])^2 + kPhi^2 + kz__^2 )
+			kDotB3_	= imaginary(kR__[*,2]) * runData.bField[*,0] $
+						+ kPhi * runData.bField[*,1] $
+						+ kz__ * runData.bField[*,2]
+			theta3_	= aCos ( kDotB3_ / ( kMag3_ * runData.bMag ) )
+
+
+			kMag4	= sqrt ( real_part ( kR__[*,3])^2 + kPhi^2 + kz__^2 )
+			kDotB4	= real_part(kR__[*,3]) * runData.bField[*,0] $
+						+ kPhi * runData.bField[*,1] $
+						+ kz__ * runData.bField[*,2]
+			theta4	= aCos ( kDotB4 / ( kMag4 * runData.bMag ) )
+
+			kMag4_	= sqrt ( imaginary ( kR__[*,3])^2 + kPhi^2 + kz__^2 )
+			kDotB4_	= imaginary(kR__[*,3]) * runData.bField[*,0] $
+						+ kPhi * runData.bField[*,1] $
+						+ kz__ * runData.bField[*,2]
+			theta4_	= aCos ( kDotB4_ / ( kMag4_ * runData.bMag ) )
+
+			p=plot(runData.r, theta1 * !radeg, color = blue, $
+					yRange = [0,180], title='k dot B')
+			p=plot(runData.r, theta1_ * !radeg, /over, color = blue)
+
+			p=plot(runData.r, theta2 * !radeg , /over, color = green)
+			p=plot(runData.r, theta2_ * !radeg, /over, color = green)
+	
+			p=plot(runData.r, theta3 * !radeg , /over, color = red)
+			p=plot(runData.r, theta3_ * !radeg, /over, color = red)
+
+			p=plot(runData.r, theta4 * !radeg , /over, color = purple)
+			p=plot(runData.r, theta4_ * !radeg, /over, color = purple)
+		endif
 
 	endif	
 

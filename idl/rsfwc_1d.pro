@@ -57,7 +57,7 @@ pro rsfwc_1d, $
 		epsilonFull = epsilon, $
 		epsilonHalf = epsilon_
 
-	dispersion, wReal, epsilon, stixVars, runData, specData, $
+	dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 		kR = kR, kPhi = kPhi, kz = kz
 
 	;out_kz = kz
@@ -83,10 +83,10 @@ pro rsfwc_1d, $
 	if not keyword_set ( jPhi ) then jPhi = 0
 	if not keyword_set ( jz ) then jz = 1
 
-	antSigX = 0.1
-    jZ = exp ( -( (runData.r_-runData.antLoc)^2/antSigX^2 ) )
-	jR	= jZ * 0
-	jPhi = jZ * 0
+	antSigX = (runData.rMax-runData.rMin)/100.0
+    jR 		= 5000*exp ( -( (runData.r_-runData.antLoc)^2/antSigX^2 ) )
+	jPhi	= jR * 0
+	jZ 		= jR * 0
                
    	for i=0,runData.nR-2 do begin
 		rhs[i*3+2]	= -II * wReal * u0 * jz[i]
@@ -184,17 +184,17 @@ pro rsfwc_1d, $
 	hz		= hz / ( II * wReal * u0 )
 
 
-	if plotSolution then $
+	if plotESolution then $
 	plot_solution, runData.antLoc, runData.dR, runData.nR, $
 		eR, ePhi, ez, $
 		kR = kR, r_kR = runData.r, $
 		r1 = runData.r, r2 = runData.r_, r3 = runData.r_
 
-	;if plotSolution then $
-	;plot_solution, runData.antLoc, runData.dR, runData.nR, $
-	;	hR, hPhi, hz, $
-	;	kR = kR, r_kR = runData.r, $
-	;	r1 = runData.r_, r2 = runData.r, r3 = runData.r
+	if plotHSolution then $
+	plot_solution, runData.antLoc, runData.dR, runData.nR, $
+		hR, hPhi, hz, $
+		kR = kR, r_kR = runData.r, $
+		r1 = runData.r_, r2 = runData.r, r3 = runData.r
 
 	;	Determine the longitudinal / transvers nature of the solution
 
@@ -209,61 +209,63 @@ pro rsfwc_1d, $
 			ezFull[i]	=  ( ez[i] + ez[i-1] ) / 2.0
 	
 		endfor
-	
-		kMag1	= sqrt ( real_part ( kR[*,0])^2 + kPhi^2 + kz^2 )
-		eMag	= sqrt ( real_part(eR)^2 + real_part(ePhiFull)^2 + real_part(ezFull)^2 )
-		kDotE1	= real_part ( kR[*,0] ) * real_part ( eR ) $
-					+ kPhi * real_part ( ePhiFull ) $
-					+ kz * real_part ( ezFull ) 
-		theta1	= aCos ( kDotE1 / ( kMag1 * eMag ) )
-	
-		kMag2	= sqrt ( real_part ( kR[*,1])^2 + kPhi^2 + kz^2 )
-		kDotE2	= real_part ( kR[*,1] ) * real_part ( eR ) $
-					+ kPhi * real_part ( ePhiFull ) $
-					+ kz * real_part ( ezFull ) 
-		theta2	= aCos ( kDotE2 / ( kMag2 * eMag ) )
-	
-		kMag3	= sqrt ( real_part ( kR[*,2])^2 + kPhi^2 + kz^2 )
-		kDotE3	= real_part ( kR[*,2] ) * real_part ( eR ) $
-					+ kPhi * real_part ( ePhiFull ) $
-					+ kz * real_part ( ezFull ) 
-		theta3	= aCos ( kDotE3 / ( kMag3 * eMag ) )
-	
-		kMag4	= sqrt ( real_part ( kR[*,3])^2 + kPhi^2 + kz^2 )
-		kDotE4	= real_part ( kR[*,3] ) * real_part ( eR ) $
-					+ kPhi * real_part ( ePhiFull ) $
-					+ kz * real_part ( ezFull ) 
-		theta4	= aCos ( kDotE4 / ( kMag4 * eMag ) )
-	
-		iPlot, runData.r, theta1 * !radeg, $
-			sym_index = 4, lineStyle = 6, color = blue, $
-			yRange = [0,180], window_title = 'k dot E angle'
-		iPlot, runData.r, theta2 * !radeg, $
-			/over, sym_index = 4, lineStyle = 6, color = green
-		iPlot, runData.r, theta3 * !radeg, $
-			/over, sym_index = 4, lineStyle = 6, color = red
-		iPlot, runData.r, theta4 * !radeg, $
-			/over, sym_index = 4, lineStyle = 6, color = purple
 
-		eMag	= sqrt ( real_part(eR)^2 + real_part(ePhiFull)^2 + real_part(ezFull)^2 )
-		eDotB	= real_part(eR) * runData.bField[*,0] $
-					+ real_part(ePhiFull) * runData.bField[*,1] $
-					+ real_part(ezFull) * runData.bField[*,2]
-		thetaA	= aCos ( eDotB / ( eMag * runData.bMag ) )
+		if plotKdotE then begin	
+			kMag1	= sqrt ( real_part ( kR[*,0])^2 + kPhi^2 + kz^2 )
+			eMag	= sqrt ( real_part(eR)^2 + real_part(ePhiFull)^2 + real_part(ezFull)^2 )
+			kDotE1	= real_part ( kR[*,0] ) * real_part ( eR ) $
+						+ kPhi * real_part ( ePhiFull ) $
+						+ kz * real_part ( ezFull ) 
+			theta1	= aCos ( kDotE1 / ( kMag1 * eMag ) )
+	
+			kMag2	= sqrt ( real_part ( kR[*,1])^2 + kPhi^2 + kz^2 )
+			kDotE2	= real_part ( kR[*,1] ) * real_part ( eR ) $
+						+ kPhi * real_part ( ePhiFull ) $
+						+ kz * real_part ( ezFull ) 
+			theta2	= aCos ( kDotE2 / ( kMag2 * eMag ) )
+	
+			kMag3	= sqrt ( real_part ( kR[*,2])^2 + kPhi^2 + kz^2 )
+			kDotE3	= real_part ( kR[*,2] ) * real_part ( eR ) $
+						+ kPhi * real_part ( ePhiFull ) $
+						+ kz * real_part ( ezFull ) 
+			theta3	= aCos ( kDotE3 / ( kMag3 * eMag ) )
+	
+			kMag4	= sqrt ( real_part ( kR[*,3])^2 + kPhi^2 + kz^2 )
+			kDotE4	= real_part ( kR[*,3] ) * real_part ( eR ) $
+						+ kPhi * real_part ( ePhiFull ) $
+						+ kz * real_part ( ezFull ) 
+			theta4	= aCos ( kDotE4 / ( kMag4 * eMag ) )
+	
+			iPlot, runData.r, theta1 * !radeg, $
+				sym_index = 4, lineStyle = 6, color = blue, $
+				yRange = [0,180], window_title = 'k dot E angle'
+			iPlot, runData.r, theta2 * !radeg, $
+				/over, sym_index = 4, lineStyle = 6, color = green
+			iPlot, runData.r, theta3 * !radeg, $
+				/over, sym_index = 4, lineStyle = 6, color = red
+			iPlot, runData.r, theta4 * !radeg, $
+				/over, sym_index = 4, lineStyle = 6, color = purple
+		endif
 
-		eMag	= sqrt ( imaginary(eR)^2 + imaginary(ePhiFull)^2 + imaginary(ezFull)^2 )
-		eDotB	= imaginary(eR) * runData.bField[*,0] $
-					+ imaginary(ePhiFull) * runData.bField[*,1] $
-					+ imaginary(ezFull) * runData.bField[*,2]
-		thetaB	= aCos ( eDotB / ( eMag * runData.bMag ) )
+		if plotEdotB then begin
+			eMag	= sqrt ( real_part(eR)^2 + real_part(ePhiFull)^2 + real_part(ezFull)^2 )
+			eDotB	= real_part(eR) * runData.bField[*,0] $
+						+ real_part(ePhiFull) * runData.bField[*,1] $
+						+ real_part(ezFull) * runData.bField[*,2]
+			thetaA	= aCos ( eDotB / ( eMag * runData.bMag ) )
+
+			eMag	= sqrt ( imaginary(eR)^2 + imaginary(ePhiFull)^2 + imaginary(ezFull)^2 )
+			eDotB	= imaginary(eR) * runData.bField[*,0] $
+						+ imaginary(ePhiFull) * runData.bField[*,1] $
+						+ imaginary(ezFull) * runData.bField[*,2]
+			thetaB	= aCos ( eDotB / ( eMag * runData.bMag ) )
 
 
-		iPlot, runData.r, thetaA * !radeg, $
-			yRange = [0,180], $
-			window_title = 'e dot B angle'		
-		iPlot, runData.r, thetaB * !radeg, $
-			/over	
-
+			p=plot(runData.r, thetaA * !radeg, $
+					lineStyle=6, symbol="D",yRange = [0,180], title = 'e dot B angle')
+			p=plot(runData.r, thetaB * !radeg, $
+					/over, lineStyle=6, symbol="S")
+		endif
 
 	endif
 
@@ -279,6 +281,10 @@ pro rsfwc_1d, $
 	jP_t_total	= jP[*,1]
 	jP_z_total	= jP[*,2]
 
+	j_r = jP_r_total
+	j_t = jP_t_total
+	j_z = jP_z_total
+
 	e_r	= eR
 	e_t	= ePhiFull
 	e_z	= eZFull
@@ -288,8 +294,84 @@ pro rsfwc_1d, $
 		e_r, e_t, e_z, $
 		fileName = 'solutionVals.sav'
 
-	stop
+	; Write netCDF file
 
+	nc_id = nCdf_create ('rsfwc_1d.nc', /clobber )
+
+	nCdf_control, nc_id, /fill
+	
+	nr_id = nCdf_dimDef ( nc_id, 'nR', runData.nR )
+	scalar_id = nCdf_dimDef ( nc_id, 'scalar', 1 )
+
+	wrf_id = nCdf_varDef ( nc_id, 'wrf', scalar_id, /float )
+	r_id = nCdf_varDef ( nc_id, 'r', nr_id, /float )
+
+	B0_r_id = nCdf_varDef ( nc_id, 'B0_r', nr_id, /float )
+	B0_p_id = nCdf_varDef ( nc_id, 'B0_p', nr_id, /float )
+	B0_z_id = nCdf_varDef ( nc_id, 'B0_z', nr_id, /float )
+
+	e_r_re_id = nCdf_varDef ( nc_id, 'e_r_re', nr_id, /float )
+	e_r_im_id = nCdf_varDef ( nc_id, 'e_r_im', nr_id, /float )
+	e_p_re_id = nCdf_varDef ( nc_id, 'e_p_re', nr_id, /float )
+	e_p_im_id = nCdf_varDef ( nc_id, 'e_p_im', nr_id, /float )
+	e_z_re_id = nCdf_varDef ( nc_id, 'e_z_re', nr_id, /float )
+	e_z_im_id = nCdf_varDef ( nc_id, 'e_z_im', nr_id, /float )
+
+	j_r_re_id = nCdf_varDef ( nc_id, 'j_r_re', nr_id, /float )
+	j_r_im_id = nCdf_varDef ( nc_id, 'j_r_im', nr_id, /float )
+	j_p_re_id = nCdf_varDef ( nc_id, 'j_p_re', nr_id, /float )
+	j_p_im_id = nCdf_varDef ( nc_id, 'j_p_im', nr_id, /float )
+	j_z_re_id = nCdf_varDef ( nc_id, 'j_z_re', nr_id, /float )
+	j_z_im_id = nCdf_varDef ( nc_id, 'j_z_im', nr_id, /float )
+
+	jA_r_re_id = nCdf_varDef ( nc_id, 'jA_r_re', nr_id, /float )
+	jA_r_im_id = nCdf_varDef ( nc_id, 'jA_r_im', nr_id, /float )
+	jA_p_re_id = nCdf_varDef ( nc_id, 'jA_p_re', nr_id, /float )
+	jA_p_im_id = nCdf_varDef ( nc_id, 'jA_p_im', nr_id, /float )
+	jA_z_re_id = nCdf_varDef ( nc_id, 'jA_z_re', nr_id, /float )
+	jA_z_im_id = nCdf_varDef ( nc_id, 'jA_z_im', nr_id, /float )
+
+	nCdf_control, nc_id, /enDef
+
+	nCdf_varPut, nc_id, wrf_id, runData.freq
+
+	nCdf_varPut, nc_id, r_id, runData.r
+
+	nCdf_varPut, nc_id, B0_r_id, runData.BField[*,0]
+	nCdf_varPut, nc_id, B0_p_id, runData.BField[*,1]
+	nCdf_varPut, nc_id, B0_z_id, runData.BField[*,2]
+
+	nCdf_varPut, nc_id, e_r_re_id, real_part(e_r) 
+	nCdf_varPut, nc_id, e_r_im_id, imaginary(e_r) 
+	nCdf_varPut, nc_id, e_p_re_id, real_part(e_t) 
+	nCdf_varPut, nc_id, e_p_im_id, imaginary(e_t) 
+	nCdf_varPut, nc_id, e_z_re_id, real_part(e_z) 
+	nCdf_varPut, nc_id, e_z_im_id, imaginary(e_z) 
+
+	nCdf_varPut, nc_id, j_r_re_id, real_part(j_r) 
+	nCdf_varPut, nc_id, j_r_im_id, imaginary(j_r) 
+	nCdf_varPut, nc_id, j_p_re_id, real_part(j_t) 
+	nCdf_varPut, nc_id, j_p_im_id, imaginary(j_t) 
+	nCdf_varPut, nc_id, j_z_re_id, real_part(j_z) 
+	nCdf_varPut, nc_id, j_z_im_id, imaginary(j_z) 
+
+	nCdf_varPut, nc_id, jA_r_re_id, jR 
+	nCdf_varPut, nc_id, jA_r_im_id, jR*0 
+	nCdf_varPut, nc_id, jA_p_re_id, jPhi
+	nCdf_varPut, nc_id, jA_p_im_id, jPhi*0
+	nCdf_varPut, nc_id, jA_z_re_id, jZ
+	nCdf_varPut, nc_id, jA_z_im_id, jZ*0
+
+	nCdf_close, nc_id
+
+
+	if plotJp then begin
+
+		p=plot(rFull, abs(jP_r_total), title = 'jP')
+		p=plot(rFull, jP_t_total, /over)
+		p=plot(rFull, jP_z_total, /over)
+
+	endif
 
 	;	Write text file for comparison with GCC
 

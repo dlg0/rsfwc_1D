@@ -4,6 +4,7 @@ pro plot_solution, antLoc, dR, nR, $
 	r1 = r1, r2 = r2, r3 = r3
 
 	common dlg_colors
+	common plotSwitches
    
     ;	Visualise solution
     
@@ -76,7 +77,7 @@ pro plot_solution, antLoc, dR, nR, $
 			yRange = [ -max ( eMag ), max ( eMag ) ] 
 
 		print, 'FFTing solution ...'
-		nFFT	= 128 
+		nFFT	= 32 
 		fftData_e1	= complexArr ( nFFT )
 		fftData_e2	= complexArr ( nFFT )
 		fftData_e3	= complexArr ( nFFT )
@@ -125,25 +126,28 @@ pro plot_solution, antLoc, dR, nR, $
 
 		kMax	= 2000 
 		iiPlotk	= where ( abs ( kRFFT_pm ) le kMax )
-		iContour, fftData2D_pm[*,iiPlotk], $
-			rFFTData, kRFFT_pm[iiPlotk], $
-			yRange = [-kMax,kMax], $
-			xRange = [min(r1),max(r1)], $
-			rgb_indices = colors, $
-			rgb_table = 1, $
-			/fill, $
-			c_value = levels, $
-			/zoom_on_resize, $
-			id = spectrum, $
-			/stretch_to_fit
+		;iContour, fftData2D_pm[*,iiPlotk], $
+		;	rFFTData, kRFFT_pm[iiPlotk], $
+		;	yRange = [-kMax,kMax], $
+		;	xRange = [min(r1),max(r1)], $
+		;	rgb_indices = colors, $
+		;	rgb_table = 1, $
+		;	/fill, $
+		;	c_value = levels, $
+		;	/zoom_on_resize, $
+		;	id = spectrum, $
+		;	/stretch_to_fit
+
+		if plotFFTSolution then $
+		c=contour(fftData2D_pm,rfftdata, krfft_pm, yrange=[-kmax,kmax], rgb_table=1,n_levels=20)
 
 		if keyword_set ( kR ) then begin
 
-			iPlot, r_kR, real_part ( kR[*,0] ), sym_index = 3, lineStyle = 6, /over
-			iPlot, r_kR, real_part ( kR[*,1] ), sym_index = 3, lineStyle = 6, /over
-			iPlot, r_kR, real_part ( kR[*,2] ), sym_index = 3, lineStyle = 6, /over
-			iPlot, r_kR, real_part ( kR[*,3] ), sym_index = 3, lineStyle = 6, /over
-
+			p=plot(r_kR, real_part ( kR[*,0] ), /over)
+			p=plot(r_kR, real_part ( kR[*,1] ), /over)
+			p=plot(r_kR, real_part ( kR[*,2] ), /over)
+			p=plot(r_kR, real_part ( kR[*,3] ), /over)
+			
 		endif
 
 		if keyword_set ( divD ) then begin

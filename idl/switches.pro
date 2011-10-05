@@ -13,9 +13,15 @@
 		plotDispersionGeneral, $
 		plotDispersionJaeger, $
 		plotDispersionNoPol, $
-		plotSolution, $
+		plotESolution, $
+		plotHSolution, $
 		plotMovie, $
-		plotFrequencies
+		plotFrequencies, $
+		plotKdotE, $
+		plotKdotB, $
+		plotEdotB, $
+		plotJp, $
+		plotFFTSolution
 
 	common writeSwitches, $
 		writeDispersionTxt
@@ -36,6 +42,11 @@
 		plotSolution = 0
 		plotMovie = 0
 		plotFrequencies = 0
+		plotKdotE = 0
+		plotKdotB = 0
+		plotEdotB = 0
+		plotJp = 0
+		plotFFTSolution = 0
 
 		writeDispersionTxt = 0
 

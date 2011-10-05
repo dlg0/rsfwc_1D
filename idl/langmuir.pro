@@ -4,20 +4,25 @@
  	dielectric_freeSpace = 0
  	dielectric_noPoloidal = 0
  	dispersion_freeSpace = 0
- 	dispersion_jaegerPRL = 1
+ 	dispersion_jaegerPRL = 0
 	dispersion_generalised = 1
  	
  	bandStorage = 0
 	noIMSL = 1
-	linearDevice = 1
+	linearDevice = 0
 
 ;	Plotting switches
 
- 	plotRunData	= 1
- 	plotDispersionGeneral 	= 1
- 	plotDispersionJaeger	= 1
+ 	plotRunData	= 0
+ 	plotDispersionGeneral 	= 0
+ 	plotDispersionJaeger	= 0
  	plotDispersionNoPol		= 0
-	plotSolution = 1
+	plotESolution = 1
+	plotHSolution = 0
+	plotKdotB = 0
+	plotEdotB = 0
+	plotJp = 1
+	plotFFTSolution = 0
 
 ;	File write switches
 
@@ -27,23 +32,23 @@
 
 ;		Variables
 
-		r0	= 100d0
-		aWall	= 0.2 
+		r0	= 10d0
+		aWall	= 2d0
 
 		rMin	= r0 - aWall
 		rMax	= r0 + aWall
-   		b0	= 1.1d0
-		bR_frac	= 0.0
+   		b0	= 0.0001d0
+		bR_frac	= 100.0
 		bz_frac	= 0.0	
 		ionSpecZ	= [ 1 ]
 		ionSpecAmu	= [ 1 ]
-		nMax		= [ 1.0 ] * 1d18
-		damping = 0.00
-		freq	= 28.0d9
+		nMax		= [ 1.0 ] * 1d14
+		damping = 0.01
+		freq	= 9.64d8
 		nPhi = 0.0
 		kz = 0.0
 		nR	= 1024L
-		antLoc	= 0.0 
+		antLoc	= 10.0
 
 		useEqdsk = 0
 		useProfiles = 0

@@ -45,6 +45,10 @@ pro run_setup, $
 	plotSolution = 0
 	plotMovie	= 0
 	plotFrequencies = 0
+	plotKdotE = 0
+	plotEdotB = 0
+	plotKdotB = 0
+	plotJp = 0
 
 ;	File write switches
 
@@ -83,13 +87,11 @@ pro run_setup, $
 
 ;	-----------------------------
 
-
-
 ;	Benchmarking cases
 
-	@smithe
+	;@smithe
 	;@steffi
-
+	@langmuir
 
 ;		Grid
 
