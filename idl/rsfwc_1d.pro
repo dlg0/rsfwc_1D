@@ -48,10 +48,9 @@ pro rsfwc_1d, $
 
  	wReal	= runData.freq * 2d0 * !dpi 
 	w	= dcomplexArr ( runData.nR ) + wReal
-	;iiDamped	= where ( r gt 1.4 )
 	w[*]	= complex ( wReal, wReal * runData.damping )
 
-	stixVariables, wReal, specData, stixVars = stixVars
+	stixVariables, wReal, specData, stixVars = stixVars, electronsOnly = 0
 
 	dielectric, runData, stixVars, $
 		epsilonFull = epsilon, $
@@ -59,8 +58,6 @@ pro rsfwc_1d, $
 
 	dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 		kR = kR, kPhi = kPhi, kz = kz
-
-	;out_kz = kz
 
 	if keyword_set ( dispersionOnly ) then return
 
@@ -83,15 +80,24 @@ pro rsfwc_1d, $
 	if not keyword_set ( jPhi ) then jPhi = 0
 	if not keyword_set ( jz ) then jz = 1
 
-	antSigX = (runData.rMax-runData.rMin)/100.0
-    jR 		= 5000*exp ( -( (runData.r_-runData.antLoc)^2/antSigX^2 ) )
+	antSigX = 0.1;(runData.rMax-runData.rMin)/400.0
+	jAmp	= 5000.0
+
+    jR 		= jAmp*exp( -( (runData.r-runData.antLoc)^2/antSigX^2 ) )
 	jPhi	= jR * 0
 	jZ 		= jR * 0
-               
+
+    jR_ 	= jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSigX^2 ) )
+	jPhi_	= jR_ * 0
+	jZ_		= jR_ * 0
+
+   	; NOTE: the equations were derived as +curlcurlE - k0edotE = +iwuJa
+	; and as such, the sign in the below is +ve, NOT -ve as in the aorsa
+	; formulation ;)	
    	for i=0,runData.nR-2 do begin
-		rhs[i*3+2]	= -II * wReal * u0 * jz[i]
-		rhs[i*3+1]	= -II * wReal * u0 * jPhi[i]
-		rhs[i*3]	= -II * wReal * u0 * jR[i]
+		rhs[i*3+2]	= II * wReal * u0 * jz_[i]
+		rhs[i*3+1]	= II * wReal * u0 * jPhi_[i]
+		rhs[i*3]	= II * wReal * u0 * jR_[i]
 	endfor
 
 ;	Solve matrix
@@ -185,13 +191,13 @@ pro rsfwc_1d, $
 
 
 	if plotESolution then $
-	plot_solution, runData.antLoc, runData.dR, runData.nR, $
+	rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
 		eR, ePhi, ez, $
 		kR = kR, r_kR = runData.r, $
 		r1 = runData.r, r2 = runData.r_, r3 = runData.r_
 
 	if plotHSolution then $
-	plot_solution, runData.antLoc, runData.dR, runData.nR, $
+	rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
 		hR, hPhi, hz, $
 		kR = kR, r_kR = runData.r, $
 		r1 = runData.r_, r2 = runData.r, r3 = runData.r
@@ -289,6 +295,31 @@ pro rsfwc_1d, $
 	e_t	= ePhiFull
 	e_z	= eZFull
 
+	; jDotE
+	; -----
+
+	jPDotE	= -0.5 * real_part ( conj(j_r) * e_r $
+				+ conj(j_t) * e_t $
+				+ conj(j_z) * e_z )
+
+	p = plot (runData.r,jPDotE,color='b',thick=3,transp=50,$
+			title='J dot E',name='jDote_0',font_size=10,$
+			layout=[1,2,1],window_title='rsfwc_1d')
+
+	; jAnt
+	; ---
+
+	pr = plot (runData.r,jr,color='b',thick=3,transp=50,$
+			title='jAnt',name='jAnt_r',font_size=10,$
+			layout=[1,2,2],/current)
+	pt = plot (runData.r,jPhi,color='r',thick=3,transp=50,$
+			name='jAnt_t',/over)
+	pz = plot (runData.r,jz,color='g',thick=3,transp=50,$
+			name='jAnt_z',/over)
+
+	l = legend(target=[pr,pt,pz],position=[0.8,0.4],/norm,font_size=10)
+
+
 	save, $
 		jP_r_total, jP_t_total, jP_z_total, $
 		e_r, e_t, e_z, $
@@ -303,7 +334,7 @@ pro rsfwc_1d, $
 	nr_id = nCdf_dimDef ( nc_id, 'nR', runData.nR )
 	scalar_id = nCdf_dimDef ( nc_id, 'scalar', 1 )
 
-	wrf_id = nCdf_varDef ( nc_id, 'wrf', scalar_id, /float )
+	freq_id = nCdf_varDef ( nc_id, 'freq', scalar_id, /float )
 	r_id = nCdf_varDef ( nc_id, 'r', nr_id, /float )
 
 	B0_r_id = nCdf_varDef ( nc_id, 'B0_r', nr_id, /float )
@@ -333,7 +364,7 @@ pro rsfwc_1d, $
 
 	nCdf_control, nc_id, /enDef
 
-	nCdf_varPut, nc_id, wrf_id, runData.freq
+	nCdf_varPut, nc_id, freq_id, runData.freq
 
 	nCdf_varPut, nc_id, r_id, runData.r
 
@@ -367,9 +398,30 @@ pro rsfwc_1d, $
 
 	if plotJp then begin
 
-		p=plot(rFull, abs(jP_r_total), title = 'jP')
-		p=plot(rFull, jP_t_total, /over)
-		p=plot(rFull, jP_z_total, /over)
+		jpRange = max(abs([abs(jp_r_total),abs(jp_t_total),abs(jp_z_total)]))
+		yRange = [-jPRange,jPRange]
+
+		p_re = plot (rFull,jP_r_total,thick=2,$
+				title='jP_r',name='Jp_re',font_size=10,$
+				layout=[1,3,1],yRange=yRange,transp=50,window_title='rsfwc_1d')
+		p_im = plot (rFull,imaginary(jP_r_total),color='r',thick=2,transp=50,$
+				name='Jp_re',font_size=10,/over)
+	   	l = legend(target=[p_re,p_im],position=[0.99,0.95],/norm,font_size=10,horizontal_align='RIGHT')
+
+		p_re = plot (rFull,jP_t_total,thick=2,$
+				title='jP_t',name='Jp_re',font_size=10,$
+				layout=[1,3,2],/current,yRange=yRange,transp=50)
+		p_im = plot (rFull,imaginary(jP_t_total),color='r',thick=2,transp=50,$
+				name='Jp_re',font_size=10,/over)
+	   	l = legend(target=[p_re,p_im],position=[0.99,0.63],/norm,font_size=10,horizontal_align='RIGHT')
+
+		p_re = plot (rFull,jP_z_total,thick=2,$
+				title='jP_z',name='Jp_re',font_size=10,$
+				layout=[1,3,3],/current,yRange=yRange,transp=50)
+		p_im = plot (rFull,imaginary(jP_z_total),color='r',thick=2,transp=50,$
+				name='Jp_re',font_size=10,/over)
+	   	l = legend(target=[p_re,p_im],position=[0.99,0.25],/norm,font_size=10,horizontal_align='RIGHT')
+
 
 	endif
 
