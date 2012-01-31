@@ -32,8 +32,8 @@
 
 ;		Variables
 
-		r0	= 10d0
-		aWall	= 2d0
+		r0	= 100d0
+		aWall	= 5d0
 
 		rMin	= r0 - aWall
 		rMax	= r0 + aWall
@@ -43,12 +43,12 @@
 		ionSpecZ	= [ 1 ]
 		ionSpecAmu	= [ 1 ]
 		nMax		= [ 1.0 ] * 1d14
-		damping = 0.01
-		freq	= 9.64d8
+		damping = 0.00
+		freq	= 1.15e8
 		nPhi = 0.0
 		kz = 0.0
-		nR	= 1024L
-		antLoc	= 10.0
+		nR	= 4096L
+		antLoc	= 100.0
 
 		useEqdsk = 0
 		useProfiles = 0
