@@ -8,7 +8,9 @@
 		bandStorage, $
 		noIMSL, $
 		linearDevice, $
-		kjInput
+		kjInput, $
+		kj_jP_fileName, $
+		runIdent
 
 	common plotSwitches, $
 		plotDispersionGeneral, $
@@ -51,4 +53,6 @@
 
 		writeDispersionTxt = 0
 
-
+		kjInput = 0
+		kj_jP_fileName = 'kj_jP.nc'
+		runIdent = ''

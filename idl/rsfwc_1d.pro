@@ -7,7 +7,7 @@ pro rsfwc_1d, $
 	ez = ez, $
 	divD = divD, $
 	rFull = rFull, rHalf = rHalf, $
-	jR = jR, jPhi = jPhi, jz = jz, $
+	jA_r = jA_r, jA_t = jA_t, jA_z = jA_z, $
 	in_kz = in_kz, $
 	nMax = nMax, $
 	nFac = nFac, $
@@ -76,24 +76,24 @@ pro rsfwc_1d, $
 						eq min ( abs ( runData.r_ - runData.antLoc ) ) )
 	rhs		= complexArr ( nAll )
 
-	if not keyword_set ( jR ) then jR = 0
-	if not keyword_set ( jPhi ) then jPhi = 0
-	if not keyword_set ( jz ) then jz = 1
+	if not keyword_set ( jA_r ) then jA_R = 0
+	if not keyword_set ( jA_t ) then jA_t = 0
+	if not keyword_set ( jA_z ) then jA_z = 1
 
 	antSigX = 0.1;(runData.rMax-runData.rMin)/400.0
 	jAmp	= 5000.0
 
-    jR 		= jAmp*exp( -( (runData.r-runData.antLoc)^2/antSigX^2 ) )
-	jPhi	= jR * 0
-	jZ 		= jR * 0
+    jA_r 		= jAmp*exp( -( (runData.r-runData.antLoc)^2/antSigX^2 ) )
+	jA_t		= jA_r * 0
+	jA_z 		= jA_r * 0
 
-    jR_ 	= jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSigX^2 ) )
-	jPhi_	= jR_ * 0
-	jZ_		= jR_ * 0
+    jA_r_ 	= jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSigX^2 ) )
+	jA_t_		= jA_r_ * 0
+	jA_z_		= jA_r_ * 0
 
 	if kjInput then begin
 
-		cdfId = ncdf_open('kjInput.nc')
+		cdfId = ncdf_open(kj_jP_fileName)
 			nCdf_varGet, cdfId, 'kj_jP_r_re', kj_jpR_re
 			nCdf_varGet, cdfId, 'kj_jP_r_im', kj_jpR_im
 			nCdf_varGet, cdfId, 'kj_jP_p_re', kj_jpT_re
@@ -125,14 +125,14 @@ pro rsfwc_1d, $
 	; formulation ;)	
    	for i=0,runData.nR-2 do begin
 
-		rhs[i*3+2]	= II * wReal * u0 * jz_[i]
-		rhs[i*3+1]	= II * wReal * u0 * jPhi_[i]
-		rhs[i*3]	= II * wReal * u0 * jR_[i]
+		rhs[i*3+2]	= II * wReal * u0 * jA_z_[i]
+		rhs[i*3+1]	= II * wReal * u0 * jA_t_[i]
+		rhs[i*3]	= II * wReal * u0 * jA_r[i]
 
 		if kjInput then begin
-			rhs[i*3+2]	+= II / (wReal * e0) * kj_jpZ_[i]
-			rhs[i*3+1]	+= II / (wReal * e0) * kj_jpT_[i]
-			rhs[i*3]	+= II / (wReal * e0) * kj_jpR_[i]
+			rhs[i*3+2]	+= II * wReal * u0 * kj_jpZ_[i]
+			rhs[i*3+1]	+= II * wReal * u0 * kj_jpT_[i]
+			rhs[i*3]	+= II * wReal * u0 * kj_jpR[i]
 		endif
 
 	endfor
@@ -140,7 +140,6 @@ pro rsfwc_1d, $
 ;	Solve matrix
 
     print, '*** solving linear system'
-
 
     if bandStorage then begin
 
@@ -316,17 +315,23 @@ pro rsfwc_1d, $
 	; Calculate plasma current
 	; ------------------------
 
-	identAll	= rebin ( identity(3),3,3,n_elements(epsilon) )
-	sigma	= (epsilon - identAll)*wReal*e0/II
-	jP	= sigma ## [[er],[ephifull],[ezfull]]
+	if kjInput then begin
 
-	jP_r_total	= jP[*,0]
-	jP_t_total	= jP[*,1]
-	jP_z_total	= jP[*,2]
+		jP_r	= kj_jpR
+		jP_t	= kj_jpT
+		jP_z	= kj_jpZ
 
-	j_r = jP_r_total
-	j_t = jP_t_total
-	j_z = jP_z_total
+	endif else begin
+
+		identAll	= rebin ( identity(3),3,3,n_elements(epsilon) )
+		sigma	= (epsilon - identAll)*wReal*e0/II
+		jP	= sigma ## [[er],[ephifull],[ezfull]]
+
+		jP_r	= jP[*,0]
+		jP_t	= jP[*,1]
+		jP_z	= jP[*,2]
+
+	endelse
 
 	e_r	= eR
 	e_t	= ePhiFull
@@ -335,9 +340,9 @@ pro rsfwc_1d, $
 	; jDotE
 	; -----
 
-	jPDotE	= -0.5 * real_part ( conj(j_r) * e_r $
-				+ conj(j_t) * e_t $
-				+ conj(j_z) * e_z )
+	jPDotE	= -0.5 * real_part ( conj(jP_r) * e_r $
+				+ conj(jP_t) * e_t $
+				+ conj(jP_z) * e_z )
 
 	p = plot (runData.r,jPDotE,color='b',thick=3,transp=50,$
 			title='J dot E',name='jDote_0',font_size=10,$
@@ -346,25 +351,25 @@ pro rsfwc_1d, $
 	; jAnt
 	; ---
 
-	pr = plot (runData.r,jr,color='b',thick=3,transp=50,$
+	pr = plot (runData.r,jA_r,color='b',thick=3,transp=50,$
 			title='jAnt',name='jAnt_r',font_size=10,$
 			layout=[1,2,2],/current)
-	pt = plot (runData.r,jPhi,color='r',thick=3,transp=50,$
+	pt = plot (runData.r,jA_t,color='r',thick=3,transp=50,$
 			name='jAnt_t',/over)
-	pz = plot (runData.r,jz,color='g',thick=3,transp=50,$
+	pz = plot (runData.r,jA_z,color='g',thick=3,transp=50,$
 			name='jAnt_z',/over)
 
 	l = legend(target=[pr,pt,pz],position=[0.8,0.4],/norm,font_size=10)
 
 
-	save, $
-		jP_r_total, jP_t_total, jP_z_total, $
-		e_r, e_t, e_z, $
-		fileName = 'solutionVals.sav'
+	;save, $
+	;	jP_r, jP_t, jP_z, $
+	;	e_r, e_t, e_z, $
+	;	fileName = 'solutionVals.sav'
 
 	; Write netCDF file
 
-	nc_id = nCdf_create ('rsfwc_1d.nc', /clobber )
+	nc_id = nCdf_create ('rsfwc_1d_'+runIdent+'.nc', /clobber )
 
 	nCdf_control, nc_id, /fill
 	
@@ -387,12 +392,12 @@ pro rsfwc_1d, $
 	e_z_re_id = nCdf_varDef ( nc_id, 'e_z_re', nr_id, /float )
 	e_z_im_id = nCdf_varDef ( nc_id, 'e_z_im', nr_id, /float )
 
-	j_r_re_id = nCdf_varDef ( nc_id, 'j_r_re', nr_id, /float )
-	j_r_im_id = nCdf_varDef ( nc_id, 'j_r_im', nr_id, /float )
-	j_p_re_id = nCdf_varDef ( nc_id, 'j_p_re', nr_id, /float )
-	j_p_im_id = nCdf_varDef ( nc_id, 'j_p_im', nr_id, /float )
-	j_z_re_id = nCdf_varDef ( nc_id, 'j_z_re', nr_id, /float )
-	j_z_im_id = nCdf_varDef ( nc_id, 'j_z_im', nr_id, /float )
+	jP_r_re_id = nCdf_varDef ( nc_id, 'jP_r_re', nr_id, /float )
+	jP_r_im_id = nCdf_varDef ( nc_id, 'jP_r_im', nr_id, /float )
+	jP_p_re_id = nCdf_varDef ( nc_id, 'jP_p_re', nr_id, /float )
+	jP_p_im_id = nCdf_varDef ( nc_id, 'jP_p_im', nr_id, /float )
+	jP_z_re_id = nCdf_varDef ( nc_id, 'jP_z_re', nr_id, /float )
+	jP_z_im_id = nCdf_varDef ( nc_id, 'jP_z_im', nr_id, /float )
 
 	jA_r_re_id = nCdf_varDef ( nc_id, 'jA_r_re', nr_id, /float )
 	jA_r_im_id = nCdf_varDef ( nc_id, 'jA_r_im', nr_id, /float )
@@ -419,72 +424,71 @@ pro rsfwc_1d, $
 	nCdf_varPut, nc_id, e_z_re_id, real_part(e_z) 
 	nCdf_varPut, nc_id, e_z_im_id, imaginary(e_z) 
 
-	nCdf_varPut, nc_id, j_r_re_id, real_part(j_r) 
-	nCdf_varPut, nc_id, j_r_im_id, imaginary(j_r) 
-	nCdf_varPut, nc_id, j_p_re_id, real_part(j_t) 
-	nCdf_varPut, nc_id, j_p_im_id, imaginary(j_t) 
-	nCdf_varPut, nc_id, j_z_re_id, real_part(j_z) 
-	nCdf_varPut, nc_id, j_z_im_id, imaginary(j_z) 
+	nCdf_varPut, nc_id, jP_r_re_id, real_part(jP_r) 
+	nCdf_varPut, nc_id, jP_r_im_id, imaginary(jP_r) 
+	nCdf_varPut, nc_id, jP_p_re_id, real_part(jP_t) 
+	nCdf_varPut, nc_id, jP_p_im_id, imaginary(jP_t) 
+	nCdf_varPut, nc_id, jP_z_re_id, real_part(jP_z) 
+	nCdf_varPut, nc_id, jP_z_im_id, imaginary(jP_z) 
 
-	nCdf_varPut, nc_id, jA_r_re_id, jR 
-	nCdf_varPut, nc_id, jA_r_im_id, jR*0 
-	nCdf_varPut, nc_id, jA_p_re_id, jPhi
-	nCdf_varPut, nc_id, jA_p_im_id, jPhi*0
-	nCdf_varPut, nc_id, jA_z_re_id, jZ
-	nCdf_varPut, nc_id, jA_z_im_id, jZ*0
+	nCdf_varPut, nc_id, jA_r_re_id, jA_r 
+	nCdf_varPut, nc_id, jA_r_im_id, jA_r*0 
+	nCdf_varPut, nc_id, jA_p_re_id, jA_t
+	nCdf_varPut, nc_id, jA_p_im_id, jA_t*0
+	nCdf_varPut, nc_id, jA_z_re_id, jA_z
+	nCdf_varPut, nc_id, jA_z_im_id, jA_z*0
 
 	nCdf_close, nc_id
 
-
+stop
 	if plotJp then begin
 
-		jpRange = max(abs([abs(jp_r_total),abs(jp_t_total),abs(jp_z_total)]))
+		jpRange = max(abs([abs(jp_r),abs(jp_t),abs(jp_z)]))
 		yRange = [-jPRange,jPRange]
 
-		p_re = plot (rFull,jP_r_total,thick=2,$
+		p_re = plot (rFull,jP_r,thick=2,$
 				title='jP_r',name='Jp_re',font_size=10,$
 				layout=[1,3,1],yRange=yRange,transp=50,window_title='rsfwc_1d')
-		p_im = plot (rFull,imaginary(jP_r_total),color='r',thick=2,transp=50,$
+		p_im = plot (rFull,imaginary(jP_r),color='r',thick=2,transp=50,$
 				name='Jp_re',font_size=10,/over)
 	   	l = legend(target=[p_re,p_im],position=[0.99,0.95],/norm,font_size=10,horizontal_align='RIGHT')
 
-		p_re = plot (rFull,jP_t_total,thick=2,$
+		p_re = plot (rFull,jP_t,thick=2,$
 				title='jP_t',name='Jp_re',font_size=10,$
 				layout=[1,3,2],/current,yRange=yRange,transp=50)
-		p_im = plot (rFull,imaginary(jP_t_total),color='r',thick=2,transp=50,$
+		p_im = plot (rFull,imaginary(jP_t),color='r',thick=2,transp=50,$
 				name='Jp_re',font_size=10,/over)
 	   	l = legend(target=[p_re,p_im],position=[0.99,0.63],/norm,font_size=10,horizontal_align='RIGHT')
 
-		p_re = plot (rFull,jP_z_total,thick=2,$
+		p_re = plot (rFull,jP_z,thick=2,$
 				title='jP_z',name='Jp_re',font_size=10,$
 				layout=[1,3,3],/current,yRange=yRange,transp=50)
-		p_im = plot (rFull,imaginary(jP_z_total),color='r',thick=2,transp=50,$
+		p_im = plot (rFull,imaginary(jP_z),color='r',thick=2,transp=50,$
 				name='Jp_re',font_size=10,/over)
 	   	l = legend(target=[p_re,p_im],position=[0.99,0.25],/norm,font_size=10,horizontal_align='RIGHT')
 
 
 	endif
 
-	;	Write text file for comparison with GCC
+	;;	Write text file for comparison with GCC
 
-	outData	= replicate ( { r : 0.0 , $
-				eR : complex ( 0.0, 0.0 ), $
-				ePhi : complex ( 0.0, 0.0 ), $
-				ez : complex ( 0.0, 0.0 ) }, n_elements ( runData.r ) )
+	;outData	= replicate ( { r : 0.0 , $
+	;			eR : complex ( 0.0, 0.0 ), $
+	;			ePhi : complex ( 0.0, 0.0 ), $
+	;			ez : complex ( 0.0, 0.0 ) }, n_elements ( runData.r ) )
 
-	outData.r 		= runData.r
-	outData.eR		= eR
-	outData[0:n_elements(ePhi)-1].ePhi	= ePhi
-	outData[0:n_elements(ePhi)-1].ez		= ez
+	;outData.r 		= runData.r
+	;outData.eR		= eR
+	;outData[0:n_elements(ePhi)-1].ePhi	= ePhi
+	;outData[0:n_elements(ePhi)-1].ez		= ez
 
-
-	openw, lun, 'dlg_solution.txt', /get_lun
-	for i=0,n_elements(runData.r)-1 do $
-		printf, lun, outData[i], $
-			format = '(f8.5,2x,6(e12.4,2x))'
-	close, lun
-	
-	close, /all
+	;openw, lun, 'dlg_solution.txt', /get_lun
+	;for i=0,n_elements(runData.r)-1 do $
+	;	printf, lun, outData[i], $
+	;		format = '(f8.5,2x,6(e12.4,2x))'
+	;close, lun
+	;
+	;close, /all
 
 
 	if plotMovie then begin

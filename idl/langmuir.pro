@@ -11,6 +11,7 @@
 	noIMSL = 1
 	linearDevice = 0
 	kjInput = 1
+	kj_jP_fileName = 'kj_jP.nc'
 
 ;	Plotting switches
 

@@ -93,6 +93,8 @@ pro run_setup, $
 	;@steffi
 	@langmuir
 
+	@rsfwc_input
+
 ;		Grid
 
 		dR	= ( rMax - rMin ) / ( nR - 1 )
