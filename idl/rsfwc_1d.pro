@@ -91,13 +91,50 @@ pro rsfwc_1d, $
 	jPhi_	= jR_ * 0
 	jZ_		= jR_ * 0
 
+	if kjInput then begin
+
+		cdfId = ncdf_open('kjInput.nc')
+			nCdf_varGet, cdfId, 'kj_jP_r_re', kj_jpR_re
+			nCdf_varGet, cdfId, 'kj_jP_r_im', kj_jpR_im
+			nCdf_varGet, cdfId, 'kj_jP_p_re', kj_jpT_re
+			nCdf_varGet, cdfId, 'kj_jP_p_im', kj_jpT_im
+			nCdf_varGet, cdfId, 'kj_jP_z_re', kj_jpZ_re
+			nCdf_varGet, cdfId, 'kj_jP_z_im', kj_jpZ_im
+
+			nCdf_varGet, cdfId, 'kj_jP_r_re_', kj_jpR_re_
+			nCdf_varGet, cdfId, 'kj_jP_r_im_', kj_jpR_im_
+			nCdf_varGet, cdfId, 'kj_jP_p_re_', kj_jpT_re_
+			nCdf_varGet, cdfId, 'kj_jP_p_im_', kj_jpT_im_
+			nCdf_varGet, cdfId, 'kj_jP_z_re_', kj_jpZ_re_
+			nCdf_varGet, cdfId, 'kj_jP_z_im_', kj_jpZ_im_
+		ncdf_close, cdfId
+
+		kj_jpR = complex(kj_jpR_re,kj_jpR_im)
+		kj_jpT = complex(kj_jpT_re,kj_jpT_im)
+		kj_jpZ = complex(kj_jpZ_re,kj_jpZ_im)
+
+		kj_jpR_ = complex(kj_jpR_re_,kj_jpR_im_)
+		kj_jpT_ = complex(kj_jpT_re_,kj_jpT_im_)
+		kj_jpZ_ = complex(kj_jpZ_re_,kj_jpZ_im_)
+
+	endif
+
+
    	; NOTE: the equations were derived as +curlcurlE - k0edotE = +iwuJa
 	; and as such, the sign in the below is +ve, NOT -ve as in the aorsa
 	; formulation ;)	
    	for i=0,runData.nR-2 do begin
+
 		rhs[i*3+2]	= II * wReal * u0 * jz_[i]
 		rhs[i*3+1]	= II * wReal * u0 * jPhi_[i]
 		rhs[i*3]	= II * wReal * u0 * jR_[i]
+
+		if kjInput then begin
+			rhs[i*3+2]	+= II / (wReal * e0) * kj_jpZ_[i]
+			rhs[i*3+1]	+= II / (wReal * e0) * kj_jpT_[i]
+			rhs[i*3]	+= II / (wReal * e0) * kj_jpR_[i]
+		endif
+
 	endfor
 
 ;	Solve matrix
@@ -332,10 +369,12 @@ pro rsfwc_1d, $
 	nCdf_control, nc_id, /fill
 	
 	nr_id = nCdf_dimDef ( nc_id, 'nR', runData.nR )
+	nrH_id = nCdf_dimDef ( nc_id, 'nR_', runData.nR-1 )
 	scalar_id = nCdf_dimDef ( nc_id, 'scalar', 1 )
 
 	freq_id = nCdf_varDef ( nc_id, 'freq', scalar_id, /float )
 	r_id = nCdf_varDef ( nc_id, 'r', nr_id, /float )
+	rH_id = nCdf_varDef ( nc_id, 'r_', nrH_id, /float )
 
 	B0_r_id = nCdf_varDef ( nc_id, 'B0_r', nr_id, /float )
 	B0_p_id = nCdf_varDef ( nc_id, 'B0_p', nr_id, /float )
@@ -367,6 +406,7 @@ pro rsfwc_1d, $
 	nCdf_varPut, nc_id, freq_id, runData.freq
 
 	nCdf_varPut, nc_id, r_id, runData.r
+	nCdf_varPut, nc_id, rH_id, runData.r_
 
 	nCdf_varPut, nc_id, B0_r_id, runData.BField[*,0]
 	nCdf_varPut, nc_id, B0_p_id, runData.BField[*,1]

@@ -10,6 +10,7 @@
  	bandStorage = 0
 	noIMSL = 1
 	linearDevice = 0
+	kjInput = 1
 
 ;	Plotting switches
 
@@ -42,7 +43,7 @@
 		bz_frac	= 0.0	
 		ionSpecZ	= [ 1 ]
 		ionSpecAmu	= [ 1 ]
-		nMax		= [ 1.0 ] * 1d14
+		nMax		= [ 1.0 ] * 1.1d14
 		damping = 0.00
 		freq	= 1.15e8
 		nPhi = 0.0

@@ -34,41 +34,70 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
                 j_  = 3*i
                 if i gt 0 then begin
                     i_  = 3*i-2
+					; eT i-1/2
 			    	aMat_bandStorage[i_,nuca+j_-i_]	= -II * nPhi * r_[i-1] / ( r[i]^2 * dr ) $
                                         - w[i]^2*r_[i-1]/(2*c^2*r[i])*epsilon_[1,0,i-1]
                     i_  = 3*i-1
+
+					; eZ i-1/2
 			    	aMat_bandStorage[i_,nuca+j_-i_]	= -II * kz / dr $
                                         - w[i]^2*r_[i-1]/(2*c^2*r[i])*epsilon_[2,0,i-1]
                 endif
                     
                     i_=3*i    
+					; eR i
 			    	aMat_bandStorage[i_,nuca+j_-i_]	= nPhi^2 / r[i]^2 + kz^2 $
                                         - w[i]^2 / c^2 * epsilon[0,0,i]
                 if i lt nR-1 then begin
                     i_=3*i+1
+					; eT i+1/2
 			    	aMat_bandStorage[i_,nuca+j_-i_]	= II * nPhi * r_[i] / ( r[i]^2 * dr ) $
                                         - w[i]^2*r_[i]/(2*c^2*r[i])*epsilon_[1,0,i]
                     i_=3*i+2
+					; eZ i+1/2
 			    	aMat_bandStorage[i_,nuca+j_-i_]	= II * kz / dr $
                                         - w[i]^2*r_[i]/(2*c^2*r[i])*epsilon_[2,0,i]
                 endif
 
-            endif else begin
-
-				t3	= nPhi^2 / r[i] + kz^2 $
-                                        - w[i]^2 / c^2 * epsilon[0,0,i]
+            endif else if kjInput then begin
 
                 if i gt 0 then begin
+					; eT i-1/2
+			    	aMat[3*i-2,3*i]	= -II * nPhi * r_[i-1] / ( r[i]^2 * dr ) 
+					; eZ i-1/2
+			    	aMat[3*i-1,3*i]	= -II * kz / dr 
+                endif
+					; eR i
+			    	aMat[3*i,3*i]	= nPhi^2 / r[i] + kz^2 - w[i]^2 / c^2
+
+                if i lt nR-1 then begin
+					; eT i+1/2
+			    	aMat[3*i+1,3*i]	= II * nPhi * r_[i] / ( r[i]^2 * dr ) 
+					; eZ i+1/2
+			    	aMat[3*i+2,3*i]	= II * kz / dr 
+                endif
+
+
+			endif else begin
+
+				t3	= nPhi^2 / r[i] + kz^2 - w[i]^2 / c^2 * epsilon[0,0,i]
+
+                if i gt 0 then begin
+					; eT i-1/2
 			    	aMat[3*i-2,3*i]	= -II * nPhi * r_[i-1] / ( r[i]^2 * dr ) $
                                         - w[i]^2*r_[i-1]/(2*c^2*r[i])*epsilon_[1,0,i-1]
+					; eZ i-1/2
 			    	aMat[3*i-1,3*i]	= -II * kz / dr $
                                         - w[i]^2*r_[i-1]/(2*c^2*r[i])*epsilon_[2,0,i-1]
                 endif
+					; eR i
 			    	aMat[3*i,3*i]	= t3;nPhi^2 / r[i]^2 + kz^2 $
                                         ;- w[i]^2 / c^2 * epsilon[0,0,i]
                 if i lt nR-1 then begin
+					; eT i+1/2
 			    	aMat[3*i+1,3*i]	= II * nPhi * r_[i] / ( r[i]^2 * dr ) $
                                         - w[i]^2*r_[i]/(2*c^2*r[i])*epsilon_[1,0,i]
+					; eZ i+1/2
 			    	aMat[3*i+2,3*i]	= II * kz / dr $
                                         - w[i]^2*r_[i]/(2*c^2*r[i])*epsilon_[2,0,i]
                 endif
@@ -101,7 +130,20 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 				    if i lt nR-2 then $
 				    aMat_bandStorage[i_,nuca+j_-i_]	= -r_[i+1]/(r[i+1]*dr^2)
 
-                endif else begin
+                endif else if kjInput then begin
+
+                    if i gt 0 then $
+				    aMat[3*i-2,3*i+1] = -r_[i-1] / ( r[i] * dr^2 ) 
+				    aMat[3*i,3*i+1]	= -II*nPhi/(r[i]*dr) 
+				    aMat[3*i+1,3*i+1]	= kz^2 + r_[i]/(r[i+1]*dr^2) $
+                                            + r_[i]/(r[i]*dr^2) $
+                                            - w[i]^2/c^2
+				    aMat[3*i+2,3*i+1]	= -kz*nPhi/r_[i] 
+				    aMat[3*i+3,3*i+1]	= II * nPhi / (r[i+1]*dr) 
+				    if i lt nR-2 then $
+				    aMat[3*i+4,3*i+1]	= -r_[i+1]/(r[i+1]*dr^2)
+ 
+				endif else begin
 
                     if i gt 0 then $
 				    aMat[3*i-2,3*i+1] = -r_[i-1] / ( r[i] * dr^2 ) 
@@ -141,15 +183,33 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 				    if i lt nR-2 then $
 				    aMat_bandStorage[i_,nuca+j_-i_] = -r[i+1] / ( r_[i] * dr^2 ) 
 
-                endif else begin
+                endif else if kjInput then begin
+
+					t1	= -r[i]/(r_[i]*dr^2)
+					t2	= -II*kz*r[i]/(r_[i]*dr) ; Propagate this "dr" correction
+					t3	= -nPhi*kz/r_[i] ; Also propagate this "r_[i]" correction
+					t4	= (r[i+1]+r[i])/(r_[i]*dr^2) + nPhi^2/r_[i]^2 - w[i]^2/c^2 ; Also propagate this "r_[i]^2" correction
+					t5	= II * kz * r[i+1] / (r_[i]*dr) ; And this "dr" correction 
+					t6	= -r[i+1] / ( r_[i] * dr^2 ) 
+
+	                if i gt 0 then $
+				    aMat[3*i-1,3*i+2] = t1
+				    aMat[3*i,3*i+2]   = t2 
+				    aMat[3*i+1,3*i+2] = t3
+				    aMat[3*i+2,3*i+2] = t4
+				    aMat[3*i+3,3*i+2] = t5
+				    if i lt nR-2 then $
+				    aMat[3*i+5,3*i+2] = t6 
+
+				endif else begin
                
 					t1	= -r[i]/(r_[i]*dr^2)
-					t2	= -II*kz*r[i]/r_[i]$
+					t2	= -II*kz*r[i]/(r_[i]*dr)$
                                         -w[i]^2*r[i]/(2*c^2*r_[i])*epsilon[0,2,i]
-					t3	= -nPhi*kz - w[i]^2/c^2*epsilon_[1,2,i]
-					t4	= (r[i+1]+r[i])/(r_[i]*dr^2) + nPhi^2/r_[i] $
+					t3	= -nPhi*kz/r_[i] - w[i]^2/c^2*epsilon_[1,2,i]
+					t4	= (r[i+1]+r[i])/(r_[i]*dr^2) + nPhi^2/r_[i]^2 $
                                             - w[i]^2/c^2*epsilon_[2,2,i]
-					t5	= II * kz * r[i+1] / r_[i] $
+					t5	= II * kz * r[i+1] / (r_[i]*dr) $
                                             - w[i]^2*r[i+1]/(2*c^2*r_[i])*epsilon[0,2,i+1]
 					t6	= -r[i+1] / ( r_[i] * dr^2 ) 
 

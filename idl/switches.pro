@@ -7,7 +7,8 @@
         dispersion_noPoloidal, $
 		bandStorage, $
 		noIMSL, $
-		linearDevice
+		linearDevice, $
+		kjInput
 
 	common plotSwitches, $
 		plotDispersionGeneral, $
