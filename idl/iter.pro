@@ -10,13 +10,13 @@
  	bandStorage = 0
 	noIMSL = 1
 	linearDevice = 0
-	kjInput = 1
+	kjInput = 0
 	kj_jP_fileName = 'kj_jP.nc'
 
 ;	Plotting switches
 
  	plotRunData	= 0
- 	plotDispersionGeneral 	= 0
+ 	plotDispersionGeneral 	= 1
  	plotDispersionJaeger	= 0
  	plotDispersionNoPol		= 0
 	plotESolution = 1
@@ -34,28 +34,26 @@
 
 ;		Variables
 
-		r0	= 100d0
-		aWall	= 5d0
+		r0	= 6.6d0
+		aWall	= 2.5d0
 
-		rMin	= r0 - aWall
-		rMax	= r0 + aWall
-   		b0	= 0.0001d0
-		bR_frac	= 100.0
+		rMin	= 4.0;r0 - aWall
+		rMax	= 8.2;r0 + aWall
+   		b0	= 5.3d0
+		bR_frac	= 0.0
 		bz_frac	= 0.0	
 		ionSpecZ	= [ 1 ]
-		ionSpecAmu	= [ 1 ]
-		nMax		= [ 1.0 ] * 1.1d14
-		damping = 0.00
-		freq	= 1.15e8
-		nPhi = 0.0
+		ionSpecAmu	= [ 3 ]
+		nMax		= [ 3.2 ] * 1d19
+		damping = 0.02
+		freq	= 53e6
+		nPhi = -27.0
 		kz = 0.0
 		nR	= 4096L
-		antLoc	= 100.0
-		AntennaJ_r = 1
-		AntennaJ_t = 0
-		AntennaJ_z = 0
+		antLoc	= 8.0
 
-		useEqdsk = 0
+		useEqdsk = 1
+		eqdskFName = 'Scen4_bn2.57_129x129'
 		useProfiles = 0
 		poloidalScale = 1.0
 		zSlice	= 0.0

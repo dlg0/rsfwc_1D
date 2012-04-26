@@ -7,7 +7,7 @@ pro rsfwc_1d, $
 	ez = ez, $
 	divD = divD, $
 	rFull = rFull, rHalf = rHalf, $
-	jA_r = jA_r, jA_t = jA_t, jA_z = jA_z, $
+	;jA_r = jA_r, jA_t = jA_t, jA_z = jA_z, $
 	in_kz = in_kz, $
 	nMax = nMax, $
 	nFac = nFac, $
@@ -40,7 +40,10 @@ pro rsfwc_1d, $
 		gradSize = gradSize, $
 		freq = freq, $
 		nPhi = nPhi, $
-		poloidalScale = poloidalScale
+		poloidalScale = poloidalScale, $
+		AntennaJ_r = AntennaJ_r, $
+		AntennaJ_t = AntennaJ_t, $
+		AntennaJ_z = AntennaJ_z
 
 	rFull 	= runData.r
 	rHalf	= runData.r_
@@ -76,37 +79,40 @@ pro rsfwc_1d, $
 						eq min ( abs ( runData.r_ - runData.antLoc ) ) )
 	rhs		= complexArr ( nAll )
 
-	if not keyword_set ( jA_r ) then jA_R = 0
-	if not keyword_set ( jA_t ) then jA_t = 0
-	if not keyword_set ( jA_z ) then jA_z = 1
+	;if not keyword_set ( jA_r ) then jA_R = 0
+	;if not keyword_set ( jA_t ) then jA_t = 0
+	;if not keyword_set ( jA_z ) then jA_z = 1
 
 	antSigX = 0.1;(runData.rMax-runData.rMin)/400.0
-	jAmp	= 5000.0
+	jAmp	= 50.0
 
-    jA_r 		= jAmp*exp( -( (runData.r-runData.antLoc)^2/antSigX^2 ) )
-	jA_t		= jA_r * 0
-	jA_z 		= jA_r * 0
+	TmpAntJ = jAmp*exp( -( (runData.r-runData.antLoc)^2/antSigX^2 ) )
+	TmpAntJ_ = jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSigX^2 ) )
 
-    jA_r_ 	= jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSigX^2 ) )
-	jA_t_		= jA_r_ * 0
-	jA_z_		= jA_r_ * 0
+    if AntennaJ_r then jA_r	= TmpAntJ else jA_r = TmpAntJ*0
+    if AntennaJ_t then jA_t	= TmpAntJ else jA_t = TmpAntJ*0
+    if AntennaJ_z then jA_z	= TmpAntJ else jA_z = TmpAntJ*0
+
+	if AntennaJ_r then jA_r_ = TmpAntJ else jA_r_ = TmpAntJ_*0
+    if AntennaJ_t then jA_t_ = TmpAntJ else jA_t_ = TmpAntJ_*0
+    if AntennaJ_z then jA_z_ = TmpAntJ else jA_z_ = TmpAntJ_*0
 
 	if kjInput then begin
 
 		cdfId = ncdf_open(kj_jP_fileName)
-			nCdf_varGet, cdfId, 'kj_jP_r_re', kj_jpR_re
-			nCdf_varGet, cdfId, 'kj_jP_r_im', kj_jpR_im
-			nCdf_varGet, cdfId, 'kj_jP_p_re', kj_jpT_re
-			nCdf_varGet, cdfId, 'kj_jP_p_im', kj_jpT_im
-			nCdf_varGet, cdfId, 'kj_jP_z_re', kj_jpZ_re
-			nCdf_varGet, cdfId, 'kj_jP_z_im', kj_jpZ_im
+			nCdf_varGet, cdfId, 'jP_r_re', kj_jpR_re
+			nCdf_varGet, cdfId, 'jP_r_im', kj_jpR_im
+			nCdf_varGet, cdfId, 'jP_p_re', kj_jpT_re
+			nCdf_varGet, cdfId, 'jP_p_im', kj_jpT_im
+			nCdf_varGet, cdfId, 'jP_z_re', kj_jpZ_re
+			nCdf_varGet, cdfId, 'jP_z_im', kj_jpZ_im
 
-			nCdf_varGet, cdfId, 'kj_jP_r_re_', kj_jpR_re_
-			nCdf_varGet, cdfId, 'kj_jP_r_im_', kj_jpR_im_
-			nCdf_varGet, cdfId, 'kj_jP_p_re_', kj_jpT_re_
-			nCdf_varGet, cdfId, 'kj_jP_p_im_', kj_jpT_im_
-			nCdf_varGet, cdfId, 'kj_jP_z_re_', kj_jpZ_re_
-			nCdf_varGet, cdfId, 'kj_jP_z_im_', kj_jpZ_im_
+			nCdf_varGet, cdfId, 'jP_r_re_', kj_jpR_re_
+			nCdf_varGet, cdfId, 'jP_r_im_', kj_jpR_im_
+			nCdf_varGet, cdfId, 'jP_p_re_', kj_jpT_re_
+			nCdf_varGet, cdfId, 'jP_p_im_', kj_jpT_im_
+			nCdf_varGet, cdfId, 'jP_z_re_', kj_jpZ_re_
+			nCdf_varGet, cdfId, 'jP_z_im_', kj_jpZ_im_
 		ncdf_close, cdfId
 
 		kj_jpR = complex(kj_jpR_re,kj_jpR_im)
@@ -440,7 +446,7 @@ pro rsfwc_1d, $
 
 	nCdf_close, nc_id
 
-stop
+
 	if plotJp then begin
 
 		jpRange = max(abs([abs(jp_r),abs(jp_t),abs(jp_z)]))

@@ -7,7 +7,11 @@ pro run_setup, $
 	gradSize = gradSize, $
 	freq = freq, $
 	poloidalScale = poloidalScale, $
-	nPhi = nPhi
+	nPhi = nPhi, $
+	AntennaJ_r = AntennaJ_r, $
+	AntennaJ_t = AntennaJ_t, $
+	AntennaJ_z = AntennaJ_z
+
 
 	common constants
 	common switches
@@ -76,6 +80,9 @@ pro run_setup, $
 	if not keyword_set ( nPhi ) then nPhi = -5.0;-22.0
 	if not keyword_set ( in_kz ) then kz = 0.0 else kz = in_kz;51.5;63.6 
 	nR	= 512L
+	AntennaJ_r = 0
+	AntennaJ_t = 0
+	AntennaJ_z = 1
 	antLoc	= 1.6
 
 	useEqdsk = 1
@@ -92,7 +99,7 @@ pro run_setup, $
 	;@smithe
 	;@steffi
 	@langmuir
-
+	;@iter
 	@rsfwc_input
 
 ;		Grid
@@ -138,8 +145,7 @@ pro run_setup, $
 
 		if useEqdsk then begin
 
-			nstx_eqdsk	= '../eqdsk/g120740.00275.EFIT02.mds.uncorrected.qscale_1.00000.dlgMod_1.67'
-			eqdsk	= readgeqdsk ( nstx_eqdsk )
+			eqdsk	= readgeqdsk ( eqdskFName, /noTor )
 			
 
 			bR  = interpolate ( eqdsk.bR, $

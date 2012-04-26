@@ -174,17 +174,7 @@ pro dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 		kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
 		if iiNegCnt gt 0 then kRPlot[iiNeg] = -1.0 * kRPlot[iiNeg]
 
-		;iPlot, runData.r, kRPlot[*,0], sym_index = 4, lineStyle = 6, $
-		;	view_grid = [2,1], color = blue, $
-		;	/strech_to_fit, /zoom_on_resize
-		;iPlot, runData.r, kRPlot[*,1], sym_index = 4, lineStyle = 6, /over, color = green
-		;iPlot, runData.r, kRPlot[*,2], sym_index = 4, lineStyle = 6, /over, color = red
-		;iPlot, runData.r, kRPlot[*,3], sym_index = 4, lineStyle = 6, /over, color = purple
-
-		p1=plot(runData.r, kRPlot[*,0], thick = 2.0, color = blue, title='dispersion')
-		p2=plot(runData.r, kRPlot[*,1], thick = 2.0, /over, color = green)
-		p3=plot(runData.r, kRPlot[*,2], thick = 2.0, /over, color = red)
-		p4=plot(runData.r, kRPlot[*,3], thick = 2.0, /over, color = purple)
+		dlg_rootPlotter, runData.r, kRPlot
 
 		kRPlot_	= kRPlot
 		kRPlot	= imaginary ( kR__ )
@@ -193,32 +183,29 @@ pro dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 		kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
 		if iiNegCnt gt 0 then kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
 
-		p5=plot(runData.r, kRPlot[*,0], lineStyle = 5, /over, color = blue)
-		p6=plot(runData.r, kRPlot[*,1], lineStyle = 5, /over, color = green)
-		p7=plot(runData.r, kRPlot[*,2], lineStyle = 5, /over, color = red)
-		p8=plot(runData.r, kRPlot[*,3], lineStyle = 5, /over, color = purple)
-	
-			range	= max ( abs( [kRPlot,kRPlot_] ) )
-			for i = 0, runData.nSpec do begin
-				for harm = 1, 15 do begin
-	
-				iiRes	= where ( abs ( abs(specData[i].wc*harm) - wReal ) $
-							eq min ( abs ( abs(specData[i].wc*harm) - wReal ) ) )
+		dlg_rootPlotter, runData.r, kRPlot, /imag
 
-					for jj=0,n_elements(iiRes)-1 do begin	
-						if iiRes[jj] ne 0 and iiRes[jj] ne runData.nR-1 $
-						and iiRes[jj] ne runData.nR/2 $
-						and iiRes[jj] ne runData.nR/2-1 $
-						then begin
+		range	= max ( abs( [kRPlot,kRPlot_] ) )
+		for i = 0, runData.nSpec do begin
+			for harm = 1, 15 do begin
 	
-							print, harm, 'th Cyclotron resonance found at ', runData.r[iiRes[jj]]
-							p9=plot( [ runData.r[iiRes[jj]], runData.r[iiRes[jj]] ], [ -range, range ],$
-								thick = 6, trans = 80, /over )
+			iiRes	= where ( abs ( abs(specData[i].wc*harm) - wReal ) $
+						eq min ( abs ( abs(specData[i].wc*harm) - wReal ) ) )
+
+				for jj=0,n_elements(iiRes)-1 do begin	
+					if iiRes[jj] ne 0 and iiRes[jj] ne runData.nR-1 $
+					and iiRes[jj] ne runData.nR/2 $
+					and iiRes[jj] ne runData.nR/2-1 $
+					then begin
 	
-						endif			
-					endfor
+						print, harm, 'th Cyclotron resonance found at ', runData.r[iiRes[jj]]
+						p9=plot( [ runData.r[iiRes[jj]], runData.r[iiRes[jj]] ], [ -range, range ],$
+							thick = 6, trans = 80, /over )
+	
+					endif			
 				endfor
 			endfor
+		endfor
 
 	
 		if plotKdotB then begin	
