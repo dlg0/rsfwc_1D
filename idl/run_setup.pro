@@ -10,7 +10,11 @@ pro run_setup, $
 	nPhi = nPhi, $
 	AntennaJ_r = AntennaJ_r, $
 	AntennaJ_t = AntennaJ_t, $
-	AntennaJ_z = AntennaJ_z
+	AntennaJ_z = AntennaJ_z, $
+	antSig_r = antSig_r, $
+	antSig_t = antSig_t, $
+	antSig_z = antSig_z, $
+	jAmp = jAmp
 
 
 	common constants
@@ -53,6 +57,7 @@ pro run_setup, $
 	plotEdotB = 0
 	plotKdotB = 0
 	plotJp = 0
+	plotJdotE = 0
 
 ;	File write switches
 
@@ -84,13 +89,14 @@ pro run_setup, $
 	AntennaJ_t = 0
 	AntennaJ_z = 1
 	antLoc	= 1.6
-
+	jAmp = 1.0
 	useEqdsk = 1
 	useProfiles = 1
 	if not keyword_set ( poloidalScale ) then poloidalScale = 1.0
 	zSlice	= 1.06 
 	sliceSlope = 0.0
 	profile1 = 0
+	profile2 = 0
 
 ;	-----------------------------
 
@@ -98,8 +104,9 @@ pro run_setup, $
 
 	;@smithe
 	;@steffi
-	@langmuir
 	;@iter
+	@langmuir
+	;@klepper
 	@rsfwc_input
 
 ;		Grid
@@ -241,6 +248,13 @@ pro run_setup, $
                     
                 nProfile  = ( nMax[i]-scaleFac*(r-r0)^2 )  / nMax[i]
                 nProfile_  = ( nMax[i]-scaleFac*(r_-r0)^2 )  / nMax[i]
+
+			endif
+
+			if profile2 and i lt nSpec then begin
+
+				nProfile = (exp(-70*((r-max(r)))))
+				nProfile_ = (exp(-70*((r_-max(r)))))
 
 			endif
 

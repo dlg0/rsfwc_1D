@@ -10,20 +10,20 @@ pro rs_plot_solution, antLoc, dR, nR, $
 
 		eRange	= max(sqrt ( abs(e1)^2 + abs(e2)^2 + abs(e3)^2 ))
    		p_r = plot ( r1, e1, layout=[1,3,1],$
-				title='Er',yRange=[-eRange,eRange],ytitle='Er [V/m]',name='Re',window_title='rsfwc_1d')
+				title='Er',ytitle='Er [V/m]',name='Re',window_title='rsfwc_1d')
 		p_i = plot ( r1, imaginary(e1), color='red',/over,name='Im')
-		l = legend(target=[p_r,p_i],position=[0.98,0.95],/norm,font_size=10,horizontal_align='RIGHT')
+		l = legend(target=[p_r,p_i],position=[0.98,0.95],/norm,font_size=10,horizontal_alignment='RIGHT')
 
 		p_r = plot ( r2, e2, layout=[1,3,2],/current,$
-				title='Et',yRange=[-eRange,eRange],ytitle='Et [V/m]',name='Re')
+				title='Et',ytitle='Et [V/m]',name='Re')
 		p_i = plot ( r2, imaginary(e2), color='red',/over,name='Im')
-		l = legend(target=[p_r,p_i],position=[0.98,0.62],/norm,font_size=10,horizontal_align='RIGHT')
+		l = legend(target=[p_r,p_i],position=[0.98,0.62],/norm,font_size=10,horizontal_alignment='RIGHT')
 
 		p_r = plot ( r3, e3, layout=[1,3,3],/current,$
-				title='Ez',yRange=[-eRange,eRange],ytitle='Ez [V/m]',name='Re')
+				title='Ez',ytitle='Ez [V/m]',name='Re')
 		p_i = plot ( r3, imaginary(e3), color='red',/over,name='Im')
-		l = legend(target=[p_r,p_i],position=[0.98,0.28],/norm,font_size=10,horizontal_align='RIGHT')
- 
+		l = legend(target=[p_r,p_i],position=[0.98,0.28],/norm,font_size=10,horizontal_alignment='RIGHT')
+
         ;loadct, 12, /sil
     
         ;iPlot, r1, e1, $
@@ -156,14 +156,14 @@ pro rs_plot_solution, antLoc, dR, nR, $
 		if plotFFTSolution then $
 		c=contour(fftData2D_pm,rfftdata, krfft_pm, yrange=[-kmax,kmax], rgb_table=1,n_levels=20)
 
-		if keyword_set ( kR ) then begin
+		;if keyword_set ( kR ) then begin
 
-			p=plot(r_kR, real_part ( kR[*,0] ), /over)
-			p=plot(r_kR, real_part ( kR[*,1] ), /over)
-			p=plot(r_kR, real_part ( kR[*,2] ), /over)
-			p=plot(r_kR, real_part ( kR[*,3] ), /over)
-			
-		endif
+		;	p=plot(r_kR, real_part ( kR[*,0] ), /over)
+		;	p=plot(r_kR, real_part ( kR[*,1] ), /over)
+		;	p=plot(r_kR, real_part ( kR[*,2] ), /over)
+		;	p=plot(r_kR, real_part ( kR[*,3] ), /over)
+		;	
+		;endif
 
 		if keyword_set ( divD ) then begin
 

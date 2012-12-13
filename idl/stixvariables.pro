@@ -62,4 +62,6 @@ pro stixVariables, wReal, specData, $
 
     endelse
 
+	;p=plot(-sqrt(abs(stixP/stixS)))
+
 end

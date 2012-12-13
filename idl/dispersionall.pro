@@ -167,45 +167,55 @@ pro dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 
 	if plotDispersionGeneral then begin
 
-        nonLinearSF = 1.0
+        ;nonLinearSF = 1.0
 		kRPlot	= real_part ( kR__ )
-		iiNeg	= where ( kRPlot lt 0, iiNegCnt )
-		if iiNegCnt gt 0 then kRPlot[iiNeg] = -1.0 * kRPlot[iiNeg] 
-		kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
-		if iiNegCnt gt 0 then kRPlot[iiNeg] = -1.0 * kRPlot[iiNeg]
+		;iiNeg	= where ( kRPlot lt 0, iiNegCnt )
+		;if iiNegCnt gt 0 then kRPlot[iiNeg] = -1.0 * kRPlot[iiNeg] 
+		;kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
+		;if iiNegCnt gt 0 then kRPlot[iiNeg] = -1.0 * kRPlot[iiNeg]
 
-		dlg_rootPlotter, runData.r, kRPlot
+		p=plot(runData.r,kRPlot[*,0],symbol="D",lineStyle='',sym_size=0.5)
+		p=plot(runData.r,kRPlot[*,1],symbol="D",lineStyle='',/over,sym_size=0.5)
+		p=plot(runData.r,kRPlot[*,2],symbol="D",lineStyle='',/over,sym_size=0.5)
+		p=plot(runData.r,kRPlot[*,3],symbol="D",lineStyle='',/over,sym_size=0.5)
 
-		kRPlot_	= kRPlot
+		;dlg_rootPlotter, runData.r, kRPlot
+
+		;kRPlot_	= kRPlot
 		kRPlot	= imaginary ( kR__ )
-		iiNeg	= where ( kRPlot lt 0, iiNegCnt )
-		if iiNegCnt gt 0 then kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg] 
-		kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
-		if iiNegCnt gt 0 then kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
+		;iiNeg	= where ( kRPlot lt 0, iiNegCnt )
+		;if iiNegCnt gt 0 then kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg] 
+		;kRPlot	= ( kRPlot )^(1d0/nonLinearSF)
+		;if iiNegCnt gt 0 then kRPlot[iiNeg]	= -1.0 * kRPlot[iiNeg]
 
-		dlg_rootPlotter, runData.r, kRPlot, /imag
+		p=plot(runData.r,kRPlot[*,0],symbol="D",lineStyle='',/over,color='b',sym_size=0.5)
+		p=plot(runData.r,kRPlot[*,1],symbol="D",lineStyle='',/over,color='b',sym_size=0.5)
+		p=plot(runData.r,kRPlot[*,2],symbol="D",lineStyle='',/over,color='b',sym_size=0.5)
+		p=plot(runData.r,kRPlot[*,3],symbol="D",lineStyle='',/over,color='b',sym_size=0.5)
 
-		range	= max ( abs( [kRPlot,kRPlot_] ) )
-		for i = 0, runData.nSpec do begin
-			for harm = 1, 15 do begin
-	
-			iiRes	= where ( abs ( abs(specData[i].wc*harm) - wReal ) $
-						eq min ( abs ( abs(specData[i].wc*harm) - wReal ) ) )
+		;dlg_rootPlotter, runData.r, kRPlot, /imag
 
-				for jj=0,n_elements(iiRes)-1 do begin	
-					if iiRes[jj] ne 0 and iiRes[jj] ne runData.nR-1 $
-					and iiRes[jj] ne runData.nR/2 $
-					and iiRes[jj] ne runData.nR/2-1 $
-					then begin
+		;range	= max ( abs( [kRPlot,kRPlot_] ) )
+		;for i = 0, runData.nSpec do begin
+		;	for harm = 1, 15 do begin
 	
-						print, harm, 'th Cyclotron resonance found at ', runData.r[iiRes[jj]]
-						p9=plot( [ runData.r[iiRes[jj]], runData.r[iiRes[jj]] ], [ -range, range ],$
-							thick = 6, trans = 80, /over )
+		;	iiRes	= where ( abs ( abs(specData[i].wc*harm) - wReal ) $
+		;				eq min ( abs ( abs(specData[i].wc*harm) - wReal ) ) )
+
+		;		for jj=0,n_elements(iiRes)-1 do begin	
+		;			if iiRes[jj] ne 0 and iiRes[jj] ne runData.nR-1 $
+		;			and iiRes[jj] ne runData.nR/2 $
+		;			and iiRes[jj] ne runData.nR/2-1 $
+		;			then begin
 	
-					endif			
-				endfor
-			endfor
-		endfor
+		;				print, harm, 'th Cyclotron resonance found at ', runData.r[iiRes[jj]]
+		;				p9=plot( [ runData.r[iiRes[jj]], runData.r[iiRes[jj]] ], [ -range, range ],$
+		;					thick = 6, trans = 80, /over )
+	
+		;			endif			
+		;		endfor
+		;	endfor
+		;endfor
 
 	
 		if plotKdotB then begin	

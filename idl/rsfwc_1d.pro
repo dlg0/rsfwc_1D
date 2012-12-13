@@ -43,7 +43,12 @@ pro rsfwc_1d, $
 		poloidalScale = poloidalScale, $
 		AntennaJ_r = AntennaJ_r, $
 		AntennaJ_t = AntennaJ_t, $
-		AntennaJ_z = AntennaJ_z
+		AntennaJ_z = AntennaJ_z, $
+		antSig_r = antSig_r, $
+		antSig_t = antSig_t, $
+		antSig_z = antSig_z, $
+		jAmp = jAmp
+
 
 	rFull 	= runData.r
 	rHalf	= runData.r_
@@ -83,19 +88,28 @@ pro rsfwc_1d, $
 	;if not keyword_set ( jA_t ) then jA_t = 0
 	;if not keyword_set ( jA_z ) then jA_z = 1
 
-	antSigX = 0.1;(runData.rMax-runData.rMin)/400.0
-	jAmp	= 50.0
+	;antSigX = (runData.rMax-runData.rMin)/n_elements(runData.r)*15
+	;if jAmp gt 0 then jAmp = jAmp else jAmp 
 
-	TmpAntJ = jAmp*exp( -( (runData.r-runData.antLoc)^2/antSigX^2 ) )
-	TmpAntJ_ = jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSigX^2 ) )
+	;antk = -2000
+	;AntFluct = cos(runData.r*antk)+ii*sin(runData.r*antk)
+	;AntFluct_ = cos(runData.r_*antk)+ii*sin(runData.r_*antk)
 
-    if AntennaJ_r then jA_r	= TmpAntJ else jA_r = TmpAntJ*0
-    if AntennaJ_t then jA_t	= TmpAntJ else jA_t = TmpAntJ*0
-    if AntennaJ_z then jA_z	= TmpAntJ else jA_z = TmpAntJ*0
+	TmpAntJr = jAmp*exp( -( (runData.r-runData.antLoc)^2/antSig_r^2 ) )
+	TmpAntJr_ = jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSig_r^2 ) )
+	TmpAntJt = jAmp*exp( -( (runData.r-runData.antLoc)^2/antSig_t^2 ) )
+	TmpAntJt_ = jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSig_t^2 ) )
+	TmpAntJz = jAmp*exp( -( (runData.r-runData.antLoc)^2/antSig_z^2 ) )
+	TmpAntJz_ = jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSig_z^2 ) )
 
-	if AntennaJ_r then jA_r_ = TmpAntJ else jA_r_ = TmpAntJ_*0
-    if AntennaJ_t then jA_t_ = TmpAntJ else jA_t_ = TmpAntJ_*0
-    if AntennaJ_z then jA_z_ = TmpAntJ else jA_z_ = TmpAntJ_*0
+
+    if AntennaJ_r then jA_r	= TmpAntJr else jA_r = TmpAntJr*0
+    if AntennaJ_t then jA_t	= TmpAntJt else jA_t = TmpAntJt*0
+    if AntennaJ_z then jA_z	= TmpAntJz else jA_z = TmpAntJz*0
+
+	if AntennaJ_r then jA_r_ = TmpAntJr_ else jA_r_ = TmpAntJr_*0
+    if AntennaJ_t then jA_t_ = TmpAntJt_ else jA_t_ = TmpAntJt_*0
+    if AntennaJ_z then jA_z_ = TmpAntJz_ else jA_z_ = TmpAntJz_*0
 
 	if kjInput then begin
 
@@ -350,23 +364,26 @@ pro rsfwc_1d, $
 				+ conj(jP_t) * e_t $
 				+ conj(jP_z) * e_z )
 
-	p = plot (runData.r,jPDotE,color='b',thick=3,transp=50,$
-			title='J dot E',name='jDote_0',font_size=10,$
-			layout=[1,2,1],window_title='rsfwc_1d')
+	if plotJdotE then begin
 
-	; jAnt
-	; ---
+		p = plot (runData.r,jPDotE,color='b',thick=3,transparency=50,$
+				title='J dot E',name='jDote_0',font_size=10,$
+				layout=[1,2,1],window_title='rsfwc_1d')
 
-	pr = plot (runData.r,jA_r,color='b',thick=3,transp=50,$
-			title='jAnt',name='jAnt_r',font_size=10,$
-			layout=[1,2,2],/current)
-	pt = plot (runData.r,jA_t,color='r',thick=3,transp=50,$
-			name='jAnt_t',/over)
-	pz = plot (runData.r,jA_z,color='g',thick=3,transp=50,$
-			name='jAnt_z',/over)
+		; jAnt
+		; ---
 
-	l = legend(target=[pr,pt,pz],position=[0.8,0.4],/norm,font_size=10)
+		pr = plot (runData.r,jA_r,color='b',thick=3,transparency=50,$
+				title='jAnt',name='jAnt_r',font_size=10,$
+				layout=[1,2,2],/current)
+		pt = plot (runData.r,jA_t,color='r',thick=3,transparency=50,$
+				name='jAnt_t',/over)
+		pz = plot (runData.r,jA_z,color='g',thick=3,transparency=50,$
+				name='jAnt_z',/over)
 
+		;l = legend(target=[pr,pt,pz],position=[0.8,0.4],/norm,font_size=10)
+
+	endif
 
 	;save, $
 	;	jP_r, jP_t, jP_z, $
@@ -430,7 +447,7 @@ pro rsfwc_1d, $
 	nCdf_varPut, nc_id, e_z_re_id, real_part(e_z) 
 	nCdf_varPut, nc_id, e_z_im_id, imaginary(e_z) 
 
-	nCdf_varPut, nc_id, jP_r_re_id, real_part(jP_r) 
+	nCdf_varPut, nc_id, jP_r_re_id, real_part(jP_r)
 	nCdf_varPut, nc_id, jP_r_im_id, imaginary(jP_r) 
 	nCdf_varPut, nc_id, jP_p_re_id, real_part(jP_t) 
 	nCdf_varPut, nc_id, jP_p_im_id, imaginary(jP_t) 
@@ -454,24 +471,24 @@ pro rsfwc_1d, $
 
 		p_re = plot (rFull,jP_r,thick=2,$
 				title='jP_r',name='Jp_re',font_size=10,$
-				layout=[1,3,1],yRange=yRange,transp=50,window_title='rsfwc_1d')
-		p_im = plot (rFull,imaginary(jP_r),color='r',thick=2,transp=50,$
+				layout=[1,3,1],yRange=yRange,transparency=50,window_title='rsfwc_1d')
+		p_im = plot (rFull,imaginary(jP_r),color='r',thick=2,transparency=50,$
 				name='Jp_re',font_size=10,/over)
-	   	l = legend(target=[p_re,p_im],position=[0.99,0.95],/norm,font_size=10,horizontal_align='RIGHT')
+	   	;l = legend(target=[p_re,p_im],position=[0.99,0.95],/norm,font_size=10,horizontal_alignment='RIGHT')
 
 		p_re = plot (rFull,jP_t,thick=2,$
 				title='jP_t',name='Jp_re',font_size=10,$
-				layout=[1,3,2],/current,yRange=yRange,transp=50)
-		p_im = plot (rFull,imaginary(jP_t),color='r',thick=2,transp=50,$
+				layout=[1,3,2],/current,yRange=yRange,transparency=50)
+		p_im = plot (rFull,imaginary(jP_t),color='r',thick=2,transparency=50,$
 				name='Jp_re',font_size=10,/over)
-	   	l = legend(target=[p_re,p_im],position=[0.99,0.63],/norm,font_size=10,horizontal_align='RIGHT')
+	   	;l = legend(target=[p_re,p_im],position=[0.99,0.63],/norm,font_size=10,horizontal_alignment='RIGHT')
 
 		p_re = plot (rFull,jP_z,thick=2,$
 				title='jP_z',name='Jp_re',font_size=10,$
-				layout=[1,3,3],/current,yRange=yRange,transp=50)
-		p_im = plot (rFull,imaginary(jP_z),color='r',thick=2,transp=50,$
+				layout=[1,3,3],/current,yRange=yRange,transparency=50)
+		p_im = plot (rFull,imaginary(jP_z),color='r',thick=2,transparency=50,$
 				name='Jp_re',font_size=10,/over)
-	   	l = legend(target=[p_re,p_im],position=[0.99,0.25],/norm,font_size=10,horizontal_align='RIGHT')
+	   	;l = legend(target=[p_re,p_im],position=[0.99,0.25],/norm,font_size=10,horizontal_alignment='RIGHT')
 
 
 	endif

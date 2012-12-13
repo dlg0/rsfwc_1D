@@ -24,7 +24,8 @@
 		plotKdotB, $
 		plotEdotB, $
 		plotJp, $
-		plotFFTSolution
+		plotFFTSolution, $
+		plotJdotE
 
 	common writeSwitches, $
 		writeDispersionTxt
