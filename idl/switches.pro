@@ -10,6 +10,9 @@
 		linearDevice, $
 		kjInput, $
 		kj_jP_fileName, $
+        ar2Input, $
+        ar2InFileName, $
+        ar2RunDataFileName, $
 		runIdent
 
 	common plotSwitches, $

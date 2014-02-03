@@ -55,14 +55,25 @@ pro rsfwc_1d, $
 	rOut	= rFull
 
  	wReal	= runData.freq * 2d0 * !dpi 
-	w	= dcomplexArr ( runData.nR ) + wReal
-	w[*]	= complex ( wReal, wReal * runData.damping )
+	wc	    = dcomplexArr ( runData.nR, runData.nSpec+1 ) 
+	wc_	    = dcomplexArr ( runData.nR_, runData.nSpec+1 ) 
 
-	stixVariables, wReal, specData, stixVars = stixVars, electronsOnly = 0
+    for s=0,runData.nSpec do begin
+	    wc[*,s]	= wReal * complex ( 1+fltArr(runData.nR), specData[s].nuOmg )
+	    wc_[*,s]	= wReal * complex ( 1+fltArr(runData.nR_), specData[s].nuOmg_)
+    endfor
+    w = real_part(wc)
+    w_ = real_part(wc_)
+
+	stixVariables, w, w_, wc, wc_, specData, stixVars = stixVars, electronsOnly = 0
 
 	dielectric, runData, stixVars, $
-		epsilonFull = epsilon, $
-		epsilonHalf = epsilon_
+		epsilonFull_ = epsilon, $
+		epsilonHalf_ = epsilon_, $
+        epsilonFullSpec = epsilonS, $
+        epsilonHalfSpec = epsilonS_, w, specData, $
+        sigmaFull = sigma, $
+        sigmaHalf = sigma_
 
 	dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 		kR = kR, kPhi = kPhi, kz = kz
@@ -145,14 +156,14 @@ pro rsfwc_1d, $
 	; formulation ;)	
    	for i=0,runData.nR-2 do begin
 
-		rhs[i*3+2]	= II * wReal * u0 * jA_z_[i]
-		rhs[i*3+1]	= II * wReal * u0 * jA_t_[i]
-		rhs[i*3]	= II * wReal * u0 * jA_r[i]
+		rhs[i*3+2]	= II * real_part(w_[i,0]) * u0 * jA_z_[i]
+		rhs[i*3+1]	= II * real_part(w_[i,0]) * u0 * jA_t_[i]
+		rhs[i*3]	= II * real_part(w[i,0]) * u0 * jA_r[i]
 
 		if kjInput then begin
-			rhs[i*3+2]	+= II * wReal * u0 * kj_jpZ_[i]
-			rhs[i*3+1]	+= II * wReal * u0 * kj_jpT_[i]
-			rhs[i*3]	+= II * wReal * u0 * kj_jpR[i]
+			rhs[i*3+2]	+= II * w_[i,0] * u0 * kj_jpZ_[i]
+			rhs[i*3+1]	+= II * w_[i,0] * u0 * kj_jpT_[i]
+			rhs[i*3]	+= II * w[i,0] * u0 * kj_jpR[i]
 		endif
 
 	endfor
@@ -241,9 +252,21 @@ pro rsfwc_1d, $
 
 	endfor
 
-	hR		= hR / ( II * wReal * u0 )
-	hPhi	= hPhi / ( II * wReal * u0 )
-	hz		= hz / ( II * wReal * u0 )
+	hR		= hR / ( II * w[*,0] * u0 )
+	hPhi	= hPhi / ( II * w[*,0] * u0 )
+	hz		= hz / ( II * w[*,0] * u0 )
+
+	ePhiFull	= complexArr ( runData.nR )
+	ezFull		= complexArr ( runData.nR )
+	hRFull  	= complexArr ( runData.nR )
+	
+	for i=1,runData.nR-2 do begin
+	
+		ePhiFull[i]	=  ( ePhi[i] + ePhi[i-1] ) / 2.0
+		ezFull[i]	=  ( ez[i] + ez[i-1] ) / 2.0
+		hRFull[i]	=  ( hR[i] + hR[i-1] ) / 2.0
+
+	endfor
 
 
 	if plotESolution then $
@@ -252,25 +275,44 @@ pro rsfwc_1d, $
 		kR = kR, r_kR = runData.r, $
 		r1 = runData.r, r2 = runData.r_, r3 = runData.r_
 
-	if plotHSolution then $
-	rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
-		hR, hPhi, hz, $
-		kR = kR, r_kR = runData.r, $
-		r1 = runData.r_, r2 = runData.r, r3 = runData.r
+	if plotHSolution then begin
+	    ;rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
+	    ;	hR, hPhi, hz, $
+	    ;	kR = kR, r_kR = runData.r, $
+	    ;	r1 = runData.r_, r2 = runData.r, r3 = runData.r
+        p=plot(runData.r,hr,layout=[1,3,1],title='h_r',window_title='rsfwc_1d')
+        p=plot(runData.r,imaginary(hr),/over,color='r')
+        p=plot(runData.r,hphi,layout=[1,3,2],/current,title='h_t')
+        p=plot(runData.r,imaginary(hphi),/over,color='r')
+        p=plot(runData.r,hz,layout=[1,3,3],/current,title='h_z')
+        p=plot(runData.r,imaginary(hz),/over,color='r')
+       
+        e_r = eR
+        e_t = ePhiFull
+        e_z = eZFull
+        h_r = hRFull
+        h_t = hPhi
+        h_z = hZ
+
+        S_r = e_t*conj(h_z)-e_z*conj(h_t)
+        S_t = -(e_r*conj(h_z)-e_z*conj(h_r))
+        S_z = e_r*conj(h_t)-e_t*conj(h_r)
+
+        S_r = 0.5*real_part(S_r)
+        S_t = 0.5*real_part(S_t)
+        S_z = 0.5*real_part(S_z)
+    
+        SRange = max(abs([S_r,S_t,S_z])) 
+        p=plot(runData.r,S_r,layout=[1,3,1],title='Time Averaged Poynting Vector S_r',$
+                window_title='rsfwc_1d', yRange=[-SRange,SRange])
+        p=plot(runData.r,S_t,layout=[1,3,2],/current,title='S_t', yRange=[-SRange,SRange])
+        p=plot(runData.r,S_z,layout=[1,3,3],/current,title='S_z', yRange=[-SRange,SRange])
+
+    endif
 
 	;	Determine the longitudinal / transvers nature of the solution
 
 	if dispersion_generalised then begin
-
-		ePhiFull	= complexArr ( runData.nR )
-		ezFull		= complexArr ( runData.nR )
-	
-		for i=1,runData.nR-2 do begin
-	
-			ePhiFull[i]	=  ( ePhi[i] + ePhi[i-1] ) / 2.0
-			ezFull[i]	=  ( ez[i] + ez[i-1] ) / 2.0
-	
-		endfor
 
 		if plotKdotE then begin	
 			kMag1	= sqrt ( real_part ( kR[*,0])^2 + kPhi^2 + kz^2 )
@@ -331,6 +373,9 @@ pro rsfwc_1d, $
 
 	endif
 
+	e_r	= eR
+	e_t	= ePhiFull
+	e_z	= eZFull
 
 	; Calculate plasma current
 	; ------------------------
@@ -343,39 +388,73 @@ pro rsfwc_1d, $
 
 	endif else begin
 
-		identAll	= rebin ( identity(3),3,3,n_elements(epsilon) )
-		sigma	= (epsilon - identAll)*wReal*e0/II
-		jP	= sigma ## [[er],[ephifull],[ezfull]]
+        jP_r = complexArr(runData.nR,runData.nSpec+1)
+        jP_t = complexArr(runData.nR,runData.nSpec+1)
+        jP_z = complexArr(runData.nR,runData.nSpec+1)
 
-		jP_r	= jP[*,0]
-		jP_t	= jP[*,1]
-		jP_z	= jP[*,2]
+        for i=1,runData.nR-2 do begin
+        for s=0,runData.nSpec do begin
+
+                ;thisSigma = (epsilonS[*,*,s,i]-identity(3))*wReal*e0/II
+                thisSigma = sigma[*,*,s,i]
+                thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
+
+                ; Changing this now matches the AORSA
+                ; jP, BUT is it the right one, or are they BOTH 
+                ; wrong now?
+
+                ;this_jP = thisSigma # transpose(thisE)
+                this_jP = thisSigma ## thisE
+
+                jP_r[i,s] = this_jP[0]
+                jP_t[i,s] = this_jP[1]
+                jP_z[i,s] = this_jP[2]
+        endfor
+        endfor
 
 	endelse
 
-	e_r	= eR
-	e_t	= ePhiFull
-	e_z	= eZFull
+    jP_r_S = jP_r
+    jP_t_S = jP_t
+    jP_z_S = jP_z
+
+    jP_r = total(jP_r,2)
+    jP_t = total(jP_t,2)
+    jP_z = total(jP_z,2)
 
 	; jDotE
 	; -----
 
-	jPDotE	= -0.5 * real_part ( conj(jP_r) * e_r $
-				+ conj(jP_t) * e_t $
-				+ conj(jP_z) * e_z )
+    jPDotE_S = fltArr(runData.nR,runData.nSpec+1)
+    for s=0,runData.nSpec do begin
+        jPDotE_S[*,s] = 0.5 * real_part ( jP_r_S[*,s] * conj(e_r) $
+				+ jP_t_S[*,s] * conj(e_t) $
+				+ jP_z_S[*,s] * conj(e_z) )
+    endfor
+
+	jPDotE	= 0.5 * real_part ( jP_r * conj(e_r) $
+				+ jP_t * conj(e_t) $
+				+ jP_z * conj(e_z) )
 
 	if plotJdotE then begin
 
-		p = plot (runData.r,jPDotE,color='b',thick=3,transparency=50,$
+		p = plot (runData.r,jPDotE,color='b',thick=1,$
 				title='J dot E',name='jDote_0',font_size=10,$
-				layout=[1,2,1],window_title='rsfwc_1d')
+				layout=[1,3,1],window_title='rsfwc_1d')
+
+        colorArr = ['blue','red','green','orange']
+        for s=0,n_elements(jPDotE_S[0,*])-1 do begin
+            p = plot(runData.r,jPDotE_S[*,s],color=colorArr[s],/over,thick=3,linestyle='--',transparency=50)
+        endfor
+
+        p=plot(runData.r,specData[0].nuOmg,title='nuOmg',/current,layout=[1,3,2])
 
 		; jAnt
 		; ---
 
 		pr = plot (runData.r,jA_r,color='b',thick=3,transparency=50,$
 				title='jAnt',name='jAnt_r',font_size=10,$
-				layout=[1,2,2],/current)
+				layout=[1,3,3],/current)
 		pt = plot (runData.r,jA_t,color='r',thick=3,transparency=50,$
 				name='jAnt_t',/over)
 		pz = plot (runData.r,jA_z,color='g',thick=3,transparency=50,$
@@ -537,4 +616,5 @@ pro rsfwc_1d, $
 		endfor
 
 	endif
+stop
 end

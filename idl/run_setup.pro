@@ -105,9 +105,10 @@ pro run_setup, $
 	;@smithe
 	;@steffi
 	;@iter
-	@langmuir
+	;@langmuir
 	;@klepper
-	@rsfwc_input
+    @ar2_vorpal_right_simple
+	;@rsfwc_input
 
 ;		Grid
 
@@ -181,30 +182,42 @@ pro run_setup, $
     		    ( z_ - min ( eqdsk.z ) ) / eqdsk.zdim * (eqdsk.nH-1.0), $
 				cubic = -0.5 )
 
-			;for i=0,5000 do begin
-			;	bPhi	= smooth ( bPhi, nR / 10, /edge ) 
-			;	bPhi_	= smooth ( bPhi_, nR / 10, /edge ) 
-			;endfor
-			;bPhi	= bPhi * 0.6
-			;bPhi_	= bPhi_ * 0.6
-
-			;;	z towards x
-			;rotTh2	=	-aTan ( max(r)-min(r), max(z)-min(z) )
-			;rot_y	= [ [ cos ( rotTh2 ), 0, -sin ( rotTh2 ) ], $
-			;			[ 0, 1, 0 ], $
-			;			[ sin ( rotTh2 ), 0, cos ( rotTh2 ) ] ]
-			;inv_rot_y	= transpose ( rot_y )
-
-			;bVec	= rot_y ## [ [bR],[bPhi],[bz] ]
-			;bVec_	= rot_y ## [ [bR_],[bPhi_],[bz_] ]
-
-			;bR	= bVec[*,0]
-			;bz	= bVec[*,2]
-
-			;bR_	= bVec_[*,0]
-			;bz_	= bVec_[*,2]
-
 		endif 
+
+        if ar2Input gt 0 then begin 
+
+            ar2_read_ar2Input, ar2InFileName, ar2RunDataFileName, ar2=ar2
+
+            ar2_nR = n_elements(ar2.r)
+            ar2_nz = n_elements(ar2.z)
+
+			bR  = interpolate ( ar2.br, $
+					( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		    ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+				cubic = -0.5 )
+    		bPhi  = interpolate ( ar2.bt, $
+					( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		    ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+				cubic = -0.5 )
+     		bZ  = interpolate ( ar2.bz, $
+					( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		    ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+				cubic = -0.5 )
+
+    		bR_  = interpolate ( ar2.br, $
+					( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		    ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+				cubic = -0.5 )
+    		bPhi_  = interpolate ( ar2.bt, $
+					( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		    ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+				cubic = -0.5 )
+     		bZ_  = interpolate ( ar2.bz, $
+					( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		    ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+				cubic = -0.5 )
+    
+        endif
 
 		if poloidalScale ne 1 then begin
 
@@ -219,6 +232,11 @@ pro run_setup, $
 		bMag	= sqrt ( bR^2 + bPhi^2 + bz^2 )
 		bMag_	= sqrt ( bR_^2 + bPhi_^2 + bz_^2 )
 
+        if ar2Input then begin
+            ionSpecZ = ar2.AtomicZ[1:-1]
+            ionSpecAmu = ar2.amu[1:-1]
+        endif
+
 		nSpec	= n_elements ( ionSpecZ )
 
 		specData	= replicate ( $
@@ -231,8 +249,11 @@ pro run_setup, $
 					n : dblArr ( nR ), $
 					n_ : dblArr ( nR - 1 ), $
 					wLH : dblArr ( nR ), $
-					wUH : dblArr ( nR ) }, nSpec + 1 )
+					wUH : dblArr ( nR ), $
+                    nuOmg: dblArr(nR), $
+                    nuOmg_ : dblArr(nR) }, nSpec + 1 )
 
+        if not ar2Input then begin
 		for i=0,nSpec do begin
 
 			nProfile	= r * 0 + 1
@@ -286,29 +307,8 @@ pro run_setup, $
 			endelse
 
 		endFor
+        endif
 
-		;;	sinusoidal density gradient
-
-		;if not keyword_set ( gradSize ) then gradSize = 0.21 ;0.26
-		;gradEnd		= 1.2
-		;gradFreq	= 1 / (2*gradSize)
-		;nGrad	= fix(gradSize / ( dR ) + 1)
-		;ne_profile	= fltArr ( nR ) 
-		;r_grad	= fIndGen ( nGrad ) * dR
-		;ii1	= where ( r lt gradEnd )
-		;ii3	= where ( abs ( r - gradEnd ) eq min ( abs ( r - gradEnd ) ) ) + 1
-		;ne_profile[*]	= -1
-		;ne_profile[ii1]	= 1
-		;ne_profile[ii3[0]-nGrad:ii3[0]-1]	= $
-		;	cos ( 2*!pi*gradFreq*r_grad )
-		;ne_profile	= (ne_profile + 1) * 40e17 + nMax[0]
-
-		;specData[1].n	= ne_profile
-		;specData[1].n_	= ((specData[1].n)[0:nR-2] + (specData[1].n)[1:nR-1])/2
-		;
-		;specData[0].n 		= specData[1].n / ionSpecZ[0]
-		;specData[0].n_		= specData[1].n_ / ionSpecZ[0]
-    	   
 		;	import density profiles 
 
 		if useProfiles then begin
@@ -337,32 +337,58 @@ pro run_setup, $
     		    ( z_ - min ( xMap_z2d ) ) / (max(xMap_z2d)-min(xMap_z2d)) * (nY-1.0), $
 				cubic = -0.5 )
 
-			;for i=0,100 do begin
-			;	ne_	= smooth ( ne_, nR / 10, /edge )
-			;	ne__	= smooth ( ne__, nR / 10, /edge )
-			;endfor
-
 			if keyword_set ( nFac ) then begin
 				ne_	= ne_ * nFac 
 				ne__	= ne__ * nFac
 			endif
 
-			;iplot, r, specData[1].n, thick = 2, trans = 50
-			;iPlot, r, specData[0].n, thick = 2, /over, trans = 50
-		
 			specData[1].n	= ne_
 			specData[1].n_	= ne__
     
 			specData[0].n	= ne_ / ionSpecZ[0]
 			specData[0].n_	= ne__ / ionSpecZ[0]
 
-			;iPlot, r, ne_, /over
-			;iplot, r, ne_ / ionSPecZ[0], /over
- 
-			;iPlot, eqdsk.rbbbs, eqdsk.zbbbs, /iso
-			;iPlot, r, z, /over
-;stop	
 		endif
+        
+        if ar2Input then begin
+
+            for s=0,nSpec do begin
+
+                index = s+1
+                if s eq nSpec then index = 0
+
+			    this_n  = interpolate ( ar2.Density_m3[*,*,index], $
+			    		( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		        ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+			    	cubic = -0.5 )
+			    this_n_  = interpolate ( ar2.Density_m3[*,*,index], $
+			    		( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		        ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+			    	cubic = -0.5 )
+
+			    this_nuOmg  = interpolate ( ar2.nuOmg[*,*,index], $
+			    		( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		        ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+			    	cubic = -0.5 )
+			    this_nuOmg_  = interpolate ( ar2.nuOmg[*,*,index], $
+			    		( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		        ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+			    	cubic = -0.5 )
+
+                specData[s].n = this_n
+                specData[s].n_ = this_n_
+
+                specData[s].nuOmg = this_nuOmg
+                specData[s].nuOmg_ = this_nuOmg_
+ 
+                specData[s].m = ar2.amu[index]*mi
+                if s eq nSpec then specData[s].m = me
+                specData[s].q = ar2.AtomicZ[index]*e
+                ;if s eq nSpec then specData[s].q = -e
+
+            endfor 
+        endif
+
 
 		for i = 0, nSpec do begin
 
@@ -396,11 +422,13 @@ pro run_setup, $
 			iplot, abs(specData[0].wc), /over, lineStyle = 2, insert_legend = 1, name = 'wci'
 		endif
 
+        
 		runData = { bField : [ [bR], [bPhi], [bz] ], $
 					bField_ : [ [bR_], [bPhi_], [bz_] ], $
 					bMag : bMag, $
 					bMag_ : bMag_, $
 					nR : nR, $
+                    nR_ : nR-1, $
 					r : r, $
 					r_ : r_, $
 					dR : dR, $
@@ -419,23 +447,21 @@ pro run_setup, $
 
 
     	if plotRunData then begin 
-		    iPlot, r, runData.bField[*,1], $
-    	        view_grid = [2,1], $
-    	        title = 'bPhi', $
-    	        /zoom_on_resize, $
-				id = runDataPlot 
-		    iPlot, r, runData.bField[*,0], $
+		    p=Plot( r, runData.bField[*,1], $
+    	        layout = [2,1,1], $
+    	        title = 'bPhi')
+		    p=plot( r, runData.bField[*,0], $
 				/over, $
-				color = red
-		    iPlot, r, runData.bField[*,2], $
+				color = red)
+		    p=plot( r, runData.bField[*,2], $
 				/over, $
-				color = blue
-		    iPlot, r, specData[nSpec].n, $
-    	        /view_next, $
-    	        title = 'density 0'
+				color = blue)
+		    p=plot( r, specData[nSpec].n, $
+    	        layout=[2,1,2],/current, $
+    	        title = 'density 0', yRange=[1e10,1e22],/ylog)
 			for i=0,nSpec-1 do $
-		    iPlot, r, specData[i].n, $
-    	        /over 
+		    p=plot( r, specData[i].n, $
+    	        /over )
     	endif
 
 
