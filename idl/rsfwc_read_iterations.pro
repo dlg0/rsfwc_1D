@@ -37,12 +37,14 @@ pro rsfwc_read_iterations, nIterations, MPE_FileName = MPE_FileName
 
     p=plot(right_s.r, jTAll[*,0],layout=[1,3,2],/current)
     for n=1,nIterations-1 do p=plot(right_s.r,jTAll[*,n],/over)
-    p=plot(compare_s.r, compare_s.jP_t, color='g',thick=3,/over)
-    p=plot(right_s.r, jT_mpe,/over,color='b',thick=3,yRange=[-range,range])
+    p=plot(compare_s.r, compare_s.jP_t, color='g',thick=2,/over)
+    p=plot(right_s.r, jT_mpe,/over,color='b',thick=2,yRange=[-range,range])
+    p=plot(compare_s.r, imaginary(compare_s.jP_t), color='g',thick=2,/over,linestyle='--')
+    p=plot(right_s.r, imaginary(jT_mpe),/over,color='b',thick=2,linestyle='--')
 
     p=plot(right_s.r, jZAll[*,0],layout=[1,3,3],/current)
     for n=1,nIterations-1 do p=plot(right_s.r,jZAll[*,n],/over)
-    p=plot(compare_s.r, compare_s.jP_z, color='g',thick=3,/over)
+    p=plot(compare_s.r, compare_s.jP_z, color='g',thick=2,/over)
     p=plot(right_s.r, jZ_mpe,/over,color='b',thick=2,yRange=[-range,range])
     p=plot(compare_s.r, imaginary(compare_s.jP_z), color='g',thick=2,/over,linestyle='--')
     p=plot(right_s.r, imaginary(jZ_mpe),/over,color='b',thick=2,linestyle='--')

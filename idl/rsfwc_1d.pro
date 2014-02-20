@@ -124,6 +124,9 @@ pro rsfwc_1d, $
         HanningFull[iiReplace] = HanningReplace
         HanningHalf = interpol(HanningFull,xGrid,xGrid_,/spline)
 
+        HanningFull = HanningFull*0+1
+        HanningHalf = HanningHalf*0+1
+
         kjIn = { $
             jpR : kj_jpR*HanningFull, $
             jpT : kj_jpT*HanningFull, $
@@ -196,14 +199,14 @@ pro rsfwc_1d, $
 		endif
 
 		if ar2EField then begin
-            ;if replace[i] then begin
-                ;print, 'Adding AORSA driving term ...'
-		        rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
-		    ;endif
-            ;if replace[i] and replace[i+1] then begin
-		    	rhs[i*3+2]	+= II * wReal * u0 * kjIn.jpZ_[i]
-		    	rhs[i*3+1]	+= II * wReal * u0 * kjIn.jpT_[i]
-            ;endif	
+            if replace[i] then begin
+               ;print, 'Adding AORSA driving term ...'
+		       rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
+		    endif
+            if replace[i] and replace[i+1] then begin
+		       rhs[i*3+2]	+= II * wReal * u0 * kjIn.jpZ_[i]
+		       rhs[i*3+1]	+= II * wReal * u0 * kjIn.jpT_[i]
+            endif	
         endif
 
 	endfor
