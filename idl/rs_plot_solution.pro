@@ -1,17 +1,25 @@
 pro rs_plot_solution, antLoc, dR, nR, $
 	e1, e2, e3, $
 	kR = kR, r_kR = r_kR, $
-	r1 = r1, r2 = r2, r3 = r3
+	r1 = r1, r2 = r2, r3 = r3, $
+    kjIn=kj
 
 	common dlg_colors
 	common plotSwitches
+    common switches
    
     ;	Visualise solution
 
 		eRange	= max(sqrt ( abs(e1)^2 + abs(e2)^2 + abs(e3)^2 ))
    		p_r = plot ( r1, e1, layout=[1,3,1],$
-				title='Er',ytitle='Er [V/m]',name='Re',window_title='rsfwc_1d')
+				title='Er',ytitle='Er [V/m]',name='Re',window_title='rsfwc_1d',$
+                yRange = [-eRange,eRange])
 		p_i = plot ( r1, imaginary(e1), color='red',/over,name='Im')
+
+        if ar2EField then begin
+            ;p = plot(r1,kj.eR,/over,color='blue',linestyle='--')
+        endif
+
 		l = legend(target=[p_r,p_i],position=[0.98,0.95],/norm,font_size=10,horizontal_alignment='RIGHT')
 
 		p_r = plot ( r2, e2, layout=[1,3,2],/current,$
@@ -23,6 +31,11 @@ pro rs_plot_solution, antLoc, dR, nR, $
 				title='Ez',ytitle='Ez [V/m]',name='Re')
 		p_i = plot ( r3, imaginary(e3), color='red',/over,name='Im')
 		l = legend(target=[p_r,p_i],position=[0.98,0.28],/norm,font_size=10,horizontal_alignment='RIGHT')
+
+        if ar2EField then begin
+            ;p = plot(r1,kj.eZ,/over,color='blue',linestyle='--')
+            ;p = plot(r1,imaginary(kj.eZ),/over,color='red',linestyle='--')
+        endif
 
         ;loadct, 12, /sil
     

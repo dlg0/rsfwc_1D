@@ -13,7 +13,8 @@
         ar2Input, $
         ar2InFileName, $
         ar2RunDataFileName, $
-		runIdent
+		runIdent, $
+        ar2EField
 
 	common plotSwitches, $
 		plotDispersionGeneral, $

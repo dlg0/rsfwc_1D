@@ -42,7 +42,7 @@
 		;aWall	= 5d0
 
 		rMin	= 1.05
-		rMax	= 2.65
+		rMax	= 2.3
    		b0	= 0.0
 		bR_frac	= 0.0
 		bz_frac	= 0.0	
@@ -53,8 +53,8 @@
 		freq	= 53.0e6
 		nPhi = 2.0
 		kz = 0.0
-		nR	= 1024L
-		antLoc	= 2.5
+		nR	= 512L
+		antLoc	= 2.0
 		AntennaJ_r = 0
 		AntennaJ_t = 0
 		AntennaJ_z = 1

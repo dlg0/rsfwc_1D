@@ -97,6 +97,8 @@ pro run_setup, $
 	sliceSlope = 0.0
 	profile1 = 0
 	profile2 = 0
+    kjInput = 0
+    specifyE = 0
 
 ;	-----------------------------
 
@@ -108,7 +110,9 @@ pro run_setup, $
 	;@langmuir
 	;@klepper
     @ar2_vorpal_right_simple
-	;@rsfwc_input
+    ;@ar2_vorpal_left_simple
+    ;@ar2_vorpal_simple_full
+	@rsfwc_input
 
 ;		Grid
 
@@ -186,7 +190,7 @@ pro run_setup, $
 
         if ar2Input gt 0 then begin 
 
-            ar2_read_ar2Input, ar2InFileName, ar2RunDataFileName, ar2=ar2
+            ar2_read_ar2Input, ar2InFileName, ar2=ar2
 
             ar2_nR = n_elements(ar2.r)
             ar2_nz = n_elements(ar2.z)
@@ -431,6 +435,8 @@ pro run_setup, $
                     nR_ : nR-1, $
 					r : r, $
 					r_ : r_, $
+					z : z, $
+					z_ : z_, $
 					dR : dR, $
 					b0 : b0, $
 					r0 : r0, $

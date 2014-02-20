@@ -80,9 +80,64 @@ pro rsfwc_1d, $
 
 	if keyword_set ( dispersionOnly ) then return
 
-	matFill, runData.nR, runData.nPhi, runData.kz, $
-		runData.r, runData.r_, epsilon, epsilon_, w, runData.dR, $
-		aMat = aMat, nAll = nAll, nuca = nuca, nlca = nlca
+	if kjInput or ar2EField then begin
+
+		cdfId = ncdf_open(kj_jP_fileName)
+
+            nCdf_varGet, cdfId, 'replace', replace
+            nCdf_varGet, cdfId, 'replace_', replace_
+
+			nCdf_varGet, cdfId, 'jP_r_re', kj_jpR_re
+			nCdf_varGet, cdfId, 'jP_r_im', kj_jpR_im
+			nCdf_varGet, cdfId, 'jP_p_re', kj_jpT_re
+			nCdf_varGet, cdfId, 'jP_p_im', kj_jpT_im
+			nCdf_varGet, cdfId, 'jP_z_re', kj_jpZ_re
+			nCdf_varGet, cdfId, 'jP_z_im', kj_jpZ_im
+
+			nCdf_varGet, cdfId, 'jP_r_re_', kj_jpR_re_
+			nCdf_varGet, cdfId, 'jP_r_im_', kj_jpR_im_
+			nCdf_varGet, cdfId, 'jP_p_re_', kj_jpT_re_
+			nCdf_varGet, cdfId, 'jP_p_im_', kj_jpT_im_
+			nCdf_varGet, cdfId, 'jP_z_re_', kj_jpZ_re_
+			nCdf_varGet, cdfId, 'jP_z_im_', kj_jpZ_im_
+
+		ncdf_close, cdfId
+
+		kj_jpR = complex(kj_jpR_re,kj_jpR_im)
+		kj_jpT = complex(kj_jpT_re,kj_jpT_im)
+		kj_jpZ = complex(kj_jpZ_re,kj_jpZ_im)
+
+		kj_jpR_ = complex(kj_jpR_re_,kj_jpR_im_)
+		kj_jpT_ = complex(kj_jpT_re_,kj_jpT_im_)
+		kj_jpZ_ = complex(kj_jpZ_re_,kj_jpZ_im_)
+
+        ; Try applying a windowing function to the
+        ; "replace" section to avoid the discontinuity
+        ; that is causing the problem ...
+
+        iiReplace = where(replace gt 0, iiReplaceCnt)
+        HanningReplace = hanning(iiReplaceCnt)
+        xGrid = fIndGen(n_elements(replace))
+        xGrid_ = xGrid[0:-2]+0.5
+
+        HanningFull = fltArr(n_elements(replace))
+        HanningFull[iiReplace] = HanningReplace
+        HanningHalf = interpol(HanningFull,xGrid,xGrid_,/spline)
+
+        kjIn = { $
+            jpR : kj_jpR*HanningFull, $
+            jpT : kj_jpT*HanningFull, $
+            jpZ : kj_jpZ*HanningFull, $
+            jpR_ : kj_jpR_*HanningHalf, $
+            jpT_ : kj_jpT_*HanningHalf, $
+            jpZ_ : kj_jpZ_*HanningHalf, $
+            replace : replace, $
+            replace_ : replace_ }
+
+	endif else begin
+        replace = intArr(runData.nR)
+        replace_ = intArr(runData.nR-1)
+    endelse
 
 	if runData.antLoc gt runData.rMax or runData.antLoc lt runData.rMin then begin
 		print, 'ADJUSTING: Antenna location was ', runData.antLoc
@@ -93,6 +148,8 @@ pro rsfwc_1d, $
 
     iiAnt   = where ( abs ( runData.r_ - runData.antLoc ) $
 						eq min ( abs ( runData.r_ - runData.antLoc ) ) )
+
+	nAll	= runData.nR + 2L * ( runData.nR - 1L )
 	rhs		= complexArr ( nAll )
 
 	;if not keyword_set ( jA_r ) then jA_R = 0
@@ -122,51 +179,48 @@ pro rsfwc_1d, $
     if AntennaJ_t then jA_t_ = TmpAntJt_ else jA_t_ = TmpAntJt_*0
     if AntennaJ_z then jA_z_ = TmpAntJz_ else jA_z_ = TmpAntJz_*0
 
-	if kjInput then begin
-
-		cdfId = ncdf_open(kj_jP_fileName)
-			nCdf_varGet, cdfId, 'jP_r_re', kj_jpR_re
-			nCdf_varGet, cdfId, 'jP_r_im', kj_jpR_im
-			nCdf_varGet, cdfId, 'jP_p_re', kj_jpT_re
-			nCdf_varGet, cdfId, 'jP_p_im', kj_jpT_im
-			nCdf_varGet, cdfId, 'jP_z_re', kj_jpZ_re
-			nCdf_varGet, cdfId, 'jP_z_im', kj_jpZ_im
-
-			nCdf_varGet, cdfId, 'jP_r_re_', kj_jpR_re_
-			nCdf_varGet, cdfId, 'jP_r_im_', kj_jpR_im_
-			nCdf_varGet, cdfId, 'jP_p_re_', kj_jpT_re_
-			nCdf_varGet, cdfId, 'jP_p_im_', kj_jpT_im_
-			nCdf_varGet, cdfId, 'jP_z_re_', kj_jpZ_re_
-			nCdf_varGet, cdfId, 'jP_z_im_', kj_jpZ_im_
-		ncdf_close, cdfId
-
-		kj_jpR = complex(kj_jpR_re,kj_jpR_im)
-		kj_jpT = complex(kj_jpT_re,kj_jpT_im)
-		kj_jpZ = complex(kj_jpZ_re,kj_jpZ_im)
-
-		kj_jpR_ = complex(kj_jpR_re_,kj_jpR_im_)
-		kj_jpT_ = complex(kj_jpT_re_,kj_jpT_im_)
-		kj_jpZ_ = complex(kj_jpZ_re_,kj_jpZ_im_)
-
-	endif
-
 
    	; NOTE: the equations were derived as +curlcurlE - k0edotE = +iwuJa
 	; and as such, the sign in the below is +ve, NOT -ve as in the aorsa
 	; formulation ;)	
    	for i=0,runData.nR-2 do begin
 
-		rhs[i*3+2]	= II * real_part(w_[i,0]) * u0 * jA_z_[i]
-		rhs[i*3+1]	= II * real_part(w_[i,0]) * u0 * jA_t_[i]
-		rhs[i*3]	= II * real_part(w[i,0]) * u0 * jA_r[i]
+		rhs[i*3+2]	= II * wReal * u0 * jA_z_[i]
+		rhs[i*3+1]	= II * wReal * u0 * jA_t_[i]
+		rhs[i*3]	= II * wReal * u0 * jA_r[i]
 
 		if kjInput then begin
-			rhs[i*3+2]	+= II * w_[i,0] * u0 * kj_jpZ_[i]
-			rhs[i*3+1]	+= II * w_[i,0] * u0 * kj_jpT_[i]
-			rhs[i*3]	+= II * w[i,0] * u0 * kj_jpR[i]
+			rhs[i*3+2]	+= II * wReal * u0 * kjIn.jpZ_[i]
+			rhs[i*3+1]	+= II * wReal * u0 * kjIn.jpT_[i]
+			rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
 		endif
 
+		if ar2EField then begin
+            ;if replace[i] then begin
+                ;print, 'Adding AORSA driving term ...'
+		        rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
+		    ;endif
+            ;if replace[i] and replace[i+1] then begin
+		    	rhs[i*3+2]	+= II * wReal * u0 * kjIn.jpZ_[i]
+		    	rhs[i*3+1]	+= II * wReal * u0 * kjIn.jpT_[i]
+            ;endif	
+        endif
+
 	endfor
+
+    ;ii3 = IndGen(RunData.nR)*3
+    ;rhs_R = rhs[ii3]
+    ;rhs_T = rhs[ii3[0:-2]+1]
+    ;rhs_Z = rhs[ii3[0:-2]+2]
+
+    ;p=plot(RunData.r,rhs_R)
+    ;p=plot(RunData.r_,rhs_T,/over)
+    ;p=plot(RunData.r_,rhs_Z,/over)
+
+	matFill, runData.nR, runData.nPhi, runData.kz, $
+		runData.r, runData.r_, epsilon, epsilon_, w, runData.dR, $
+		aMat = aMat, nAll = nAll, nuca = nuca, nlca = nlca, $
+        replaceFull = replace, replaceHalf = replace_, rhs=rhs, kjIn = kjIn
 
 ;	Solve matrix
 
@@ -273,7 +327,7 @@ pro rsfwc_1d, $
 	rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
 		eR, ePhi, ez, $
 		kR = kR, r_kR = runData.r, $
-		r1 = runData.r, r2 = runData.r_, r3 = runData.r_
+		r1 = runData.r, r2 = runData.r_, r3 = runData.r_, kjIn=kjIn
 
 	if plotHSolution then begin
 	    ;rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
@@ -380,47 +434,49 @@ pro rsfwc_1d, $
 	; Calculate plasma current
 	; ------------------------
 
-	if kjInput then begin
+    jP_r_S = complexArr(runData.nR,runData.nSpec+1)
+    jP_t_S = complexArr(runData.nR,runData.nSpec+1)
+    jP_z_S = complexArr(runData.nR,runData.nSpec+1)
+    
+    jP_r = complexArr(runData.nR)
+    jP_t = complexArr(runData.nR)
+    jP_z = complexArr(runData.nR)
 
-		jP_r	= kj_jpR
-		jP_t	= kj_jpT
-		jP_z	= kj_jpZ
+    for i=1,runData.nR-2 do begin
+    
+    	if kjInput and replace[i] then begin
+    
+    		jP_r[i]	= kj_jpR[i]
+    		jP_t[i]	= kj_jpT[i]
+    		jP_z[i]	= kj_jpZ[i]
+            print, 'REPLACING THINGS ...'    
+    	endif else begin
+    
+            for s=0,runData.nSpec do begin
+                    ;thisSigma = (epsilonS[*,*,s,i]-identity(3))*wReal*e0/II
+                    thisSigma = sigma[*,*,s,i]
+                    thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
+    
+                    ; Changing this now matches the AORSA
+                    ; jP, BUT is it the right one, or are they BOTH 
+                    ; wrong now?
+    
+                    ;this_jP = thisSigma # transpose(thisE)
+                    this_jP = thisSigma ## thisE
+  
+                    jP_r_S[i,s] = this_jP[0]
+                    jP_t_S[i,s] = this_jP[1]
+                    jP_z_S[i,s] = this_jP[2]
+    
+            endfor
 
-	endif else begin
+            jP_r[i] = total(jP_r_S[i,*],2)
+            jP_t[i] = total(jP_t_S[i,*],2)
+            jP_z[i] = total(jP_z_S[i,*],2)
 
-        jP_r = complexArr(runData.nR,runData.nSpec+1)
-        jP_t = complexArr(runData.nR,runData.nSpec+1)
-        jP_z = complexArr(runData.nR,runData.nSpec+1)
+    	endelse
+    endfor
 
-        for i=1,runData.nR-2 do begin
-        for s=0,runData.nSpec do begin
-
-                ;thisSigma = (epsilonS[*,*,s,i]-identity(3))*wReal*e0/II
-                thisSigma = sigma[*,*,s,i]
-                thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
-
-                ; Changing this now matches the AORSA
-                ; jP, BUT is it the right one, or are they BOTH 
-                ; wrong now?
-
-                ;this_jP = thisSigma # transpose(thisE)
-                this_jP = thisSigma ## thisE
-
-                jP_r[i,s] = this_jP[0]
-                jP_t[i,s] = this_jP[1]
-                jP_z[i,s] = this_jP[2]
-        endfor
-        endfor
-
-	endelse
-
-    jP_r_S = jP_r
-    jP_t_S = jP_t
-    jP_z_S = jP_z
-
-    jP_r = total(jP_r,2)
-    jP_t = total(jP_t,2)
-    jP_z = total(jP_z,2)
 
 	; jDotE
 	; -----
@@ -460,6 +516,17 @@ pro rsfwc_1d, $
 		pz = plot (runData.r,jA_z,color='g',thick=3,transparency=50,$
 				name='jAnt_z',/over)
 
+        if ar2EField then begin
+            p = plot(runData.r,kjIn.jPr,linestyle='--',/over)
+            p = plot(runData.r,imaginary(kjIn.jPr),linestyle='-',/over)
+            p = plot(runData.r,kjIn.jPt,linestyle='--',/over,color='r')
+            p = plot(runData.r,imaginary(kjIn.jPt),linestyle='-',/over,color='r')
+            p = plot(runData.r,kjIn.jPz,linestyle='--',/over,color='g')
+            p = plot(runData.r,imaginary(kjIn.jPz),linestyle='-',/over,color='g')
+        endif
+
+
+
 		;l = legend(target=[pr,pt,pz],position=[0.8,0.4],/norm,font_size=10)
 
 	endif
@@ -482,6 +549,8 @@ pro rsfwc_1d, $
 	freq_id = nCdf_varDef ( nc_id, 'freq', scalar_id, /float )
 	r_id = nCdf_varDef ( nc_id, 'r', nr_id, /float )
 	rH_id = nCdf_varDef ( nc_id, 'r_', nrH_id, /float )
+	z_id = nCdf_varDef ( nc_id, 'z', nr_id, /float )
+	zH_id = nCdf_varDef ( nc_id, 'z_', nrH_id, /float )
 
 	B0_r_id = nCdf_varDef ( nc_id, 'B0_r', nr_id, /float )
 	B0_p_id = nCdf_varDef ( nc_id, 'B0_p', nr_id, /float )
@@ -515,6 +584,9 @@ pro rsfwc_1d, $
 	nCdf_varPut, nc_id, r_id, runData.r
 	nCdf_varPut, nc_id, rH_id, runData.r_
 
+	nCdf_varPut, nc_id, z_id, runData.z
+	nCdf_varPut, nc_id, zH_id, runData.z_
+
 	nCdf_varPut, nc_id, B0_r_id, runData.BField[*,0]
 	nCdf_varPut, nc_id, B0_p_id, runData.BField[*,1]
 	nCdf_varPut, nc_id, B0_z_id, runData.BField[*,2]
@@ -546,7 +618,7 @@ pro rsfwc_1d, $
 	if plotJp then begin
 
 		jpRange = max(abs([abs(jp_r),abs(jp_t),abs(jp_z)]))
-		yRange = [-jPRange,jPRange]
+		yRange = [-jPRange,jPRange]*0.5
 
 		p_re = plot (rFull,jP_r,thick=2,$
 				title='jP_r',name='Jp_re',font_size=10,$
@@ -616,5 +688,5 @@ pro rsfwc_1d, $
 		endfor
 
 	endif
-stop
+
 end
