@@ -30,24 +30,37 @@ pro rsfwc_read_iterations, nIterations, MPE_FileName = MPE_FileName
 
     range = max(abs([jR_mpe,jT_mpe,jZ_mpe]))
 
-    p=plot(right_s.r, jRAll[*,0],layout=[1,3,1], window_title=MPE_FileName)
+    p=plot(right_s.r, jRAll[*,0],layout=[2,3,1], window_title=MPE_FileName)
     for n=1,nIterations-1 do p=plot(right_s.r,jRAll[*,n],/over)
     p=plot(compare_s.r, compare_s.jP_r, color='g',thick=3,/over)
     p=plot(right_s.r, jR_mpe,/over,color='b',thick=3,yRange=[-range,range])
 
-    p=plot(right_s.r, jTAll[*,0],layout=[1,3,2],/current)
+    p=plot(right_s.r, jTAll[*,0],layout=[2,3,3],/current)
     for n=1,nIterations-1 do p=plot(right_s.r,jTAll[*,n],/over)
     p=plot(compare_s.r, compare_s.jP_t, color='g',thick=2,/over)
     p=plot(right_s.r, jT_mpe,/over,color='b',thick=2,yRange=[-range,range])
-    p=plot(compare_s.r, imaginary(compare_s.jP_t), color='g',thick=2,/over,linestyle='--')
-    p=plot(right_s.r, imaginary(jT_mpe),/over,color='b',thick=2,linestyle='--')
 
-    p=plot(right_s.r, jZAll[*,0],layout=[1,3,3],/current)
+    p=plot(right_s.r, jZAll[*,0],layout=[2,3,5],/current)
     for n=1,nIterations-1 do p=plot(right_s.r,jZAll[*,n],/over)
     p=plot(compare_s.r, compare_s.jP_z, color='g',thick=2,/over)
     p=plot(right_s.r, jZ_mpe,/over,color='b',thick=2,yRange=[-range,range])
-    p=plot(compare_s.r, imaginary(compare_s.jP_z), color='g',thick=2,/over,linestyle='--')
-    p=plot(right_s.r, imaginary(jZ_mpe),/over,color='b',thick=2,linestyle='--')
+
+    p=plot(right_s.r, imaginary(jRAll[*,0]),layout=[2,3,2],/current,color='r')
+    for n=1,nIterations-1 do p=plot(right_s.r,imaginary(jRAll[*,n]),/over,color='r')
+    p=plot(compare_s.r, imaginary(compare_s.jP_r), color='g',thick=3,/over)
+    p=plot(right_s.r, imaginary(jR_mpe),/over,color='b',thick=3,yRange=[-range,range])
+
+    p=plot(right_s.r, imaginary(jTAll[*,0]),layout=[2,3,4],/current,color='r')
+    for n=1,nIterations-1 do p=plot(right_s.r,imaginary(jTAll[*,n]),/over,color='r')
+    p=plot(compare_s.r, imaginary(compare_s.jP_t), color='g',thick=3,/over)
+    p=plot(right_s.r, imaginary(jT_mpe),/over,color='b',thick=3,yRange=[-range,range])
+
+    p=plot(right_s.r, imaginary(jZAll[*,0]),layout=[2,3,6],/current,color='r')
+    for n=1,nIterations-1 do p=plot(right_s.r,imaginary(jZAll[*,n]),/over,color='r')
+    p=plot(compare_s.r, imaginary(compare_s.jP_z), color='g',thick=3,/over)
+    p=plot(right_s.r, imaginary(jZ_mpe),/over,color='b',thick=3,yRange=[-range,range])
+
+
 
     fName = 'restart_mpe.nc'
     if keyword_set(MPE_FileName) then fName = MPE_FileName

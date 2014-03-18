@@ -101,6 +101,20 @@ pro rsfwc_1d, $
 			nCdf_varGet, cdfId, 'jP_z_re_', kj_jpZ_re_
 			nCdf_varGet, cdfId, 'jP_z_im_', kj_jpZ_im_
 
+			nCdf_varGet, cdfId, 'E_r_re', kj_ER_re
+			nCdf_varGet, cdfId, 'E_r_im', kj_ER_im
+			nCdf_varGet, cdfId, 'E_p_re', kj_ET_re
+			nCdf_varGet, cdfId, 'E_p_im', kj_ET_im
+			nCdf_varGet, cdfId, 'E_z_re', kj_EZ_re
+			nCdf_varGet, cdfId, 'E_z_im', kj_EZ_im
+
+			nCdf_varGet, cdfId, 'E_r_re_', kj_ER_re_
+			nCdf_varGet, cdfId, 'E_r_im_', kj_ER_im_
+			nCdf_varGet, cdfId, 'E_p_re_', kj_ET_re_
+			nCdf_varGet, cdfId, 'E_p_im_', kj_ET_im_
+			nCdf_varGet, cdfId, 'E_z_re_', kj_EZ_re_
+			nCdf_varGet, cdfId, 'E_z_im_', kj_EZ_im_
+
 		ncdf_close, cdfId
 
 		kj_jpR = complex(kj_jpR_re,kj_jpR_im)
@@ -110,6 +124,14 @@ pro rsfwc_1d, $
 		kj_jpR_ = complex(kj_jpR_re_,kj_jpR_im_)
 		kj_jpT_ = complex(kj_jpT_re_,kj_jpT_im_)
 		kj_jpZ_ = complex(kj_jpZ_re_,kj_jpZ_im_)
+
+		kj_ER = complex(kj_ER_re,kj_ER_im)
+		kj_ET = complex(kj_ET_re,kj_ET_im)
+		kj_EZ = complex(kj_EZ_re,kj_EZ_im)
+
+		kj_ER_ = complex(kj_ER_re_,kj_ER_im_)
+		kj_ET_ = complex(kj_ET_re_,kj_ET_im_)
+		kj_EZ_ = complex(kj_EZ_re_,kj_EZ_im_)
 
         ; Try applying a windowing function to the
         ; "replace" section to avoid the discontinuity
@@ -134,6 +156,12 @@ pro rsfwc_1d, $
             jpR_ : kj_jpR_*HanningHalf, $
             jpT_ : kj_jpT_*HanningHalf, $
             jpZ_ : kj_jpZ_*HanningHalf, $
+            ER : kj_ER*HanningFull, $
+            ET : kj_ET*HanningFull, $
+            EZ : kj_EZ*HanningFull, $
+            ER_ : kj_ER_*HanningHalf, $
+            ET_ : kj_ET_*HanningHalf, $
+            EZ_ : kj_EZ_*HanningHalf, $
             replace : replace, $
             replace_ : replace_ }
 
@@ -198,16 +226,16 @@ pro rsfwc_1d, $
 			rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
 		endif
 
-		if ar2EField then begin
-            if replace[i] then begin
-               ;print, 'Adding AORSA driving term ...'
-		       rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
-		    endif
-            if replace[i] and replace[i+1] then begin
-		       rhs[i*3+2]	+= II * wReal * u0 * kjIn.jpZ_[i]
-		       rhs[i*3+1]	+= II * wReal * u0 * kjIn.jpT_[i]
-            endif	
-        endif
+		;if ar2EField then begin
+        ;    if replace[i] then begin
+        ;       ;print, 'Adding AORSA driving term ...'
+		;       rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
+		;    endif
+        ;    if replace[i] and replace[i+1] then begin
+		;       rhs[i*3+2]	+= II * wReal * u0 * kjIn.jpZ_[i]
+		;       rhs[i*3+1]	+= II * wReal * u0 * kjIn.jpT_[i]
+        ;    endif	
+        ;endif
 
 	endfor
 
@@ -217,8 +245,11 @@ pro rsfwc_1d, $
     ;rhs_Z = rhs[ii3[0:-2]+2]
 
     ;p=plot(RunData.r,rhs_R)
+    ;p=plot(RunData.r,imaginary(rhs_R),/over,color='r')
     ;p=plot(RunData.r_,rhs_T,/over)
+    ;p=plot(RunData.r_,imaginary(rhs_T),color='r',/over)
     ;p=plot(RunData.r_,rhs_Z,/over)
+    ;p=plot(RunData.r_,imaginary(rhs_z),color='r',/over)
 
 	matFill, runData.nR, runData.nPhi, runData.kz, $
 		runData.r, runData.r_, epsilon, epsilon_, w, runData.dR, $
@@ -316,7 +347,14 @@ pro rsfwc_1d, $
 	ePhiFull	= complexArr ( runData.nR )
 	ezFull		= complexArr ( runData.nR )
 	hRFull  	= complexArr ( runData.nR )
-	
+
+    ;; Remove the Inident Field from the solution
+    ;if ar2EField then begin
+    ;    eR = eR - kjIn.eR*kjIn.replace
+    ;    ePhi = ePhi - kjIn.eT_*kjIn.replace_
+    ;    eZ = eZ - kjIn.eZ_*kjIn.replace_
+    ;endif
+
 	for i=1,runData.nR-2 do begin
 	
 		ePhiFull[i]	=  ( ePhi[i] + ePhi[i-1] ) / 2.0
@@ -324,7 +362,6 @@ pro rsfwc_1d, $
 		hRFull[i]	=  ( hR[i] + hR[i-1] ) / 2.0
 
 	endfor
-
 
 	if plotESolution then $
 	rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
@@ -520,12 +557,12 @@ pro rsfwc_1d, $
 				name='jAnt_z',/over)
 
         if ar2EField then begin
-            p = plot(runData.r,kjIn.jPr,linestyle='--',/over)
-            p = plot(runData.r,imaginary(kjIn.jPr),linestyle='-',/over)
-            p = plot(runData.r,kjIn.jPt,linestyle='--',/over,color='r')
-            p = plot(runData.r,imaginary(kjIn.jPt),linestyle='-',/over,color='r')
-            p = plot(runData.r,kjIn.jPz,linestyle='--',/over,color='g')
-            p = plot(runData.r,imaginary(kjIn.jPz),linestyle='-',/over,color='g')
+            p = plot(runData.r,kjIn.jPr*kjIn.replace,linestyle='--',/over)
+            p = plot(runData.r,imaginary(kjIn.jPr)*kjIn.replace,linestyle='-',/over)
+            p = plot(runData.r,kjIn.jPt*kjIn.replace,linestyle='--',/over,color='r')
+            p = plot(runData.r,imaginary(kjIn.jPt)*kjIn.replace,linestyle='-',/over,color='r')
+            p = plot(runData.r,kjIn.jPz*kjIn.replace,linestyle='--',/over,color='g')
+            p = plot(runData.r,imaginary(kjIn.jPz)*kjIn.replace,linestyle='-',/over,color='g')
         endif
 
 

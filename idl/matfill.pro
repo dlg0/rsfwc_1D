@@ -31,10 +31,10 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 	for i = 0UL, nR - 1L do begin
 
             if ar2EField and i gt 0 and i lt nR-2 then begin
-               ;this_kjE = [$
-               ;    kjIn.eR[i-1],kjIn.eT_[i-1],kjIn.eZ_[i-1], $
-               ;    kjIn.eR[i],kjIn.eT_[i],kjIn.eZ_[i], $
-               ;    kjIn.eR[i+1],kjIn.eT_[i+1],kjIn.eZ_[i+1]]
+               this_kjE = [$
+                   kjIn.eR[i-1],kjIn.eT_[i-1],kjIn.eZ_[i-1], $
+                   kjIn.eR[i],  kjIn.eT_[i],  kjIn.eZ_[i], $
+                   kjIn.eR[i+1],kjIn.eT_[i+1],kjIn.eZ_[i+1]]
             endif
 		    ;	r component
         
@@ -91,16 +91,26 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
                 ;    rhs[3*i] -= total(this_aMat * this_kjE)
                 ;endif
                 ;endif
-                ;; now at the left TF/SF boundary we have to add the incident
-                ;; field to ensure the derivative terms are between TOTAL fields, 
-                ;; i.e., they are just TOTAL field differences 
-                ;if ar2EField and i gt 0 then begin
-                ;if replace[i-1] eq 0 and replace[i] then begin
-                ;    this_aMat = aMat[3*i-3:3*i+5,3*i]
-                ;    this_aMat[3:-1] = 0
-                ;    rhs[3*i] += total(this_aMat * this_kjE)
-                ;endif 
-                ;endif
+                ; At the left TF/SF boundary we have to add the incident
+                ; field to ensure the derivative terms are between TOTAL fields, 
+                ; i.e., they are just TOTAL field differences 
+                if ar2EField and i gt 0 then begin
+                if replace[i-1] eq 0 and replace[i] then begin
+                    this_aMat = aMat[3*i-3:3*i+5,3*i]
+                    this_aMat[3:-1] = 0
+                    rhs[3*i] -= total(this_aMat * this_kjE)
+                endif 
+                endif
+                ; At the right TF/SF boundary we have to add the incident
+                ; field to ensure the derivative terms are between TOTAL fields, 
+                ; i.e., they are just TOTAL field differences 
+                if ar2EField and i lt nR-1 then begin
+                if replace[i] and replace[i+1] eq 0 then begin
+                    this_aMat = aMat[3*i-3:3*i+5,3*i]
+                    this_aMat[0:3] = 0
+                    rhs[3*i] -= total(this_aMat * this_kjE)
+                endif 
+                endif
  
 		;	phi component
 			if i lt nR-1 then begin
@@ -137,34 +147,54 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 
                     ;; TF/SF Method
                     ;if ar2EField and i gt 0 and i lt nR-1 then begin
-                    ;if replace[i] and replace[i+1] then begin
+                    ;if replace[i-1] and replace[i] and replace[i+1] and replace[i+2] then begin
                     ;    this_aMat = aMat[3*i-3:3*i+5,3*i+1]
                     ;    rhs[3*i+1] -= total(this_aMat * this_kjE)
                     ;endif
                     ;endif
-                    ;; Both the half points inside and outside of the full
-                    ;; point interface layer need to be corrected for since 
-                    ;; unlinke the r component, the th and z components have
-                    ;; a dependence on a larger stencil. 
-                    ;; 
-                    ;; at the half point outside we need to SUBTRACT the incident
-                    ;; field so this is an equation for SCATTERED fields
-                    ;if ar2EField and i gt 0 then begin ; outside
-                    ;if replace[i] eq 0 and replace[i+1] then begin
-                    ;    this_aMat = -aMat[3*i-3:3*i+5,3*i+1]
-                    ;    this_aMat[0:5] = 0
-                    ;    rhs[3*i+1] += total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
-                    ;; at the half point inside we need to ADD the incident
-                    ;; field so this is an equation for TOTAL fields
-                    ;if ar2EField and i gt 0 then begin ; inside
-                    ;if replace[i-1] eq 0 and replace[i] and replace[i+1] then begin
-                    ;    this_aMat = aMat[3*i-3:3*i+5,3*i+1]
-                    ;    this_aMat[3:-1] = 0
-                    ;    rhs[3*i+1] += total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
+                    ; Both the half points inside and outside of the full
+                    ; point interface layer need to be corrected for since 
+                    ; unlinke the r component, the th and z components have
+                    ; a dependence on a larger stencil. 
+                    ; 
+                    ; Left TF/SF boundary
+                    ; at the half point outside we need to SUBTRACT the incident
+                    ; field so this is an equation for SCATTERED fields
+                    if ar2EField and i gt 0 then begin ; outside
+                    if replace[i] eq 0 and replace[i+1] then begin
+                        this_aMat = -aMat[3*i-3:3*i+5,3*i+1]
+                        this_aMat[0:5] = 0
+                        rhs[3*i+1] -= total(this_aMat * this_kjE)
+                    endif 
+                    endif
+                    ; at the half point inside we need to ADD the incident
+                    ; field so this is an equation for TOTAL fields
+                    if ar2EField and i gt 0 then begin ; inside
+                    if replace[i-1] eq 0 and replace[i] and replace[i+1] then begin
+                        this_aMat = aMat[3*i-3:3*i+5,3*i+1]
+                        this_aMat[3:-1] = 0
+                        rhs[3*i+1] -= total(this_aMat * this_kjE)
+                    endif 
+                    endif
+                    ; Right TF/SF boundary
+                    ; at the half point outside we need to SUBTRACT the incident
+                    ; field so this is an equation for SCATTERED fields
+                    if ar2EField and i lt nR-1 then begin ; outside
+                    if replace[i] and replace[i+1] eq 0 then begin
+                        this_aMat = -aMat[3*i-3:3*i+5,3*i+1]
+                        this_aMat[4:-1] = 0
+                        rhs[3*i+1] -= total(this_aMat * this_kjE)
+                    endif 
+                    endif
+                    ; at the half point inside we need to ADD the incident
+                    ; field so this is an equation for TOTAL fields
+                    if ar2EField and i lt nR-2 then begin ; inside
+                    if replace[i] and replace[i+1] and replace[i+2] eq 0 then begin
+                        this_aMat = aMat[3*i-3:3*i+5,3*i+1]
+                        this_aMat[0:3] = 0
+                        rhs[3*i+1] -= total(this_aMat * this_kjE)
+                    endif 
+                    endif
  
 		;	z component	
 
@@ -201,29 +231,49 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 
                     ;; TF/SF Method
                     ;if ar2EField and i gt 0 and i lt nR-1 then begin
-                    ;if replace[i] and replace[i+1] then begin
+                    ;if replace[i-1] and replace[i] and replace[i+1] and replace[i+2] then begin
                     ;    this_aMat = aMat[3*i-3:3*i+5,3*i+2]
                     ;    rhs[3*i+2] -= total(this_aMat * this_kjE)
                     ;endif
                     ;endif
-                    ;; at the half point outside we need to SUBTRACT the incident
-                    ;; field so this is an equation for SCATTERED fields
-                    ;if ar2EField and i gt 0 then begin
-                    ;if replace[i] eq 0 and replace[i+1] then begin
-                    ;    this_aMat = -aMat[3*i-3:3*i+5,3*i+2]
-                    ;    this_aMat[0:5] = 0
-                    ;    rhs[3*i+2] += total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
-                    ;; at the half point inside we need to ADD the incident
-                    ;; field so this is an equation for TOTAL fields
-                    ;if ar2EField and i gt 0 then begin
-                    ;if replace[i-1] eq 0 and replace[i] and replace[i+1] then begin
-                    ;    this_aMat = aMat[3*i-3:3*i+5,3*i+2]
-                    ;    this_aMat[3:-1] = 0
-                    ;    rhs[3*i+2] += total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
+                    ; Left TF/SF boundary
+                    ; at the half point outside we need to SUBTRACT the incident
+                    ; field so this is an equation for SCATTERED fields
+                    if ar2EField and i gt 0 then begin
+                    if replace[i] eq 0 and replace[i+1] then begin
+                        this_aMat = -aMat[3*i-3:3*i+5,3*i+2]
+                        this_aMat[0:5] = 0
+                        rhs[3*i+2] -= total(this_aMat * this_kjE)
+                    endif 
+                    endif
+                    ; at the half point inside we need to ADD the incident
+                    ; field so this is an equation for TOTAL fields
+                    if ar2EField and i gt 0 then begin
+                    if replace[i-1] eq 0 and replace[i] and replace[i+1] then begin
+                        this_aMat = aMat[3*i-3:3*i+5,3*i+2]
+                        this_aMat[3:-1] = 0
+                        rhs[3*i+2] -= total(this_aMat * this_kjE)
+                    endif 
+                    endif
+                    ; Right TF/SF boundary
+                    ; at the half point outside we need to SUBTRACT the incident
+                    ; field so this is an equation for SCATTERED fields
+                    if ar2EField and i lt nR-1 then begin
+                    if replace[i] and replace[i+1] eq 0 then begin
+                        this_aMat = -aMat[3*i-3:3*i+5,3*i+2]
+                        this_aMat[4:-1] = 0
+                        rhs[3*i+2] -= total(this_aMat * this_kjE)
+                    endif 
+                    endif
+                    ; at the half point inside we need to ADD the incident
+                    ; field so this is an equation for TOTAL fields
+                    if ar2EField and i lt nR-2 then begin
+                    if replace[i] and replace[i+1] and replace[i+2] eq 0 then begin
+                        this_aMat = aMat[3*i-3:3*i+5,3*i+2]
+                        this_aMat[0:3] = 0
+                        rhs[3*i+2] -= total(this_aMat * this_kjE)
+                    endif 
+                    endif
  
 			endif
 	endfor
