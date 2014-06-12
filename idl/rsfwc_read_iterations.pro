@@ -1,13 +1,18 @@
-pro rsfwc_read_iterations, nIterations, MPE_FileName = MPE_FileName
+pro rsfwc_read_iterations, nIterations, RightName, MPE_FileName = MPE_FileName, $
+		vorpal=vorpal, freq = freq
 
-    RightName = '~/scratch/rsfwc_1d/ar2_vorpal/right_simple_'
+    ;RightName = '/Users/dg6/scratch/rsfwc_1d/ar2_vorpal/right_simple_'
     CompareDir = '~/scratch/rsfwc_1d/ar2_vorpal/simple_full'
 
     for n=0,nIterations-1 do begin
 
         right_ThisDir =  RightName+StrCompress(string(n),/rem)
         print, 'Reading ... ', right_ThisDir
-        right_s = rsfwc_read_solution (right_ThisDir)
+		if keyword_set(vorpal) then begin
+    		right_s = ar2_read_vorpal (runFolderName = right_ThisDir, /oneD, freq = freq )
+		endif else begin
+        	right_s = rsfwc_read_solution (right_ThisDir)
+		endelse
 
         if jRAll eq !null then begin
             nR = n_elements(right_s.jP_r)
@@ -47,18 +52,18 @@ pro rsfwc_read_iterations, nIterations, MPE_FileName = MPE_FileName
 
     p=plot(right_s.r, imaginary(jRAll[*,0]),layout=[2,3,2],/current,color='r')
     for n=1,nIterations-1 do p=plot(right_s.r,imaginary(jRAll[*,n]),/over,color='r')
-    p=plot(compare_s.r, imaginary(compare_s.jP_r), color='g',thick=3,/over)
-    p=plot(right_s.r, imaginary(jR_mpe),/over,color='b',thick=3,yRange=[-range,range])
+    p=plot(compare_s.r, imaginary(compare_s.jP_r), color='g',thick=2,/over)
+    p=plot(right_s.r, imaginary(jR_mpe),/over,color='b',thick=2,yRange=[-range,range])
 
     p=plot(right_s.r, imaginary(jTAll[*,0]),layout=[2,3,4],/current,color='r')
     for n=1,nIterations-1 do p=plot(right_s.r,imaginary(jTAll[*,n]),/over,color='r')
-    p=plot(compare_s.r, imaginary(compare_s.jP_t), color='g',thick=3,/over)
-    p=plot(right_s.r, imaginary(jT_mpe),/over,color='b',thick=3,yRange=[-range,range])
+    p=plot(compare_s.r, imaginary(compare_s.jP_t), color='g',thick=2,/over)
+    p=plot(right_s.r, imaginary(jT_mpe),/over,color='b',thick=2,yRange=[-range,range])
 
     p=plot(right_s.r, imaginary(jZAll[*,0]),layout=[2,3,6],/current,color='r')
     for n=1,nIterations-1 do p=plot(right_s.r,imaginary(jZAll[*,n]),/over,color='r')
-    p=plot(compare_s.r, imaginary(compare_s.jP_z), color='g',thick=3,/over)
-    p=plot(right_s.r, imaginary(jZ_mpe),/over,color='b',thick=3,yRange=[-range,range])
+    p=plot(compare_s.r, imaginary(compare_s.jP_z), color='g',thick=2,/over)
+    p=plot(right_s.r, imaginary(jZ_mpe),/over,color='b',thick=2,yRange=[-range,range])
 
 
 
@@ -69,13 +74,16 @@ pro rsfwc_read_iterations, nIterations, MPE_FileName = MPE_FileName
 	nCdf_control, nc_id, /fill
 	
 	nr_id = nCdf_dimDef ( nc_id, 'nR', n_elements(right_s.R) )
-	nrH_id = nCdf_dimDef ( nc_id, 'nR_', n_elements(right_s.R_) )
+	if not keyword_set(vorpal) then $
+			nrH_id = nCdf_dimDef ( nc_id, 'nR_', n_elements(right_s.R_) )
 	scalar_id = nCdf_dimDef ( nc_id, 'scalar', 1 )
 
 	r_id = nCdf_varDef ( nc_id, 'r', nr_id, /float )
-	rH_id = nCdf_varDef ( nc_id, 'r_', nrH_id, /float )
+	if not keyword_set(vorpal) then $
+		rH_id = nCdf_varDef ( nc_id, 'r_', nrH_id, /float )
 	z_id = nCdf_varDef ( nc_id, 'z', nr_id, /float )
-	zH_id = nCdf_varDef ( nc_id, 'z_', nrH_id, /float )
+	if not keyword_set(vorpal) then $
+		zH_id = nCdf_varDef ( nc_id, 'z_', nrH_id, /float )
 
 	jP_r_re_id = nCdf_varDef ( nc_id, 'jP_r_re', nr_id, /float )
 	jP_r_im_id = nCdf_varDef ( nc_id, 'jP_r_im', nr_id, /float )
@@ -87,10 +95,12 @@ pro rsfwc_read_iterations, nIterations, MPE_FileName = MPE_FileName
 	nCdf_control, nc_id, /enDef
 
 	nCdf_varPut, nc_id, r_id, right_s.r
-	nCdf_varPut, nc_id, rH_id, right_s.r_
+	if not keyword_set(vorpal) then $
+		nCdf_varPut, nc_id, rH_id, right_s.r_
 
 	nCdf_varPut, nc_id, z_id, right_s.z
-	nCdf_varPut, nc_id, zH_id, right_s.z_
+	if not keyword_set(vorpal) then $
+		nCdf_varPut, nc_id, zH_id, right_s.z_
 
 	nCdf_varPut, nc_id, jP_r_re_id, real_part(jr_mpe)
 	nCdf_varPut, nc_id, jP_r_im_id, imaginary(jr_mpe) 
