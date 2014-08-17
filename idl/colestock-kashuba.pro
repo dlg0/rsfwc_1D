@@ -14,7 +14,7 @@
 	kj_jP_fileName = 'kj_jP.nc'
     ar2Input = 1
     ar2InFileName = 'ar2Input.nc'
-    ar2RunDataFileName = 'runData_001_+002_000001.nc'
+    ar2RunDataFileName = 'runData_001_+013_000001.nc'
 
 ;	Plotting switches
 
@@ -41,8 +41,8 @@
 		;r0	= 100d0
 		;aWall	= 5d0
 
-		rMin	= 1.05
-		rMax	= 2.65
+		rMin	= 0.92
+		rMax	= 1.72
    		b0	= 0.0
 		bR_frac	= 0.0
 		bz_frac	= 0.0	
@@ -50,25 +50,25 @@
 		ionSpecAmu	= [ 4 ]
 		nMax		= [ 1.0 ] * 0
 		damping = 0.00
-		freq	= 53.0e6
-		nPhi = 2.0
+		freq	= 42.0e6
+		nPhi = 13.0
 		kz = 0.0
-		nR	= 512L
-		antLoc	= 2.5
-		AntennaJ_r = 1
+		nR	= 1024L
+		antLoc	= 1.6
+		AntennaJ_r = 0
 		AntennaJ_t = 0
-		AntennaJ_z = 0
+		AntennaJ_z = 1
 
-		antSig_r = 0.02
-		antSig_t = 0.02
-		antSig_z = 0.02
+		antSig_r = 0.01
+		antSig_t = 0.01
+		antSig_z = 0.01
 
 		jAmp = 1.0
 
 		useEqdsk = 0
 		useProfiles = 0
 		poloidalScale = 1.0
-		zSlice	= 0.3
+		zSlice	= 0.0
 		profile1 = 0
 
 ;		-----------------------------

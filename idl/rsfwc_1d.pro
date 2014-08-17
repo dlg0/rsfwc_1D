@@ -23,7 +23,8 @@ pro rsfwc_1d, $
 	stixVars = stixVars, $
 	runData = runData, $
 	poloidalScale = poloidalScale, $
-	nPhi = nPhi
+	nPhi = nPhi, $
+    plot_Jp_spec = plot_Jp_spec
 
 ;	Parameters
 
@@ -471,6 +472,14 @@ pro rsfwc_1d, $
 	e_t	= ePhiFull
 	e_z	= eZFull
 
+    h_r = hRFull
+    h_t = hPhi
+    h_z = hZ
+
+    b_r = u0 * h_r 
+    b_t = u0 * h_t 
+    b_z = u0 * h_z 
+
 	; Calculate plasma current
 	; ------------------------
 
@@ -585,6 +594,7 @@ pro rsfwc_1d, $
 	nr_id = nCdf_dimDef ( nc_id, 'nR', runData.nR )
 	nrH_id = nCdf_dimDef ( nc_id, 'nR_', runData.nR-1 )
 	scalar_id = nCdf_dimDef ( nc_id, 'scalar', 1 )
+	nSpec_id = nCdf_dimDef ( nc_id, 'nSpec', runData.nSpec+1 )
 
 	freq_id = nCdf_varDef ( nc_id, 'freq', scalar_id, /float )
 	r_id = nCdf_varDef ( nc_id, 'r', nr_id, /float )
@@ -602,6 +612,13 @@ pro rsfwc_1d, $
 	e_p_im_id = nCdf_varDef ( nc_id, 'e_p_im', nr_id, /float )
 	e_z_re_id = nCdf_varDef ( nc_id, 'e_z_re', nr_id, /float )
 	e_z_im_id = nCdf_varDef ( nc_id, 'e_z_im', nr_id, /float )
+    
+	b_r_re_id = nCdf_varDef ( nc_id, 'b_r_re', nr_id, /float )
+	b_r_im_id = nCdf_varDef ( nc_id, 'b_r_im', nr_id, /float )
+	b_p_re_id = nCdf_varDef ( nc_id, 'b_p_re', nr_id, /float )
+	b_p_im_id = nCdf_varDef ( nc_id, 'b_p_im', nr_id, /float )
+	b_z_re_id = nCdf_varDef ( nc_id, 'b_z_re', nr_id, /float )
+	b_z_im_id = nCdf_varDef ( nc_id, 'b_z_im', nr_id, /float )
 
 	jP_r_re_id = nCdf_varDef ( nc_id, 'jP_r_re', nr_id, /float )
 	jP_r_im_id = nCdf_varDef ( nc_id, 'jP_r_im', nr_id, /float )
@@ -616,6 +633,8 @@ pro rsfwc_1d, $
 	jA_p_im_id = nCdf_varDef ( nc_id, 'jA_p_im', nr_id, /float )
 	jA_z_re_id = nCdf_varDef ( nc_id, 'jA_z_re', nr_id, /float )
 	jA_z_im_id = nCdf_varDef ( nc_id, 'jA_z_im', nr_id, /float )
+
+	Density_id = nCdf_varDef ( nc_id, 'density_m3', [nr_id,nSpec_id], /float )
 
 	nCdf_control, nc_id, /enDef
 
@@ -638,6 +657,13 @@ pro rsfwc_1d, $
 	nCdf_varPut, nc_id, e_z_re_id, real_part(e_z) 
 	nCdf_varPut, nc_id, e_z_im_id, imaginary(e_z) 
 
+	nCdf_varPut, nc_id, b_r_re_id, real_part(b_r) 
+	nCdf_varPut, nc_id, b_r_im_id, imaginary(b_r) 
+	nCdf_varPut, nc_id, b_p_re_id, real_part(b_t) 
+	nCdf_varPut, nc_id, b_p_im_id, imaginary(b_t) 
+	nCdf_varPut, nc_id, b_z_re_id, real_part(b_z) 
+	nCdf_varPut, nc_id, b_z_im_id, imaginary(b_z) 
+
 	nCdf_varPut, nc_id, jP_r_re_id, real_part(jP_r)
 	nCdf_varPut, nc_id, jP_r_im_id, imaginary(jP_r) 
 	nCdf_varPut, nc_id, jP_p_re_id, real_part(jP_t) 
@@ -652,35 +678,49 @@ pro rsfwc_1d, $
 	nCdf_varPut, nc_id, jA_z_re_id, jA_z
 	nCdf_varPut, nc_id, jA_z_im_id, jA_z*0
 
+    TmpDensity = FltArr(RunData.nR,RunData.nSpec+1)
+    for s=0,RunData.nSpec do begin
+        TmpDensity[*,s] = SpecData[s].n
+    endfor
+
+    nCdf_varPut, nc_id, Density_id, TmpDensity
+
 	nCdf_close, nc_id
 
 
 	if plotJp then begin
 
+        nS = n_elements(SpecData)
 		jpRange = max(abs([abs(jp_r),abs(jp_t),abs(jp_z)]))
-		yRange = [-jPRange,jPRange]*0.5
+		yRange = [-4,4];[-jPRange,jPRange]*0.5
 
-		p_re = plot (rFull,jP_r,thick=2,$
-				title='jP_r',name='Jp_re',font_size=10,$
-				layout=[1,3,1],yRange=yRange,transparency=50,window_title='rsfwc_1d')
-		p_im = plot (rFull,imaginary(jP_r),color='r',thick=2,transparency=50,$
-				name='Jp_re',font_size=10,/over)
-	   	;l = legend(target=[p_re,p_im],position=[0.99,0.95],/norm,font_size=10,horizontal_alignment='RIGHT')
+        p=plot([0,0],[0,0],/noData, layout=[nS,3,1],window_title='rsfwc_1d',dimensions=[1200,800])
 
-		p_re = plot (rFull,jP_t,thick=2,$
-				title='jP_t',name='Jp_re',font_size=10,$
-				layout=[1,3,2],/current,yRange=yRange,transparency=50)
-		p_im = plot (rFull,imaginary(jP_t),color='r',thick=2,transparency=50,$
-				name='Jp_re',font_size=10,/over)
-	   	;l = legend(target=[p_re,p_im],position=[0.99,0.63],/norm,font_size=10,horizontal_alignment='RIGHT')
+        for s=0,nS-1 do begin
+            This_amu_str = ', amu: '+string(SpecData[s].m/mi,format='(i1.1)')
+            This_Z_str = ', Z: '+string(SpecData[s].q/e,format='(i+2.1)')
 
-		p_re = plot (rFull,jP_z,thick=2,$
-				title='jP_z',name='Jp_re',font_size=10,$
-				layout=[1,3,3],/current,yRange=yRange,transparency=50)
-		p_im = plot (rFull,imaginary(jP_z),color='r',thick=2,transparency=50,$
-				name='Jp_re',font_size=10,/over)
-	   	;l = legend(target=[p_re,p_im],position=[0.99,0.25],/norm,font_size=10,horizontal_alignment='RIGHT')
+		    p_re = plot (rFull,jP_r_s[*,s],thick=2,$
+		    		title='jP_r'+This_amu_str+This_Z_str,name='Jp_re',font_size=10,$
+		    		layout=[nS,3,1+s],yRange=yRange,transparency=50,/current)
+		    p_im = plot (rFull,imaginary(jP_r_s[*,s]),color='r',thick=2,transparency=50,$
+		    		name='Jp_re',font_size=10,/over)
+	   	    ;l = legend(target=[p_re,p_im],position=[0.99,0.95],/norm,font_size=10,horizontal_alignment='RIGHT')
 
+		    p_re = plot (rFull,jP_t_s[*,s],thick=2,$
+		    		title='jP_t',name='Jp_re',font_size=10,$
+		    		layout=[nS,3,1+1*nS+s],/current,yRange=yRange,transparency=50)
+		    p_im = plot (rFull,imaginary(jP_t_s[*,s]),color='r',thick=2,transparency=50,$
+		    		name='Jp_re',font_size=10,/over)
+	   	    ;l = legend(target=[p_re,p_im],position=[0.99,0.63],/norm,font_size=10,horizontal_alignment='RIGHT')
+
+		    p_re = plot (rFull,jP_z_s[*,s],thick=2,$
+		    		title='jP_z',name='Jp_re',font_size=10,$
+		    		layout=[nS,3,1+2*nS+s],/current,yRange=yRange,transparency=50)
+		    p_im = plot (rFull,imaginary(jP_z_s[*,s]),color='r',thick=2,transparency=50,$
+		    		name='Jp_re',font_size=10,/over)
+	   	    ;l = legend(target=[p_re,p_im],position=[0.99,0.25],/norm,font_size=10,horizontal_alignment='RIGHT')
+        endfor
 
 	endif
 

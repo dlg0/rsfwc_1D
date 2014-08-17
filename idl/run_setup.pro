@@ -109,9 +109,10 @@ pro run_setup, $
 	;@iter
 	;@langmuir
 	;@klepper
-    ;@ar2_vorpal_right_simple
+    @ar2_vorpal_right_simple
     ;@ar2_vorpal_left_simple
-    @ar2_vorpal_simple_full
+    ;@ar2_vorpal_simple_full
+    ;@colestock-kashuba
 	@rsfwc_input
 
 ;		Grid
