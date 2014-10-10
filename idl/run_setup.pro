@@ -98,6 +98,7 @@ pro run_setup, $
 	profile1 = 0
 	profile2 = 0
     kjInput = 0
+    ar2EField = 0
     specifyE = 0
 
 ;	-----------------------------
@@ -109,10 +110,10 @@ pro run_setup, $
 	;@iter
 	;@langmuir
 	;@klepper
-    @ar2_vorpal_right_simple
+    ;@ar2_vorpal_right_simple
     ;@ar2_vorpal_left_simple
     ;@ar2_vorpal_simple_full
-    ;@colestock-kashuba
+    @colestock-kashuba
 	@rsfwc_input
 
 ;		Grid

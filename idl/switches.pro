@@ -13,7 +13,6 @@
         ar2Input, $
         ar2InFileName, $
         ar2RunDataFileName, $
-		runIdent, $
         ar2EField
 
 	common plotSwitches, $
@@ -60,4 +59,3 @@
 
 		kjInput = 0
 		kj_jP_fileName = 'kj_jP.nc'
-		runIdent = ''

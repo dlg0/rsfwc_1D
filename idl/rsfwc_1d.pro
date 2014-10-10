@@ -587,7 +587,7 @@ pro rsfwc_1d, $
 
 	; Write netCDF file
 
-	nc_id = nCdf_create ('rsfwc_1d_'+runIdent+'.nc', /clobber )
+	nc_id = nCdf_create ('rsfwc_1d.nc', /clobber )
 
 	nCdf_control, nc_id, /fill
 	
