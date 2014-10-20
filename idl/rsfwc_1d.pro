@@ -82,90 +82,9 @@ pro rsfwc_1d, $
 	if keyword_set ( dispersionOnly ) then return
 
 	if kjInput or ar2EField then begin
-
-		cdfId = ncdf_open(kj_jP_fileName)
-
-            nCdf_varGet, cdfId, 'replace', replace
-            nCdf_varGet, cdfId, 'replace_', replace_
-
-			nCdf_varGet, cdfId, 'jP_r_re', kj_jpR_re
-			nCdf_varGet, cdfId, 'jP_r_im', kj_jpR_im
-			nCdf_varGet, cdfId, 'jP_p_re', kj_jpT_re
-			nCdf_varGet, cdfId, 'jP_p_im', kj_jpT_im
-			nCdf_varGet, cdfId, 'jP_z_re', kj_jpZ_re
-			nCdf_varGet, cdfId, 'jP_z_im', kj_jpZ_im
-
-			nCdf_varGet, cdfId, 'jP_r_re_', kj_jpR_re_
-			nCdf_varGet, cdfId, 'jP_r_im_', kj_jpR_im_
-			nCdf_varGet, cdfId, 'jP_p_re_', kj_jpT_re_
-			nCdf_varGet, cdfId, 'jP_p_im_', kj_jpT_im_
-			nCdf_varGet, cdfId, 'jP_z_re_', kj_jpZ_re_
-			nCdf_varGet, cdfId, 'jP_z_im_', kj_jpZ_im_
-
-			nCdf_varGet, cdfId, 'E_r_re', kj_ER_re
-			nCdf_varGet, cdfId, 'E_r_im', kj_ER_im
-			nCdf_varGet, cdfId, 'E_p_re', kj_ET_re
-			nCdf_varGet, cdfId, 'E_p_im', kj_ET_im
-			nCdf_varGet, cdfId, 'E_z_re', kj_EZ_re
-			nCdf_varGet, cdfId, 'E_z_im', kj_EZ_im
-
-			nCdf_varGet, cdfId, 'E_r_re_', kj_ER_re_
-			nCdf_varGet, cdfId, 'E_r_im_', kj_ER_im_
-			nCdf_varGet, cdfId, 'E_p_re_', kj_ET_re_
-			nCdf_varGet, cdfId, 'E_p_im_', kj_ET_im_
-			nCdf_varGet, cdfId, 'E_z_re_', kj_EZ_re_
-			nCdf_varGet, cdfId, 'E_z_im_', kj_EZ_im_
-
-		ncdf_close, cdfId
-
-		kj_jpR = complex(kj_jpR_re,kj_jpR_im)
-		kj_jpT = complex(kj_jpT_re,kj_jpT_im)
-		kj_jpZ = complex(kj_jpZ_re,kj_jpZ_im)
-
-		kj_jpR_ = complex(kj_jpR_re_,kj_jpR_im_)
-		kj_jpT_ = complex(kj_jpT_re_,kj_jpT_im_)
-		kj_jpZ_ = complex(kj_jpZ_re_,kj_jpZ_im_)
-
-		kj_ER = complex(kj_ER_re,kj_ER_im)
-		kj_ET = complex(kj_ET_re,kj_ET_im)
-		kj_EZ = complex(kj_EZ_re,kj_EZ_im)
-
-		kj_ER_ = complex(kj_ER_re_,kj_ER_im_)
-		kj_ET_ = complex(kj_ET_re_,kj_ET_im_)
-		kj_EZ_ = complex(kj_EZ_re_,kj_EZ_im_)
-
-        ; Try applying a windowing function to the
-        ; "replace" section to avoid the discontinuity
-        ; that is causing the problem ...
-
-        iiReplace = where(replace gt 0, iiReplaceCnt)
-        HanningReplace = hanning(iiReplaceCnt)
-        xGrid = fIndGen(n_elements(replace))
-        xGrid_ = xGrid[0:-2]+0.5
-
-        HanningFull = fltArr(n_elements(replace))
-        HanningFull[iiReplace] = HanningReplace
-        HanningHalf = interpol(HanningFull,xGrid,xGrid_,/spline)
-
-        HanningFull = HanningFull*0+1
-        HanningHalf = HanningHalf*0+1
-
-        kjIn = { $
-            jpR : kj_jpR*HanningFull, $
-            jpT : kj_jpT*HanningFull, $
-            jpZ : kj_jpZ*HanningFull, $
-            jpR_ : kj_jpR_*HanningHalf, $
-            jpT_ : kj_jpT_*HanningHalf, $
-            jpZ_ : kj_jpZ_*HanningHalf, $
-            ER : kj_ER*HanningFull, $
-            ET : kj_ET*HanningFull, $
-            EZ : kj_EZ*HanningFull, $
-            ER_ : kj_ER_*HanningHalf, $
-            ET_ : kj_ET_*HanningHalf, $
-            EZ_ : kj_EZ_*HanningHalf, $
-            replace : replace, $
-            replace_ : replace_ }
-
+        kjIn = kj_read_kj_jP(kj_jP_fileName, /PerSpecies)
+        replace = intArr(runData.nR)*0+1
+        replace_ = intArr(runData.nR-1)*0+1
 	endif else begin
         replace = intArr(runData.nR)
         replace_ = intArr(runData.nR-1)
@@ -495,10 +414,15 @@ pro rsfwc_1d, $
     
     	if kjInput and replace[i] then begin
     
-    		jP_r[i]	= kj_jpR[i]
-    		jP_t[i]	= kj_jpT[i]
-    		jP_z[i]	= kj_jpZ[i]
-            print, 'REPLACING THINGS ...'    
+    		jP_r[i]	= kjIn.jpR[i]
+    		jP_t[i]	= kjIn.jpT[i]
+    		jP_z[i]	= kjIn.jpZ[i]
+
+            nS_here = n_elements(kjIn.jpR_spec[0,*])
+    		jP_r_S[i,*]	= shift(kjIn.jpR_spec[i,*],[0,ns_Here-1])
+    		jP_t_S[i,*]	= shift(kjIn.jpT_spec[i,*],[0,ns_Here-1])
+    		jP_z_S[i,*]	= shift(kjIn.jpZ_spec[i,*],[0,ns_Here-1])
+
     	endif else begin
     
             for s=0,runData.nSpec do begin
