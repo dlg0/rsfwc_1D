@@ -3,10 +3,10 @@
 
 pro rsfwc_1d, $
     eR = eR, $
-	ePhi = ePhi, $
+	eP = eP, $
 	ez = ez, $
 	divD = divD, $
-	rFull = rFull, rHalf = rHalf, $
+	r = r, r_ = r_, $
 	;jA_r = jA_r, jA_t = jA_t, jA_z = jA_z, $
 	in_kz = in_kz, $
 	nMax = nMax, $
@@ -51,9 +51,9 @@ pro rsfwc_1d, $
 		jAmp = jAmp
 
 
-	rFull 	= runData.r
-	rHalf	= runData.r_
-	rOut	= rFull
+	r 	= runData.r
+	r_	= runData.r_
+	rOut	= r
 
  	wReal	= runData.freq * 2d0 * !dpi 
 	wc	    = dcomplexArr ( runData.nR, runData.nSpec+1 ) 
@@ -81,8 +81,9 @@ pro rsfwc_1d, $
 
 	if keyword_set ( dispersionOnly ) then return
 
-	if kjInput or ar2EField then begin
-        kjIn = kj_read_kj_jP(kj_jP_fileName, /PerSpecies)
+	if kjInput then begin
+        kjIn = kj_read_kj_jP(kj_jP_fileName)
+    endif else if ar2EField then begin
         replace = intArr(runData.nR)*0+1
         replace_ = intArr(runData.nR-1)*0+1
 	endif else begin
@@ -145,7 +146,6 @@ pro rsfwc_1d, $
 			rhs[i*3+1]	+= II * wReal * u0 * kjIn.jpT_[i]
 			rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
 		endif
-
 		;if ar2EField then begin
         ;    if replace[i] then begin
         ;       ;print, 'Adding AORSA driving term ...'
@@ -158,18 +158,6 @@ pro rsfwc_1d, $
         ;endif
 
 	endfor
-
-    ;ii3 = IndGen(RunData.nR)*3
-    ;rhs_R = rhs[ii3]
-    ;rhs_T = rhs[ii3[0:-2]+1]
-    ;rhs_Z = rhs[ii3[0:-2]+2]
-
-    ;p=plot(RunData.r,rhs_R)
-    ;p=plot(RunData.r,imaginary(rhs_R),/over,color='r')
-    ;p=plot(RunData.r_,rhs_T,/over)
-    ;p=plot(RunData.r_,imaginary(rhs_T),color='r',/over)
-    ;p=plot(RunData.r_,rhs_Z,/over)
-    ;p=plot(RunData.r_,imaginary(rhs_z),color='r',/over)
 
 	matFill, runData.nR, runData.nPhi, runData.kz, $
 		runData.r, runData.r_, epsilon, epsilon_, w, runData.dR, $
@@ -193,10 +181,10 @@ pro rsfwc_1d, $
    
 	ii_eR	= lIndGen(runData.nR)*3
 	eR	= eField[ii_eR]
-	ii_ePhi	= temporary(ii_eR[0:runData.nR-2]+1)
-	ePhi	= eField[ii_ePhi]
-	ii_ez	= temporary(ii_ePhi+1)
-	ez	= eField[ii_ez]
+	ii_eP	= temporary(ii_eR[0:runData.nR-2]+1)
+	eP_	= eField[ii_eP]
+	ii_ez	= temporary(ii_eP+1)
+	ez_	= eField[ii_ez]
 
 	if keyword_set ( divD ) then begin
 
@@ -209,17 +197,17 @@ pro rsfwc_1d, $
     	for i=1UL,runData.nR-3L do begin 
     	    
     	    Dri     = epsilon[0,0,i] * eR[i] $
-    	            + ( epsilon_[1,0,i-1] * ePhi[i-1] + epsilon_[1,0,i] * ePhi[i] )/2 $
-    	            + ( epsilon_[2,0,i-1] * ez[i-1] + epsilon_[2,0,i] * ez[i] )/2
+    	            + ( epsilon_[1,0,i-1] * eP_[i-1] + epsilon_[1,0,i] * eP_[i] )/2 $
+    	            + ( epsilon_[2,0,i-1] * ez_[i-1] + epsilon_[2,0,i] * ez_[i] )/2
     	    Dri1    =  epsilon[0,0,i+1] * eR[i+1] $
-    	            + ( epsilon_[1,0,i] * ePhi[i] + epsilon_[1,0,i+1] * ePhi[i+1] )/2 $
-    	            + ( epsilon_[2,0,i] * ez[i] + epsilon_[2,0,i+1] * ez[i+1] )/2
+    	            + ( epsilon_[1,0,i] * eP_[i] + epsilon_[1,0,i+1] * eP_[i+1] )/2 $
+    	            + ( epsilon_[2,0,i] * ez_[i] + epsilon_[2,0,i+1] * ez_[i+1] )/2
     	    Dth     = ( epsilon[0,1,i] * eR[i] + epsilon[0,1,i+1] * eR[i+1] )/2 $
-    	            + epsilon[1,1,i] * ePhi[i] $
-    	            + epsilon[2,1,i] * ez[i] 
+    	            + epsilon[1,1,i] * eP_[i] $
+    	            + epsilon[2,1,i] * ez_[i] 
     	    Dz      = ( epsilon[0,2,i] * eR[i] + epsilon[0,2,i+1] * eR[i+1] )/2 $
-    	            + epsilon[1,2,i] * ePhi[i] $
-    	            + epsilon[2,2,i] * ez[i] 
+    	            + epsilon[1,2,i] * eP_[i] $
+    	            + epsilon[2,2,i] * ez_[i] 
 
     	    divD_[i]    = ( r[i+1] * e0 * Dri1 - r[i] * e0 * Dri ) / ( r_[i] * dr ) $
     	                    + II * nPhi / r_[i] * e0 * Dth $
@@ -228,8 +216,8 @@ pro rsfwc_1d, $
 
     	divE_   = dcomplexArr ( runData.nR - 1 )
     	for i=0UL,runData.nR-2L do begin
-    	    divE_[i]    = II * nPhi * ePhi[i] / r_[i] $
-    	                    + II * kz * ez[i] $
+    	    divE_[i]    = II * nPhi * eP_[i] / r_[i] $
+    	                    + II * kz * ez_[i] $
     	                    + ( r[i+1] * eR[i+1] - r[i] * eR[i] ) / ( r_[i] * dr ) 
     	endfor
 
@@ -239,73 +227,73 @@ pro rsfwc_1d, $
 
 	;	Calculate the magnetic wave field
 
-	hR		= complexArr ( runData.nR-1 )
-	hPhi	= complexArr ( runData.nR )
-	hz		= complexArr ( runData.nR )
+	hR_	= complexArr ( runData.nR-1 )
+	hP	= complexArr ( runData.nR )
+	hz	= complexArr ( runData.nR )
 
 	for i=0,runData.nR-1 do begin
 
 		if i lt runData.nR-1 then $
-			hR[i]	= -II * runData.kz * ePhi[i] + II * runData.nPhi * ez[i] / runData.r_[i]
+			hR_[i]	= -II * runData.kz * eP_[i] + II * runData.nPhi * ez_[i] / runData.r_[i]
 
 		if i gt 0 and i lt runData.nR-1 then begin
 		
-			hPhi[i]	= II * runData.kz * eR[i] - ( ez[i] - ez[i-1] ) / runData.dR 
+			hP[i]	= II * runData.kz * eR[i] - ( ez_[i] - ez_[i-1] ) / runData.dR 
 			hz[i]	= ( -II * runData.nPhi * eR[i] $
-						+ ( runData.r_[i]*ePhi[i] $
-							- runData.r_[i-1]*ePhi[i-1] ) / runData.dR ) $
+						+ ( runData.r_[i]*eP_[i] $
+							- runData.r_[i-1]*eP_[i-1] ) / runData.dR ) $
 					 	/ runData.r[i]
 	
 		endif
 
 	endfor
 
-	hR		= hR / ( II * w[*,0] * u0 )
-	hPhi	= hPhi / ( II * w[*,0] * u0 )
-	hz		= hz / ( II * w[*,0] * u0 )
+	hR_	= hR_ / ( II * w[*,0] * u0 )
+	hP	= hP / ( II * w[*,0] * u0 )
+	hz	= hz / ( II * w[*,0] * u0 )
 
-	ePhiFull	= complexArr ( runData.nR )
-	ezFull		= complexArr ( runData.nR )
-	hRFull  	= complexArr ( runData.nR )
+	eP	= complexArr ( runData.nR )
+	eZ	= complexArr ( runData.nR )
+	hR 	= complexArr ( runData.nR )
 
     ;; Remove the Inident Field from the solution
     ;if ar2EField then begin
     ;    eR = eR - kjIn.eR*kjIn.replace
-    ;    ePhi = ePhi - kjIn.eT_*kjIn.replace_
+    ;    eP = eP - kjIn.eT_*kjIn.replace_
     ;    eZ = eZ - kjIn.eZ_*kjIn.replace_
     ;endif
 
 	for i=1,runData.nR-2 do begin
 	
-		ePhiFull[i]	=  ( ePhi[i] + ePhi[i-1] ) / 2.0
-		ezFull[i]	=  ( ez[i] + ez[i-1] ) / 2.0
-		hRFull[i]	=  ( hR[i] + hR[i-1] ) / 2.0
+		eP[i]	=  ( eP_[i] + eP_[i-1] ) / 2.0
+		eZ[i]	=  ( ez_[i] + ez_[i-1] ) / 2.0
+		hR[i]	=  ( hR_[i] + hR_[i-1] ) / 2.0
 
 	endfor
 
 	if plotESolution then $
 	rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
-		eR, ePhi, ez, $
+		eR, eP_, ez_, $
 		kR = kR, r_kR = runData.r, $
 		r1 = runData.r, r2 = runData.r_, r3 = runData.r_, kjIn=kjIn
 
 	if plotHSolution then begin
 	    ;rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
-	    ;	hR, hPhi, hz, $
+	    ;	hR, hP, hz, $
 	    ;	kR = kR, r_kR = runData.r, $
 	    ;	r1 = runData.r_, r2 = runData.r, r3 = runData.r
         p=plot(runData.r,hr,layout=[1,3,1],title='h_r',window_title='rsfwc_1d')
         p=plot(runData.r,imaginary(hr),/over,color='r')
-        p=plot(runData.r,hphi,layout=[1,3,2],/current,title='h_t')
-        p=plot(runData.r,imaginary(hphi),/over,color='r')
+        p=plot(runData.r,hP,layout=[1,3,2],/current,title='h_t')
+        p=plot(runData.r,imaginary(hP),/over,color='r')
         p=plot(runData.r,hz,layout=[1,3,3],/current,title='h_z')
         p=plot(runData.r,imaginary(hz),/over,color='r')
        
         e_r = eR
-        e_t = ePhiFull
-        e_z = eZFull
-        h_r = hRFull
-        h_t = hPhi
+        e_t = eP
+        e_z = eZ
+        h_r = hR
+        h_t = hP
         h_z = hZ
 
         S_r = e_t*conj(h_z)-e_z*conj(h_t)
@@ -330,28 +318,28 @@ pro rsfwc_1d, $
 
 		if plotKdotE then begin	
 			kMag1	= sqrt ( real_part ( kR[*,0])^2 + kPhi^2 + kz^2 )
-			eMag	= sqrt ( real_part(eR)^2 + real_part(ePhiFull)^2 + real_part(ezFull)^2 )
+			eMag	= sqrt ( real_part(eR)^2 + real_part(eP)^2 + real_part(eZ)^2 )
 			kDotE1	= real_part ( kR[*,0] ) * real_part ( eR ) $
-						+ kPhi * real_part ( ePhiFull ) $
-						+ kz * real_part ( ezFull ) 
+						+ kPhi * real_part ( eP ) $
+						+ kz * real_part ( eZ ) 
 			theta1	= aCos ( kDotE1 / ( kMag1 * eMag ) )
 	
 			kMag2	= sqrt ( real_part ( kR[*,1])^2 + kPhi^2 + kz^2 )
 			kDotE2	= real_part ( kR[*,1] ) * real_part ( eR ) $
-						+ kPhi * real_part ( ePhiFull ) $
-						+ kz * real_part ( ezFull ) 
+						+ kPhi * real_part ( eP ) $
+						+ kz * real_part ( eZ ) 
 			theta2	= aCos ( kDotE2 / ( kMag2 * eMag ) )
 	
 			kMag3	= sqrt ( real_part ( kR[*,2])^2 + kPhi^2 + kz^2 )
 			kDotE3	= real_part ( kR[*,2] ) * real_part ( eR ) $
-						+ kPhi * real_part ( ePhiFull ) $
-						+ kz * real_part ( ezFull ) 
+						+ kPhi * real_part ( eP ) $
+						+ kz * real_part ( eZ ) 
 			theta3	= aCos ( kDotE3 / ( kMag3 * eMag ) )
 	
 			kMag4	= sqrt ( real_part ( kR[*,3])^2 + kPhi^2 + kz^2 )
 			kDotE4	= real_part ( kR[*,3] ) * real_part ( eR ) $
-						+ kPhi * real_part ( ePhiFull ) $
-						+ kz * real_part ( ezFull ) 
+						+ kPhi * real_part ( eP ) $
+						+ kz * real_part ( eZ ) 
 			theta4	= aCos ( kDotE4 / ( kMag4 * eMag ) )
 	
 			iPlot, runData.r, theta1 * !radeg, $
@@ -366,16 +354,16 @@ pro rsfwc_1d, $
 		endif
 
 		if plotEdotB then begin
-			eMag	= sqrt ( real_part(eR)^2 + real_part(ePhiFull)^2 + real_part(ezFull)^2 )
+			eMag	= sqrt ( real_part(eR)^2 + real_part(eP)^2 + real_part(eZ)^2 )
 			eDotB	= real_part(eR) * runData.bField[*,0] $
-						+ real_part(ePhiFull) * runData.bField[*,1] $
-						+ real_part(ezFull) * runData.bField[*,2]
+						+ real_part(eP) * runData.bField[*,1] $
+						+ real_part(eZ) * runData.bField[*,2]
 			thetaA	= aCos ( eDotB / ( eMag * runData.bMag ) )
 
-			eMag	= sqrt ( imaginary(eR)^2 + imaginary(ePhiFull)^2 + imaginary(ezFull)^2 )
+			eMag	= sqrt ( imaginary(eR)^2 + imaginary(eP)^2 + imaginary(eZ)^2 )
 			eDotB	= imaginary(eR) * runData.bField[*,0] $
-						+ imaginary(ePhiFull) * runData.bField[*,1] $
-						+ imaginary(ezFull) * runData.bField[*,2]
+						+ imaginary(eP) * runData.bField[*,1] $
+						+ imaginary(eZ) * runData.bField[*,2]
 			thetaB	= aCos ( eDotB / ( eMag * runData.bMag ) )
 
 
@@ -388,11 +376,11 @@ pro rsfwc_1d, $
 	endif
 
 	e_r	= eR
-	e_t	= ePhiFull
-	e_z	= eZFull
+	e_t	= eP
+	e_z	= eZ
 
-    h_r = hRFull
-    h_t = hPhi
+    h_r = hR
+    h_t = hP
     h_z = hZ
 
     b_r = u0 * h_r 
@@ -412,16 +400,16 @@ pro rsfwc_1d, $
 
     for i=1,runData.nR-2 do begin
     
-    	if kjInput and replace[i] then begin
+    	if kjInput then begin
     
     		jP_r[i]	= kjIn.jpR[i]
     		jP_t[i]	= kjIn.jpT[i]
     		jP_z[i]	= kjIn.jpZ[i]
 
             nS_here = n_elements(kjIn.jpR_spec[0,*])
-    		jP_r_S[i,*]	= shift(kjIn.jpR_spec[i,*],[0,ns_Here-1])
-    		jP_t_S[i,*]	= shift(kjIn.jpT_spec[i,*],[0,ns_Here-1])
-    		jP_z_S[i,*]	= shift(kjIn.jpZ_spec[i,*],[0,ns_Here-1])
+    		jP_r_S[i,*]	= kjIn.jpR_spec[i,*]
+    		jP_t_S[i,*]	= kjIn.jpT_spec[i,*]
+    		jP_z_S[i,*]	= kjIn.jpZ_spec[i,*]
 
     	endif else begin
     
@@ -429,18 +417,18 @@ pro rsfwc_1d, $
                     ;thisSigma = (epsilonS[*,*,s,i]-identity(3))*wReal*e0/II
                     thisSigma = sigma[*,*,s,i]
                     thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
-    
+   
                     ; Changing this now matches the AORSA
                     ; jP, BUT is it the right one, or are they BOTH 
                     ; wrong now?
     
                     ;this_jP = thisSigma # transpose(thisE)
                     this_jP = thisSigma ## thisE
-  
+
                     jP_r_S[i,s] = this_jP[0]
                     jP_t_S[i,s] = this_jP[1]
                     jP_z_S[i,s] = this_jP[2]
-    
+
             endfor
 
             jP_r[i] = total(jP_r_S[i,*],2)
@@ -551,6 +539,13 @@ pro rsfwc_1d, $
 	jP_z_re_id = nCdf_varDef ( nc_id, 'jP_z_re', nr_id, /float )
 	jP_z_im_id = nCdf_varDef ( nc_id, 'jP_z_im', nr_id, /float )
 
+	jP_r_re_spec_id = nCdf_varDef ( nc_id, 'jP_r_re_spec', [nr_id,nSpec_id], /float )
+	jP_r_im_spec_id = nCdf_varDef ( nc_id, 'jP_r_im_spec', [nr_id,nSpec_id], /float )
+	jP_p_re_spec_id = nCdf_varDef ( nc_id, 'jP_p_re_spec', [nr_id,nSpec_id], /float )
+	jP_p_im_spec_id = nCdf_varDef ( nc_id, 'jP_p_im_spec', [nr_id,nSpec_id], /float )
+	jP_z_re_spec_id = nCdf_varDef ( nc_id, 'jP_z_re_spec', [nr_id,nSpec_id], /float )
+	jP_z_im_spec_id = nCdf_varDef ( nc_id, 'jP_z_im_spec', [nr_id,nSpec_id], /float )
+
 	jA_r_re_id = nCdf_varDef ( nc_id, 'jA_r_re', nr_id, /float )
 	jA_r_im_id = nCdf_varDef ( nc_id, 'jA_r_im', nr_id, /float )
 	jA_p_re_id = nCdf_varDef ( nc_id, 'jA_p_re', nr_id, /float )
@@ -595,6 +590,13 @@ pro rsfwc_1d, $
 	nCdf_varPut, nc_id, jP_z_re_id, real_part(jP_z) 
 	nCdf_varPut, nc_id, jP_z_im_id, imaginary(jP_z) 
 
+	nCdf_varPut, nc_id, jP_r_re_spec_id, real_part(jP_r_S)
+	nCdf_varPut, nc_id, jP_r_im_spec_id, imaginary(jP_r_S) 
+	nCdf_varPut, nc_id, jP_p_re_spec_id, real_part(jP_t_S)
+	nCdf_varPut, nc_id, jP_p_im_spec_id, imaginary(jP_t_S) 
+	nCdf_varPut, nc_id, jP_z_re_spec_id, real_part(jP_z_S)
+	nCdf_varPut, nc_id, jP_z_im_spec_id, imaginary(jP_z_S) 
+
 	nCdf_varPut, nc_id, jA_r_re_id, jA_r 
 	nCdf_varPut, nc_id, jA_r_im_id, jA_r*0 
 	nCdf_varPut, nc_id, jA_p_re_id, jA_t
@@ -624,62 +626,51 @@ pro rsfwc_1d, $
             This_amu_str = ', amu: '+string(SpecData[s].m/mi,format='(i1.1)')
             This_Z_str = ', Z: '+string(SpecData[s].q/e,format='(i+2.1)')
 
-		    p_re = plot (rFull,jP_r_s[*,s],thick=2,$
+		    p_re = plot (r,jP_r_s[*,s],thick=2,$
 		    		title='jP_r'+This_amu_str+This_Z_str,name='Jp_re',font_size=10,$
 		    		layout=[nS,3,1+s],yRange=yRange,transparency=50,/current)
-		    p_im = plot (rFull,imaginary(jP_r_s[*,s]),color='r',thick=2,transparency=50,$
+		    p_im = plot (r,imaginary(jP_r_s[*,s]),color='r',thick=2,transparency=50,$
 		    		name='Jp_re',font_size=10,/over)
 	   	    ;l = legend(target=[p_re,p_im],position=[0.99,0.95],/norm,font_size=10,horizontal_alignment='RIGHT')
 
-		    p_re = plot (rFull,jP_t_s[*,s],thick=2,$
+		    p_re = plot (r,jP_t_s[*,s],thick=2,$
 		    		title='jP_t',name='Jp_re',font_size=10,$
 		    		layout=[nS,3,1+1*nS+s],/current,yRange=yRange,transparency=50)
-		    p_im = plot (rFull,imaginary(jP_t_s[*,s]),color='r',thick=2,transparency=50,$
+		    p_im = plot (r,imaginary(jP_t_s[*,s]),color='r',thick=2,transparency=50,$
 		    		name='Jp_re',font_size=10,/over)
 	   	    ;l = legend(target=[p_re,p_im],position=[0.99,0.63],/norm,font_size=10,horizontal_alignment='RIGHT')
 
-		    p_re = plot (rFull,jP_z_s[*,s],thick=2,$
+		    p_re = plot (r,jP_z_s[*,s],thick=2,$
 		    		title='jP_z',name='Jp_re',font_size=10,$
 		    		layout=[nS,3,1+2*nS+s],/current,yRange=yRange,transparency=50)
-		    p_im = plot (rFull,imaginary(jP_z_s[*,s]),color='r',thick=2,transparency=50,$
+		    p_im = plot (r,imaginary(jP_z_s[*,s]),color='r',thick=2,transparency=50,$
 		    		name='Jp_re',font_size=10,/over)
 	   	    ;l = legend(target=[p_re,p_im],position=[0.99,0.25],/norm,font_size=10,horizontal_alignment='RIGHT')
         endfor
 
+        p=plot(r,jP_r,layout=[1,3,1], title='jP (summed over species)')
+        p=plot(r,imaginary(jP_r),color='r',/over)
+
+        p=plot(r,jP_t,layout=[1,3,2], /current)
+        p=plot(r,imaginary(jP_t),color='r',/over)
+
+        p=plot(r,jP_z,layout=[1,3,3], /current)
+        p=plot(r,imaginary(jP_z),color='r',/over)
+
 	endif
-
-	;;	Write text file for comparison with GCC
-
-	;outData	= replicate ( { r : 0.0 , $
-	;			eR : complex ( 0.0, 0.0 ), $
-	;			ePhi : complex ( 0.0, 0.0 ), $
-	;			ez : complex ( 0.0, 0.0 ) }, n_elements ( runData.r ) )
-
-	;outData.r 		= runData.r
-	;outData.eR		= eR
-	;outData[0:n_elements(ePhi)-1].ePhi	= ePhi
-	;outData[0:n_elements(ePhi)-1].ez		= ez
-
-	;openw, lun, 'dlg_solution.txt', /get_lun
-	;for i=0,n_elements(runData.r)-1 do $
-	;	printf, lun, outData[i], $
-	;		format = '(f8.5,2x,6(e12.4,2x))'
-	;close, lun
-	;
-	;close, /all
 
 
 	if plotMovie then begin
 
 		dt	= 1.0/wReal* 0.05
-		rng	= max ( abs ( [eR,ePhi,ez] ) )
+		rng	= max ( abs ( [eR,eP,ez] ) )
 		for i=0,10000L do begin
 			t	= i * dt
 			plot, runData.r, real_part ( eR ) * cos ( wReal * t ) $
 					+ imaginary ( eR ) * sin ( wReal * t ), $
 				yRange = [-rng*1.5,rng*1.5]
-			oplot, runData.r_, real_part ( ePhi ) * cos ( wReal * t ) $
-					+ imaginary ( ePhi ) * sin ( wReal * t ), $
+			oplot, runData.r_, real_part ( eP ) * cos ( wReal * t ) $
+					+ imaginary ( eP ) * sin ( wReal * t ), $
 					lineStyle = 1
 			oplot, runData.r_, real_part ( ez ) * cos ( wReal * t ) $
 					+ imaginary ( ez ) * sin ( wReal * t ), $
