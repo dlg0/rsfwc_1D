@@ -142,9 +142,9 @@ pro rsfwc_1d, $
 		rhs[i*3+2]	= II * wReal * u0 * jA_z_[i]
 
 		if kjInput then begin
-			rhs[i*3]	= rhs[i*3]   + II * wReal * u0 * (kjIn.jpR[i]*0+1)
-			rhs[i*3+1]	= rhs[i*3+1] + II * wReal * u0 * (kjIn.jpT_[i] *0+1)
-			rhs[i*3+2]	= rhs[i*3+2] + II * wReal * u0 * (kjIn.jpZ_[i] *0+1)
+			rhs[i*3]	= rhs[i*3]   + II * wReal * u0 * (kjIn.jpR[i] )
+			rhs[i*3+1]	= rhs[i*3+1] + II * wReal * u0 * (kjIn.jpT_[i])
+			rhs[i*3+2]	= rhs[i*3+2] + II * wReal * u0 * (kjIn.jpZ_[i])
 		endif
 		;if ar2EField then begin
         ;    if replace[i] then begin
@@ -185,7 +185,8 @@ pro rsfwc_1d, $
 	eP_	= eField[ii_eP]
 	ii_ez	= temporary(ii_eP+1)
 	ez_	= eField[ii_ez]
-stop
+
+
 	if keyword_set ( divD ) then begin
 
 	;  	Calculate the Div of D @ the z,phi grid pts

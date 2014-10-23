@@ -138,9 +138,9 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 				    t5 = -kz*nPhi/r_[i] - w[i]^2/(c^2)*epsilon_[2,1,i]
 
                     aMat[3*i,3*i+1] = t2
-                    aMat[3*i+3,3*i+1] = t3
                     aMat[3*i+1,3*i+1] = t4
                     aMat[3*i+2,3*i+1] = t5
+                    aMat[3*i+3,3*i+1] = t3
 
 				    if i lt nR-2 then begin
 				        t6 = -r_[i+1]/(r[i+1]*dr^2)
