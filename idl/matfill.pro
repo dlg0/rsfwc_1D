@@ -38,7 +38,7 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
                 epsilon_[*,*,i] = identity(3)
             endfor
     endif
-stop
+
     t1Tmp = ComplexArr(nR)
     t2Tmp = ComplexArr(nR)
     t3Tmp = ComplexArr(nR)
@@ -66,10 +66,12 @@ stop
 
                     aMat[3*i-2,3*i] = t1
                     aMat[3*i-1,3*i] = t2
+                    t1Tmp[i] = t1
+                    t2Tmp[i] = t2
                 endif
 
 					; eR i
-				    t3	= nPhi^2 / r[i] + kz^2 - w[i]^2 / c^2 * epsilon[0,0,i]
+				    t3	= nPhi^2 / r[i]^2 + kz^2 - w[i]^2 / c^2 * epsilon[0,0,i]
 			    	aMat[3*i,3*i]	= t3
 					t3Tmp[i] = t3
 
@@ -82,6 +84,9 @@ stop
 
                     aMat[3*i+1,3*i] = t4             
                     aMat[3*i+2,3*i] = t5
+
+					t4Tmp[i] = t4
+                    t5Tmp[i] = t5
                 endif
 
                 ;;; TF/SF Method
@@ -207,7 +212,6 @@ stop
                                                 - w[i]^2/c^2*epsilon_[2,2,i]
 					t6	= -r[i+1] / ( r_[i] * dr^2 ) 
 
-					t4Tmp[i] = t4
 
 	                if i gt 0 then begin 
 				        aMat[3*i-1,3*i+2] = t1
@@ -268,7 +272,7 @@ stop
  
 			endif
 	endfor
-   stop 
+    
    ; check the solve with another routine
    ; find the zero crossing point in amat
 end
