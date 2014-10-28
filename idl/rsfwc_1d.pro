@@ -53,6 +53,8 @@ pro rsfwc_1d, $
 
 	r 	= runData.r
 	r_	= runData.r_
+    nR = n_elements(r)
+    nR_ = n_elements(r_)
 	rOut	= r
 
  	wReal	= runData.freq * 2d0 * !dpi 
@@ -135,16 +137,20 @@ pro rsfwc_1d, $
    	; NOTE: the equations were derived as +curlcurlE - k0edotE = +iwuJa
 	; and as such, the sign in the below is +ve, NOT -ve as in the aorsa
 	; formulation ;)	
-   	for i=0,runData.nR-2 do begin
+   	for i=0,runData.nR-1 do begin
 
 		rhs[i*3]	= II * wReal * u0 * jA_r[i]
+        if i lt nR-1 then begin
 		rhs[i*3+1]	= II * wReal * u0 * jA_t_[i]
 		rhs[i*3+2]	= II * wReal * u0 * jA_z_[i]
+        endif
 
 		if kjInput then begin
 			rhs[i*3]	= rhs[i*3]   + II * wReal * u0 * (kjIn.jpR[i] )
+            if i lt nR-1 then begin
 			rhs[i*3+1]	= rhs[i*3+1] + II * wReal * u0 * (kjIn.jpT_[i])
 			rhs[i*3+2]	= rhs[i*3+2] + II * wReal * u0 * (kjIn.jpZ_[i])
+            endif
 		endif
 		;if ar2EField then begin
         ;    if replace[i] then begin
@@ -159,8 +165,31 @@ pro rsfwc_1d, $
 
 	endfor
 
+    ;; Try replacing sigma with a sigma derived from J and E
+    ;if kjInput then begin
+    ;    for i=0,nR-1 do begin
+    ;            ThisJp = [kjIn.jpR,kjIn.jpT,kjIn.jpZ]
+    ;            ThisE = [kjIn.eR,kjIn.eT,kjIn.eZ]
+    ;            ThisEpsilon =  1 + II/(wReal*e0) * ThisJp / ThisE
+    ;            epsilon[*,*,i] = 0
+    ;            epsilon[0,0,i] = ThisEpsilon[0]
+    ;            epsilon[1,1,i] = ThisEpsilon[1]
+    ;            epsilon[2,2,i] = ThisEpsilon[2]
+    ;    endfor
+
+    ;    for i=0,nR_-1 do begin
+    ;            ThisJp = [kjIn.jpR_,kjIn.jpT_,kjIn.jpZ_]
+    ;            ThisE = [kjIn.eR_,kjIn.eT_,kjIn.eZ_]
+    ;            ThisEpsilon =  1 + II/(wReal*e0) * ThisJp / ThisE
+    ;            epsilon_[*,*,i] = 0
+    ;            epsilon_[0,0,i] = ThisEpsilon[0]
+    ;            epsilon_[1,1,i] = ThisEpsilon[1]
+    ;            epsilon_[2,2,i] = ThisEpsilon[2]
+    ;    endfor
+    ;endif
+
 	matFill, runData.nR, runData.nPhi, runData.kz, $
-		runData.r, runData.r_, epsilon, epsilon_, w, runData.dR, $
+		runData.r, runData.r_, epsilon, epsilon_, wReal, runData.dR, $
 		aMat = aMat, nAll = nAll, nuca = nuca, nlca = nlca, $
         replaceFull = replace, replaceHalf = replace_, rhs=rhs, kjIn = kjIn
 
@@ -178,14 +207,18 @@ pro rsfwc_1d, $
 	    print, 'lapack status: ', stat
 
     endelse
-   
+
+    ; Remove BC layers
+    rhs = rhs[2:-3]
+    eField = eField[2:-3]
+  
 	ii_eR	= lIndGen(runData.nR)*3
 	eR	= eField[ii_eR]
 	ii_eP	= temporary(ii_eR[0:runData.nR-2]+1)
 	eP_	= eField[ii_eP]
 	ii_ez	= temporary(ii_eP+1)
 	ez_	= eField[ii_ez]
-
+stop
 
 	if keyword_set ( divD ) then begin
 
@@ -257,20 +290,27 @@ pro rsfwc_1d, $
 	eZ	= complexArr ( runData.nR )
 	hR 	= complexArr ( runData.nR )
 
-    ;; Remove the Inident Field from the solution
-    ;if ar2EField then begin
-    ;    eR = eR - kjIn.eR*kjIn.replace
-    ;    eP = eP - kjIn.eT_*kjIn.replace_
-    ;    eZ = eZ - kjIn.eZ_*kjIn.replace_
-    ;endif
-
 	for i=1,runData.nR-2 do begin
-	
 		eP[i]	=  ( eP_[i] + eP_[i-1] ) / 2.0
 		eZ[i]	=  ( ez_[i] + ez_[i-1] ) / 2.0
 		hR[i]	=  ( hR_[i] + hR_[i-1] ) / 2.0
-
 	endfor
+
+    ;_r = RunData.r
+    ;_r_ = RunData.r_    
+    ;spline_sigma = 0.01
+    ;eP = complex(spline(_r_,real_part(eP_),_r,spline_sigma),$
+    ;        spline(_r_,imaginary(eP_),_r,spline_sigma))
+    ;eZ = complex(spline(_r_,real_part(eZ_),_r,spline_sigma),$
+    ;        spline(_r_,imaginary(eZ_),_r,spline_sigma))
+    ;hR = complex(spline(_r_,real_part(hR_),_r,spline_sigma),$
+    ;        spline(_r_,imaginary(hR_),_r,spline_sigma))
+    ;eP[0]  = 0
+    ;eP[-1] = 0
+    ;eZ[0]  = 0
+    ;eZ[-1] = 0
+    ;hR[0]  = 0
+    ;hR[-1] = 0
 
 	if plotESolution then $
 	rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
@@ -413,30 +453,36 @@ pro rsfwc_1d, $
     		jP_z_S[i,*]	= kjIn.jpZ_spec[i,*]
 
     	endif else begin
-    
+
+            thisSigmaTotal = total(sigma[*,*,*,i],3)
+            thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
+
+            ;this_jPTotal = thisSigmaTotal # transpose(thisE)
+            this_jPTotal = thisSigmaTotal ## thisE
+
+            jP_r[i] = this_jPTotal[0]
+            jP_t[i] = this_jPTotal[1]
+            jP_z[i] = this_jPTotal[2]
+
             for s=0,runData.nSpec do begin
                     ;thisSigma = (epsilonS[*,*,s,i]-identity(3))*wReal*e0/II
                     thisSigma = sigma[*,*,s,i]
-                    thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
-   
+  
                     ; Changing this now matches the AORSA
                     ; jP, BUT is it the right one, or are they BOTH 
                     ; wrong now?
     
                     ;this_jP = thisSigma # transpose(thisE)
                     this_jP = thisSigma ## thisE
-
+           
                     jP_r_S[i,s] = this_jP[0]
                     jP_t_S[i,s] = this_jP[1]
                     jP_z_S[i,s] = this_jP[2]
 
             endfor
 
-            jP_r[i] = total(jP_r_S[i,*],2)
-            jP_t[i] = total(jP_t_S[i,*],2)
-            jP_z[i] = total(jP_z_S[i,*],2)
+      	endelse
 
-    	endelse
     endfor
 
 
@@ -486,8 +532,6 @@ pro rsfwc_1d, $
             p = plot(runData.r,kjIn.jPz*kjIn.replace,linestyle='--',/over,color='g')
             p = plot(runData.r,imaginary(kjIn.jPz)*kjIn.replace,linestyle='-',/over,color='g')
         endif
-
-
 
 		;l = legend(target=[pr,pt,pz],position=[0.8,0.4],/norm,font_size=10)
 
@@ -651,6 +695,10 @@ pro rsfwc_1d, $
 
         p=plot(r,jP_r,layout=[1,3,1], title='jP (summed over species)')
         p=plot(r,imaginary(jP_r),color='r',/over)
+        if kjInput then begin
+                p=plot(r_,kjIn.jPr_,/over)
+                p=plot(r_,imaginary(kjIn.jPr_),/over,color='r')
+        endif
 
         p=plot(r,jP_t,layout=[1,3,2], /current)
         p=plot(r,imaginary(jP_t),color='r',/over)
