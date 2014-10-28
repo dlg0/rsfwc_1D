@@ -25,7 +25,7 @@ pro rs_plot_solution, antLoc, dR, nR, $
         ;endif
 
 		l = legend(target=[p_r,p_i],position=[0.98,0.95],/norm,font_size=10,horizontal_alignment='RIGHT')
-        eRange = 0.15
+        eRange = 0.004
 		p_r = plot ( r2, e2, layout=[1,3,2],/current,$
 				title='Et',ytitle='Et [V/m]',name='Re',yRange = [-eRange,eRange])
 		p_i = plot ( r2, imaginary(e2), color='red',/over,name='Im')

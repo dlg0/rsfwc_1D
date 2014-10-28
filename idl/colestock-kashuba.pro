@@ -53,7 +53,7 @@
 		freq	= 42.0e6
 		nPhi = 13.0
 		kz = 0.0
-		nR	= 256L
+		nR	= 1024L
 		antLoc	= 1.6
 		AntennaJ_r = 0
 		AntennaJ_t = 0

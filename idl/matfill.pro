@@ -337,21 +337,21 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
                         t5 = -kz*nPhi/r_[i] - w^2/c^2 * epsilon_[1,2,i]
                         t4 = 0.5*II*kz*(1/r_[i]-2/dr) - w^2*r[i]*epsilon[0,2,i]/(2*c^2*r_[i])
 
-				        if i gt 0 then begin
+				        ;if i gt 0 then begin
                         aMat[jj-3,jj+2] = t1
 				        aMat[jj-2,jj+2] = t2
 				        aMat[jj-1,jj+2] = t3 
-                        endif
+                        ;endif
 
 				        aMat[jj+0,jj+2] = t4 
 				        aMat[jj+1,jj+2] = t5 
 				        aMat[jj+2,jj+2] = t6 
 				        aMat[jj+3,jj+2] = t7 
 
-                        if i lt nR-2 then begin
+                        ;if i lt nR-2 then begin
 				        aMat[jj+4,jj+2] = t8 
 				        aMat[jj+5,jj+2] = t9 
-                        endif
+                        ;endif
 
                     endelse 
 

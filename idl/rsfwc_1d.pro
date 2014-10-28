@@ -146,10 +146,10 @@ pro rsfwc_1d, $
         endif
 
 		if kjInput then begin
-			rhs[i*3]	= rhs[i*3]   + II * wReal * u0 * (kjIn.jpR[i] )
+			rhs[i*3]	+= II * wReal * u0 * (kjIn.jpR[i] )
             if i lt nR-1 then begin
-			rhs[i*3+1]	= rhs[i*3+1] + II * wReal * u0 * (kjIn.jpT_[i])
-			rhs[i*3+2]	= rhs[i*3+2] + II * wReal * u0 * (kjIn.jpZ_[i])
+			rhs[i*3+1]	+= II * wReal * u0 * (kjIn.jpT_[i])
+			rhs[i*3+2]	+= II * wReal * u0 * (kjIn.jpZ_[i])
             endif
 		endif
 		;if ar2EField then begin
@@ -213,12 +213,12 @@ pro rsfwc_1d, $
     eField = eField[2:-3]
   
 	ii_eR	= lIndGen(runData.nR)*3
-	eR	= eField[ii_eR]
+	eR	= eField[ii_eR];/(2*r^2)
 	ii_eP	= temporary(ii_eR[0:runData.nR-2]+1)
 	eP_	= eField[ii_eP]
 	ii_ez	= temporary(ii_eP+1)
 	ez_	= eField[ii_ez]
-stop
+
 
 	if keyword_set ( divD ) then begin
 
@@ -431,60 +431,54 @@ stop
 	; Calculate plasma current
 	; ------------------------
 
-    jP_r_S = complexArr(runData.nR,runData.nSpec+1)
-    jP_t_S = complexArr(runData.nR,runData.nSpec+1)
-    jP_z_S = complexArr(runData.nR,runData.nSpec+1)
+    if kjInput then begin
     
-    jP_r = complexArr(runData.nR)
-    jP_t = complexArr(runData.nR)
-    jP_z = complexArr(runData.nR)
+    	jP_r	= kjIn.jpR
+    	jP_t	= kjIn.jpT
+    	jP_z	= kjIn.jpZ
 
-    for i=1,runData.nR-2 do begin
-    
-    	if kjInput then begin
-    
-    		jP_r[i]	= kjIn.jpR[i]
-    		jP_t[i]	= kjIn.jpT[i]
-    		jP_z[i]	= kjIn.jpZ[i]
+    	jP_r_S	= kjIn.jpR_spec
+    	jP_t_S	= kjIn.jpT_spec
+    	jP_z_S	= kjIn.jpZ_spec
 
-            nS_here = n_elements(kjIn.jpR_spec[0,*])
-    		jP_r_S[i,*]	= kjIn.jpR_spec[i,*]
-    		jP_t_S[i,*]	= kjIn.jpT_spec[i,*]
-    		jP_z_S[i,*]	= kjIn.jpZ_spec[i,*]
+    endif else begin
 
-    	endif else begin
+        jP_r_S = complexArr(runData.nR,runData.nSpec+1)
+        jP_t_S = complexArr(runData.nR,runData.nSpec+1)
+        jP_z_S = complexArr(runData.nR,runData.nSpec+1)
+        
+        jP_r = complexArr(runData.nR)
+        jP_t = complexArr(runData.nR)
+        jP_z = complexArr(runData.nR)
 
-            thisSigmaTotal = total(sigma[*,*,*,i],3)
-            thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
+        for i=1,runData.nR-2 do begin
+        
+                thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
 
-            ;this_jPTotal = thisSigmaTotal # transpose(thisE)
-            this_jPTotal = thisSigmaTotal ## thisE
-
-            jP_r[i] = this_jPTotal[0]
-            jP_t[i] = this_jPTotal[1]
-            jP_z[i] = this_jPTotal[2]
-
-            for s=0,runData.nSpec do begin
-                    ;thisSigma = (epsilonS[*,*,s,i]-identity(3))*wReal*e0/II
-                    thisSigma = sigma[*,*,s,i]
+                for s=0,runData.nSpec do begin
+                        ThisSigma = (epsilonS[*,*,s,i]-identity(3))*wReal*e0/II
+                        ;ThisSigma = sigma[*,*,s,i]
   
-                    ; Changing this now matches the AORSA
-                    ; jP, BUT is it the right one, or are they BOTH 
-                    ; wrong now?
-    
-                    ;this_jP = thisSigma # transpose(thisE)
-                    this_jP = thisSigma ## thisE
-           
-                    jP_r_S[i,s] = this_jP[0]
-                    jP_t_S[i,s] = this_jP[1]
-                    jP_z_S[i,s] = this_jP[2]
+                        ; Changing this now matches the AORSA
+                        ; jP, BUT is it the right one, or are they BOTH 
+                        ; wrong now?
+        
+                        ;this_jP = thisSigma # transpose(thisE)
+                        this_jP = thisSigma ## thisE
+               
+                        jP_r_S[i,s] = this_jP[0]
+                        jP_t_S[i,s] = this_jP[1]
+                        jP_z_S[i,s] = this_jP[2]
 
-            endfor
+                endfor
 
-      	endelse
+        endfor
 
-    endfor
+        jP_r = Total(jP_r_S,2)
+        jP_t = Total(jP_t_S,2)
+        jP_z = Total(jP_z_S,2)
 
+    endelse
 
 	; jDotE
 	; -----
@@ -663,7 +657,7 @@ stop
 
         nS = n_elements(SpecData)
 		jpRange = max(abs([abs(jp_r),abs(jp_t),abs(jp_z)]))
-		yRange = [-4,4];[-jPRange,jPRange]*0.5
+		yRange = [-1,1];[-jPRange,jPRange]*0.5
 
         p=plot([0,0],[0,0],/noData, layout=[nS,3,1],window_title='rsfwc_1d',dimensions=[1200,800])
 
