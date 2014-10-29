@@ -84,7 +84,7 @@ pro rsfwc_1d, $
 	if keyword_set ( dispersionOnly ) then return
 
 	if kjInput then begin
-        kjIn = kj_read_kj_jP(kj_jP_fileName)
+        kjIn = kj_read_kj_jP(kj_jP_fileName, rF=r, rH=r_)
     endif else if ar2EField then begin
         replace = intArr(runData.nR)*0+1
         replace_ = intArr(runData.nR-1)*0+1
@@ -206,7 +206,19 @@ pro rsfwc_1d, $
 	    eField	= la_linear_equation ( aMat, rhs, status = stat )
 	    print, 'lapack status: ', stat
 
+        print, 'solving with IDL solver too ...'
+        la_ludc, aMat, index, /double, stat = stat
+	    print, 'lapack status: ', stat
+
+        eField_IDL = la_lusol(aMat,index,rhs,/double)
+        eField = eField_IDL
+
     endelse
+
+    eP_LeftBoundary_ = eField[0]
+    eZ_LeftBoundary_ = eField[1]
+    eP_RightBoundary_ = eField[-2]
+    eZ_RightBoundary_ = eField[-1]
 
     ; Remove BC layers
     rhs = rhs[2:-3]
@@ -219,6 +231,7 @@ pro rsfwc_1d, $
 	ii_ez	= temporary(ii_eP+1)
 	ez_	= eField[ii_ez]
 
+stop
 
 	if keyword_set ( divD ) then begin
 
@@ -295,6 +308,11 @@ pro rsfwc_1d, $
 		eZ[i]	=  ( ez_[i] + ez_[i-1] ) / 2.0
 		hR[i]	=  ( hR_[i] + hR_[i-1] ) / 2.0
 	endfor
+    eP[0] = (eP_LeftBoundary_+eP_[0])/2.0
+    eZ[0] = (eZ_LeftBoundary_+eZ_[0])/2.0
+    eP[-1] = (eP_RightBoundary_+eP_[-1])/2.0
+    eZ[-1] = (eZ_RightBoundary_+eZ_[-1])/2.0
+
 
     ;_r = RunData.r
     ;_r_ = RunData.r_    
@@ -451,7 +469,7 @@ pro rsfwc_1d, $
         jP_t = complexArr(runData.nR)
         jP_z = complexArr(runData.nR)
 
-        for i=1,runData.nR-2 do begin
+        for i=0,runData.nR-1 do begin
         
                 thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
 
