@@ -1,8 +1,7 @@
 pro rs_plot_solution, antLoc, dR, nR, $
 	e1, e2, e3, $
 	kR = kR, r_kR = r_kR, $
-	r1 = r1, r2 = r2, r3 = r3, $
-    kjIn=kj
+	r1 = r1, r2 = r2, r3 = r3
 
 	common dlg_colors
 	common plotSwitches

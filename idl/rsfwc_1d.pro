@@ -84,7 +84,7 @@ pro rsfwc_1d, $
 	if keyword_set ( dispersionOnly ) then return
 
 	if kjInput then begin
-        kjIn = kj_read_kj_jP(kj_jP_fileName, rF=r, rH=r_)
+        kjIn = kj_read_kj_jP(kj_jP_fileName, r, rH=r_)
     endif else if ar2EField then begin
         replace = intArr(runData.nR)*0+1
         replace_ = intArr(runData.nR-1)*0+1
@@ -191,7 +191,7 @@ pro rsfwc_1d, $
 	matFill, runData.nR, runData.nPhi, runData.kz, $
 		runData.r, runData.r_, epsilon, epsilon_, wReal, runData.dR, $
 		aMat = aMat, nAll = nAll, nuca = nuca, nlca = nlca, $
-        replaceFull = replace, replaceHalf = replace_, rhs=rhs, kjIn = kjIn
+        replaceFull = replace, replaceHalf = replace_, rhs=rhs
 
 ;	Solve matrix
 
@@ -334,7 +334,7 @@ stop
 	rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
 		eR, eP_, ez_, $
 		kR = kR, r_kR = runData.r, $
-		r1 = runData.r, r2 = runData.r_, r3 = runData.r_, kjIn=kjIn
+		r1 = runData.r, r2 = runData.r_, r3 = runData.r_
 
 	if plotHSolution then begin
 	    ;rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
