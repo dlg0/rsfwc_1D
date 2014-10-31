@@ -51,9 +51,9 @@
 		nMax		= [ 1.0 ] * 0
 		damping = 0.00
 		freq	= 42.0e6
-		nPhi = 13.0
+		nPhi = 0.0
 		kz = 0.0
-		nR	= 256L
+		nR	= 512L
 		antLoc	= 1.6
 		AntennaJ_r = 0
 		AntennaJ_t = 0

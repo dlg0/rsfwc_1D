@@ -75,8 +75,10 @@ pro rsfwc_1d, $
 		epsilonHalf_ = epsilon_, $
         epsilonFullSpec = epsilonS, $
         epsilonHalfSpec = epsilonS_, w, specData, $
-        sigmaFull = sigma, $
-        sigmaHalf = sigma_
+        sigmaFull_ = sigma, $
+        sigmaHalf_ = sigma_, $
+		sigmaFullSpec_abp = sigma_abp, $
+		sigmaHalfSpec_abp = sigma_abp_
 
 	dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 		kR = kR, kPhi = kPhi, kz = kz
@@ -104,7 +106,7 @@ pro rsfwc_1d, $
 						eq min ( abs ( runData.r_ - runData.antLoc ) ) )
 
 	nAll	= runData.nR + 2L * ( runData.nR - 1L )
-	rhs		= complexArr ( nAll )
+	rhs		= dcomplexArr ( nAll )
 
 	;if not keyword_set ( jA_r ) then jA_R = 0
 	;if not keyword_set ( jA_t ) then jA_t = 0
@@ -146,10 +148,10 @@ pro rsfwc_1d, $
         endif
 
 		if kjInput then begin
-			rhs[i*3]	+= II * wReal * u0 * (kjIn.jpR[i] )
+			rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
             if i lt nR-1 then begin
-			rhs[i*3+1]	+= II * wReal * u0 * (kjIn.jpT_[i])
-			rhs[i*3+2]	+= II * wReal * u0 * (kjIn.jpZ_[i])
+			rhs[i*3+1]	+= II * wReal * u0 * kjIn.jpT_[i]
+			rhs[i*3+2]	+= II * wReal * u0 * kjIn.jpZ_[i]
             endif
 		endif
 		;if ar2EField then begin
@@ -203,15 +205,14 @@ pro rsfwc_1d, $
 
     endif else begin
 
-	    eField	= la_linear_equation ( aMat, rhs, status = stat )
+	    eField	= la_linear_equation ( aMat, rhs, status = stat, /double )
 	    print, 'lapack status: ', stat
+        ;print, 'solving with IDL solver too ...'
+        ;la_ludc, aMat, index, /double, stat = stat
+	    ;print, 'lapack status: ', stat
 
-        print, 'solving with IDL solver too ...'
-        la_ludc, aMat, index, /double, stat = stat
-	    print, 'lapack status: ', stat
-
-        eField_IDL = la_lusol(aMat,index,rhs,/double)
-        eField = eField_IDL
+        ;eField_IDL = la_lusol(aMat,index,rhs,/double)
+        ;;eField = eField_IDL
 
     endelse
 
@@ -225,7 +226,7 @@ pro rsfwc_1d, $
     eField = eField[2:-3]
   
 	ii_eR	= lIndGen(runData.nR)*3
-	eR	= eField[ii_eR];/(2*r^2)
+	eR	= eField[ii_eR]
 	ii_eP	= temporary(ii_eR[0:runData.nR-2]+1)
 	eP_	= eField[ii_eP]
 	ii_ez	= temporary(ii_eP+1)
@@ -474,7 +475,7 @@ stop
                 thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
 
                 for s=0,runData.nSpec do begin
-                        ThisSigma = (epsilonS[*,*,s,i]-identity(3))*wReal*e0/II
+                        ThisSigma = (epsilonS[*,*,s,i]-identity(3,/double))*wReal*e0/II
                         ;ThisSigma = sigma[*,*,s,i]
   
                         ; Changing this now matches the AORSA
@@ -484,7 +485,18 @@ stop
                         ;this_jP = thisSigma # transpose(thisE)
                         this_jP = thisSigma ## thisE
                
-                        jP_r_S[i,s] = this_jP[0]
+						; vvv  MADE NO DIFFERENCE  vvv
+   						;; Lets try it in abp THEN rotate back to rtz
+						;; since that operation MAY not commute
+						;ThisSigma_abp = Sigma_abp[*,*,s,i]
+						;B_rtz = RunData.bField[i,*]
+						;Rot_abp_to_rtz = Get_RotMat_abp_to_rtz(B_rtz)
+						;E_abp = transpose(Rot_abp_to_rtz)##ThisE
+						;this_jP_abp = ThisSigma_abp ## E_abp
+						;this_jP_rtz = Rot_abp_to_rtz ## this_jP_abp		
+						;this_jP = this_jP_rtz
+
+        				jP_r_S[i,s] = this_jP[0]
                         jP_t_S[i,s] = this_jP[1]
                         jP_z_S[i,s] = this_jP[2]
 

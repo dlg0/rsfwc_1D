@@ -4,8 +4,10 @@ pro dielectric, runData, stixVars, $
     noHalfGrid = noHalfGrid, $
     epsilonFullSpec = epsilonFullSpec, $
     epsilonHalfSpec = epsilonHalfSpec, w, specData, $
-    sigmaFull = sigma, $
-    sigmaHalf = sigma_
+    sigmaFull_ = sigma, $
+    sigmaHalf_ = sigma_, $
+	sigmaFullSpec_abp = sigma_abp, $
+	sigmaHalfSpec_abp = sigma_abp_
 
 	common switches
 	common constants
@@ -21,6 +23,9 @@ pro dielectric, runData, stixVars, $
 	sigma		= dcomplexArr ( 3, 3, nSpec, runData.nR )
     if not keyword_set(noHalfGrid) then $
 	sigma_	= dcomplexArr ( 3, 3, nSpec, runData.nR-1 )
+
+			sigma_abp = dComplexArr(3,3,nSpec,RunData.nR)
+			sigma_abp_ = dComplexArr(3,3,nSpec,RunData.nR-1)
 
 
     if dielectric_freeSpace then begin
@@ -107,8 +112,9 @@ pro dielectric, runData, stixVars, $
             ;print, 'sigma_abp: '
             ;print, thisSigma
 
-			epsilon[*,*,s,i]	= rotateEpsilon ( epsilon_stix, bUnit_cyl[i,*], rot_abp_to_rtz=rot_, w[i] )
-    		sigma[*,*,s,i]	= rotateEpsilon ( sigma_stix, bUnit_cyl[i,*], rot_abp_to_rtz=rot_, w[i] )
+			epsilon[*,*,s,i]	= rotateEpsilon ( epsilon_stix, bUnit_cyl[i,*], w[i] )
+    		sigma[*,*,s,i]	= rotateEpsilon ( sigma_stix, bUnit_cyl[i,*], w[i] )
+			sigma_abp[*,*,s,i] = sigma_stix
         
             ;print, 'r: ', runData.r[i]
             ;print, 'bu: ', bUnit_cyl[i,*]
@@ -136,6 +142,7 @@ pro dielectric, runData, stixVars, $
 
 				epsilon_[*,*,s,i]	= rotateEpsilon ( epsilon_stix_, bUnit_cyl_[i,*], w[i] )
 				sigma_[*,*,s,i]	= rotateEpsilon ( sigma_stix_, bUnit_cyl_[i,*], w[i] )
+				sigma_abp_[*,*,s,i] = sigma_stix_
 	
 			endif
             endif
@@ -164,6 +171,9 @@ pro dielectric, runData, stixVars, $
 
     epsilonFullSpec = epsilon
     epsilonHalfSpec = epsilon_
+
+	SigmaFullSpec_abp = sigma_abp
+	SigmaHalfSpec_abp = sigma_abp_
 
     epsilon = total(epsilon,3)
     epsilon_ = total(epsilon_,3)

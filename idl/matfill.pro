@@ -22,8 +22,8 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
     endif else begin
 
         ; The extra are to apply the PEC BCs
-	    aMat	= complexArr ( nAll+4, nAll+4 )
-        aMat[*] = 0
+	    aMat	= dcomplexArr ( nAll+4, nAll+4 )
+        aMat[*] = 0d0
 
     endelse
 
@@ -107,72 +107,27 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
             ;endif
 		    ;	r component
         
-                ;; Set the Hperp == 0 at the boundary (PEC)
-                ;if i eq 0 then begin
+   				; eT i-1/2
+			    t1 = -II * nPhi * r_[i-1] / ( r[i]^2 * dr ) $
+                                    - w^2*r_[i-1]/(2*c^2*r[i])*epsilon_[1,0,i-1]
+				; eZ i-1/2
+			    t2 = -II * kz / dr - w^2*r_[i-1]/(2*c^2*r[i])*epsilon_[2,0,i-1]
 
-                ;    t1 = 0
-                ;    t2 = 0
-                ;    t3 = 0
-                ;    t4 = 0
-                ;    t5 = 0
-                ;    t6 = 0
-                ;    t7 = 0
-                ;    t8 = 0
-                ;    t9 = 0
+                aMat[jj-2,jj] = t1
+                aMat[jj-1,jj] = t2
 
-                ;    
+				; eR i
+				t3	= nPhi^2 / r[i]^2 + kz^2 - w^2 / c^2 * epsilon[0,0,i]
+			    aMat[jj,jj]	= t3
 
-				;    if i gt 0 then begin
-                ;    aMat[3*i-3,3*i+2] = t1
-				;    aMat[3*i-2,3*i+2] = t2
-				;    aMat[3*i-1,3*i+2] = t3 
-                ;    endif
+			    ; eT i+1/2
+			    t4 = II * nPhi * r_[i] / ( r[i]^2 * dr ) $
+                                    - w^2*r_[i]/(2*c^2*r[i])*epsilon_[1,0,i]
+				; eZ i+1/2
+			    t5 = II * kz / dr - w^2*r_[i]/(2*c^2*r[i])*epsilon_[2,0,i]
 
-				;    aMat[3*i+0,3*i+2] = t4 
-				;    aMat[3*i+1,3*i+2] = t5 
-				;    aMat[3*i+2,3*i+2] = t6 
-				;    aMat[3*i+3,3*i+2] = t7 
-
-                ;    if i lt nR-2 then begin
-				;    aMat[3*i+4,3*i+2] = t8 
-				;    aMat[3*i+5,3*i+2] = t9 
-                ;    endif
-
-
-                ;endif
-
-                ;if i gt 0 then begin
-   				    ; eT i-1/2
-			        t1 = -II * nPhi * r_[i-1] / ( r[i]^2 * dr ) $
-                                        - w^2*r_[i-1]/(2*c^2*r[i])*epsilon_[1,0,i-1]
-				    ; eZ i-1/2
-			        t2 = -II * kz / dr - w^2*r_[i-1]/(2*c^2*r[i])*epsilon_[2,0,i-1]
-
-                    aMat[jj-2,jj] = t1
-                    aMat[jj-1,jj] = t2
-                ;endif
-
-					; eR i
-				    t3	= nPhi^2 / r[i]^2 + kz^2 - w^2 / c^2 * epsilon[0,0,i]
-			    	aMat[jj,jj]	= t3
-
-                ;if i lt nR-1 then begin
-			    	; eT i+1/2
-			        t4 = II * nPhi * r_[i] / ( r[i]^2 * dr ) $
-                                        - w^2*r_[i]/(2*c^2*r[i])*epsilon_[1,0,i]
-				    ; eZ i+1/2
-			        t5 = II * kz / dr - w^2*r_[i]/(2*c^2*r[i])*epsilon_[2,0,i]
-
-                    aMat[jj+1,jj] = t4             
-                    aMat[jj+2,jj] = t5
-
-                ;endif
-
-                    ;if kjInput then begin 
-                    ;extraTerm = -II*w*u0*kjIn.jpR[i]
-                    ;aMat[*,3*i] += extraTerm
-                    ;endif
-
+                aMat[jj+1,jj] = t4             
+                aMat[jj+2,jj] = t5
 
                 ;;; TF/SF Method
                 ;;; First add the incident field to the RHS
