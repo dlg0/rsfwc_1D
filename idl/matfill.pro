@@ -43,13 +43,6 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
             endfor
     endif
 
-    ;t1Tmp = ComplexArr(nR)
-    ;t2Tmp = ComplexArr(nR)
-    ;t3Tmp = ComplexArr(nR)
-    ;t4Tmp = ComplexArr(nR)
-    ;t5Tmp = ComplexArr(nR)
-    ;t6Tmp = ComplexArr(nR)
-
     conservative_form = 0
 
     ; PEC BC eqns (Tangential components == 0)
@@ -163,37 +156,6 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
                 endelse 
 
 
-                ;;; TF/SF Method
-                ;;; First add the incident field to the RHS
-                ;;; but only for the "total" field points, not "scattered" field, 
-                ;;; i.e., where replace[i]==1
-                ;;if ar2EField and i gt 0 and i lt nR-1 then begin
-                ;;if replace[i] then begin
-                ;;    this_aMat = aMat[3*i-3:3*i+5,3*i]
-                ;;    rhs[3*i] -= total(this_aMat * this_kjE)
-                ;;endif
-                ;;endif
-                ;; At the left TF/SF boundary we have to add the incident
-                ;; field to ensure the derivative terms are between TOTAL fields, 
-                ;; i.e., they are just TOTAL field differences 
-                ;if ar2EField and i gt 0 then begin
-                ;if replace[i-1] eq 0 and replace[i] then begin
-                ;    this_aMat = aMat[3*i-3:3*i+5,3*i]
-                ;    this_aMat[3:-1] = 0
-                ;    rhs[3*i] -= total(this_aMat * this_kjE)
-                ;endif 
-                ;endif
-                ;; At the right TF/SF boundary we have to add the incident
-                ;; field to ensure the derivative terms are between TOTAL fields, 
-                ;; i.e., they are just TOTAL field differences 
-                ;if ar2EField and i lt nR-1 then begin
-                ;if replace[i] and replace[i+1] eq 0 then begin
-                ;    this_aMat = aMat[3*i-3:3*i+5,3*i]
-                ;    this_aMat[0:3] = 0
-                ;    rhs[3*i] -= total(this_aMat * this_kjE)
-                ;endif 
-                ;endif
- 
 		;	phi component
 			if i lt nR-1+SpatialOffSet then begin
          
@@ -254,63 +216,6 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 				        aMat[jj+5,jj+1] = t9 
 
                     endelse 
-
- 
-                    ;if kjInput then begin 
-                    ;extraTerm = -II*w*u0*kjIn.jpT_[i]
-                    ;aMat[*,3*i+1] += extraTerm
-                    ;endif
-
-                    ;;; TF/SF Method
-                    ;;if ar2EField and i gt 0 and i lt nR-1 then begin
-                    ;;if replace[i-1] and replace[i] and replace[i+1] and replace[i+2] then begin
-                    ;;    this_aMat = aMat[3*i-3:3*i+5,3*i+1]
-                    ;;    rhs[3*i+1] -= total(this_aMat * this_kjE)
-                    ;;endif
-                    ;;endif
-                    ;; Both the half points inside and outside of the full
-                    ;; point interface layer need to be corrected for since 
-                    ;; unlinke the r component, the th and z components have
-                    ;; a dependence on a larger stencil. 
-                    ;; 
-                    ;; Left TF/SF boundary
-                    ;; at the half point outside we need to SUBTRACT the incident
-                    ;; field so this is an equation for SCATTERED fields
-                    ;if ar2EField and i gt 0 then begin ; outside
-                    ;if replace[i] eq 0 and replace[i+1] then begin
-                    ;    this_aMat = -aMat[3*i-3:3*i+5,3*i+1]
-                    ;    this_aMat[0:5] = 0
-                    ;    rhs[3*i+1] -= total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
-                    ;; at the half point inside we need to ADD the incident
-                    ;; field so this is an equation for TOTAL fields
-                    ;if ar2EField and i gt 0 then begin ; inside
-                    ;if replace[i-1] eq 0 and replace[i] and replace[i+1] then begin
-                    ;    this_aMat = aMat[3*i-3:3*i+5,3*i+1]
-                    ;    this_aMat[3:-1] = 0
-                    ;    rhs[3*i+1] -= total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
-                    ;; Right TF/SF boundary
-                    ;; at the half point outside we need to SUBTRACT the incident
-                    ;; field so this is an equation for SCATTERED fields
-                    ;if ar2EField and i lt nR-1 then begin ; outside
-                    ;if replace[i] and replace[i+1] eq 0 then begin
-                    ;    this_aMat = -aMat[3*i-3:3*i+5,3*i+1]
-                    ;    this_aMat[4:-1] = 0
-                    ;    rhs[3*i+1] -= total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
-                    ;; at the half point inside we need to ADD the incident
-                    ;; field so this is an equation for TOTAL fields
-                    ;if ar2EField and i lt nR-2 then begin ; inside
-                    ;if replace[i] and replace[i+1] and replace[i+2] eq 0 then begin
-                    ;    this_aMat = aMat[3*i-3:3*i+5,3*i+1]
-                    ;    this_aMat[0:3] = 0
-                    ;    rhs[3*i+1] -= total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
  
 		;	z component	
 
@@ -374,57 +279,6 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 
                     endelse 
 
-                    ;if kjInput then begin 
-                    ;extraTerm = -II*w*u0*kjIn.jpZ_[i]
-                    ;aMat[*,3*i+2] += extraTerm
-                    ;endif
-
-                    ;;; TF/SF Method
-                    ;;if ar2EField and i gt 0 and i lt nR-1 then begin
-                    ;;if replace[i-1] and replace[i] and replace[i+1] and replace[i+2] then begin
-                    ;;    this_aMat = aMat[3*i-3:3*i+5,3*i+2]
-                    ;;    rhs[3*i+2] -= total(this_aMat * this_kjE)
-                    ;;endif
-                    ;;endif
-                    ;; Left TF/SF boundary
-                    ;; at the half point outside we need to SUBTRACT the incident
-                    ;; field so this is an equation for SCATTERED fields
-                    ;if ar2EField and i gt 0 then begin
-                    ;if replace[i] eq 0 and replace[i+1] then begin
-                    ;    this_aMat = -aMat[3*i-3:3*i+5,3*i+2]
-                    ;    this_aMat[0:5] = 0
-                    ;    rhs[3*i+2] -= total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
-                    ;; at the half point inside we need to ADD the incident
-                    ;; field so this is an equation for TOTAL fields
-                    ;if ar2EField and i gt 0 then begin
-                    ;if replace[i-1] eq 0 and replace[i] and replace[i+1] then begin
-                    ;    this_aMat = aMat[3*i-3:3*i+5,3*i+2]
-                    ;    this_aMat[3:-1] = 0
-                    ;    rhs[3*i+2] -= total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
-                    ;; Right TF/SF boundary
-                    ;; at the half point outside we need to SUBTRACT the incident
-                    ;; field so this is an equation for SCATTERED fields
-                    ;if ar2EField and i lt nR-1 then begin
-                    ;if replace[i] and replace[i+1] eq 0 then begin
-                    ;    this_aMat = -aMat[3*i-3:3*i+5,3*i+2]
-                    ;    this_aMat[4:-1] = 0
-                    ;    rhs[3*i+2] -= total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
-                    ;; at the half point inside we need to ADD the incident
-                    ;; field so this is an equation for TOTAL fields
-                    ;if ar2EField and i lt nR-2 then begin
-                    ;if replace[i] and replace[i+1] and replace[i+2] eq 0 then begin
-                    ;    this_aMat = aMat[3*i-3:3*i+5,3*i+2]
-                    ;    this_aMat[0:3] = 0
-                    ;    rhs[3*i+2] -= total(this_aMat * this_kjE)
-                    ;endif 
-                    ;endif
- 
 			endif
 	endfor
 
@@ -433,7 +287,4 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
     epsilon = epsilonBak 
     epsilon_ = epsilonBak_ 
 
-stop
-   ; check the solve wth another routine
-   ; find the zero crossing point in amat
 end

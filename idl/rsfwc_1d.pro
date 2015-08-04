@@ -58,10 +58,10 @@ pro rsfwc_1d, $
 	rOut	= r
 
  	wReal	= runData.freq * 2d0 * !dpi 
-	wc	    = dcomplexArr ( runData.nR, runData.nSpec+1 ) 
-	wc_	    = dcomplexArr ( runData.nR_, runData.nSpec+1 ) 
+	wc	    = dcomplexArr ( runData.nR, runData.nIonSpec+1 ) 
+	wc_	    = dcomplexArr ( runData.nR_, runData.nIonSpec+1 ) 
 
-    for s=0,runData.nSpec do begin
+    for s=0,runData.nIonSpec do begin
 	    wc[*,s]	= wReal * complex ( 1+fltArr(runData.nR), specData[s].nuOmg )
 	    wc_[*,s]	= wReal * complex ( 1+fltArr(runData.nR_), specData[s].nuOmg_)
     endfor
@@ -87,6 +87,7 @@ pro rsfwc_1d, $
 
 	if kjInput then begin
         kjIn = kj_read_kj_jP(kj_jP_fileName, r, rH=r_)
+        runData.nIonSpec = n_elements(kjIn.jPr_spec[0,*])-1
     endif else if ar2EField then begin
         replace = intArr(runData.nR)*0+1
         replace_ = intArr(runData.nR-1)*0+1
@@ -139,6 +140,7 @@ pro rsfwc_1d, $
    	; NOTE: the equations were derived as +curlcurlE - k0edotE = +iwuJa
 	; and as such, the sign in the below is +ve, NOT -ve as in the aorsa
 	; formulation ;)	
+
    	for i=0,runData.nR-1 do begin
 
 		rhs[i*3]	= II * wReal * u0 * jA_r[i]
@@ -154,41 +156,8 @@ pro rsfwc_1d, $
 			rhs[i*3+2]	+= II * wReal * u0 * kjIn.jpZ_[i]
             endif
 		endif
-		;if ar2EField then begin
-        ;    if replace[i] then begin
-        ;       ;print, 'Adding AORSA driving term ...'
-		;       rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
-		;    endif
-        ;    if replace[i] and replace[i+1] then begin
-		;       rhs[i*3+2]	+= II * wReal * u0 * kjIn.jpZ_[i]
-		;       rhs[i*3+1]	+= II * wReal * u0 * kjIn.jpT_[i]
-        ;    endif	
-        ;endif
 
 	endfor
-
-    ;; Try replacing sigma with a sigma derived from J and E
-    ;if kjInput then begin
-    ;    for i=0,nR-1 do begin
-    ;            ThisJp = [kjIn.jpR,kjIn.jpT,kjIn.jpZ]
-    ;            ThisE = [kjIn.eR,kjIn.eT,kjIn.eZ]
-    ;            ThisEpsilon =  1 + II/(wReal*e0) * ThisJp / ThisE
-    ;            epsilon[*,*,i] = 0
-    ;            epsilon[0,0,i] = ThisEpsilon[0]
-    ;            epsilon[1,1,i] = ThisEpsilon[1]
-    ;            epsilon[2,2,i] = ThisEpsilon[2]
-    ;    endfor
-
-    ;    for i=0,nR_-1 do begin
-    ;            ThisJp = [kjIn.jpR_,kjIn.jpT_,kjIn.jpZ_]
-    ;            ThisE = [kjIn.eR_,kjIn.eT_,kjIn.eZ_]
-    ;            ThisEpsilon =  1 + II/(wReal*e0) * ThisJp / ThisE
-    ;            epsilon_[*,*,i] = 0
-    ;            epsilon_[0,0,i] = ThisEpsilon[0]
-    ;            epsilon_[1,1,i] = ThisEpsilon[1]
-    ;            epsilon_[2,2,i] = ThisEpsilon[2]
-    ;    endfor
-    ;endif
 
 	matFill, runData.nR, runData.nPhi, runData.kz, $
 		runData.r, runData.r_, epsilon, epsilon_, wReal, runData.dR, $
@@ -207,12 +176,6 @@ pro rsfwc_1d, $
 
 	    eField	= la_linear_equation ( aMat, rhs, status = stat, /double )
 	    print, 'lapack status: ', stat
-        ;print, 'solving with IDL solver too ...'
-        ;la_ludc, aMat, index, /double, stat = stat
-	    ;print, 'lapack status: ', stat
-
-        ;eField_IDL = la_lusol(aMat,index,rhs,/double)
-        ;;eField = eField_IDL
 
     endelse
 
@@ -231,8 +194,6 @@ pro rsfwc_1d, $
 	eP_	= eField[ii_eP]
 	ii_ez	= temporary(ii_eP+1)
 	ez_	= eField[ii_ez]
-
-stop
 
 	if keyword_set ( divD ) then begin
 
@@ -315,22 +276,6 @@ stop
     eZ[-1] = (eZ_RightBoundary_+eZ_[-1])/2.0
 
 
-    ;_r = RunData.r
-    ;_r_ = RunData.r_    
-    ;spline_sigma = 0.01
-    ;eP = complex(spline(_r_,real_part(eP_),_r,spline_sigma),$
-    ;        spline(_r_,imaginary(eP_),_r,spline_sigma))
-    ;eZ = complex(spline(_r_,real_part(eZ_),_r,spline_sigma),$
-    ;        spline(_r_,imaginary(eZ_),_r,spline_sigma))
-    ;hR = complex(spline(_r_,real_part(hR_),_r,spline_sigma),$
-    ;        spline(_r_,imaginary(hR_),_r,spline_sigma))
-    ;eP[0]  = 0
-    ;eP[-1] = 0
-    ;eZ[0]  = 0
-    ;eZ[-1] = 0
-    ;hR[0]  = 0
-    ;hR[-1] = 0
-
 	if plotESolution then $
 	rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
 		eR, eP_, ez_, $
@@ -338,10 +283,6 @@ stop
 		r1 = runData.r, r2 = runData.r_, r3 = runData.r_
 
 	if plotHSolution then begin
-	    ;rs_plot_solution, runData.antLoc, runData.dR, runData.nR, $
-	    ;	hR, hP, hz, $
-	    ;	kR = kR, r_kR = runData.r, $
-	    ;	r1 = runData.r_, r2 = runData.r, r3 = runData.r
         p=plot(runData.r,hr,layout=[1,3,1],title='h_r',window_title='rsfwc_1d')
         p=plot(runData.r,imaginary(hr),/over,color='r')
         p=plot(runData.r,hP,layout=[1,3,2],/current,title='h_t')
@@ -462,29 +403,39 @@ stop
 
     endif else begin
 
-        jP_r_S = complexArr(runData.nR,runData.nSpec+1)
-        jP_t_S = complexArr(runData.nR,runData.nSpec+1)
-        jP_z_S = complexArr(runData.nR,runData.nSpec+1)
+        jP_r_S = complexArr(runData.nR,runData.nIonSpec+1)
+        jP_t_S = complexArr(runData.nR,runData.nIonSpec+1)
+        jP_z_S = complexArr(runData.nR,runData.nIonSpec+1)
         
-        jP_r = complexArr(runData.nR)
-        jP_t = complexArr(runData.nR)
-        jP_z = complexArr(runData.nR)
-
+        jP_a_S = complexArr(runData.nR,runData.nIonSpec+1)
+        jP_b_S = complexArr(runData.nR,runData.nIonSpec+1)
+        jP_p_S = complexArr(runData.nR,runData.nIonSpec+1)
+        
         for i=0,runData.nR-1 do begin
         
                 thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
+				B_rtz = RunData.bField[i,*]
+                Bu_rtz = B_rtz / sqrt(B_rtz[0]^2+B_rtz[1]^2+B_rtz[2]^2)
+				Rot_abp_to_rtz = Get_RotMat_abp_to_rtz(Bu_rtz)
+				thisE_abp = transpose(Rot_abp_to_rtz)##ThisE
 
-                for s=0,runData.nSpec do begin
-                        ThisSigma = (epsilonS[*,*,s,i]-identity(3,/double))*wReal*e0/II
-                        ;ThisSigma = sigma[*,*,s,i]
-  
+                if total(transpose(Rot_abp_to_rtz)) ne total(transpose(Rot_abp_to_rtz)) then stop
+
+                for s=0,runData.nIonSpec do begin
+                        ;ThisSigma = (epsilonS[*,*,s,i]-identity(3,/double))*wReal*e0/II
+                        ThisSigma = sigma[*,*,s,i]
+                        ThisSigma_abp = sigma_abp[*,*,s,i]
+ 
                         ; Changing this now matches the AORSA
                         ; jP, BUT is it the right one, or are they BOTH 
                         ; wrong now?
         
                         ;this_jP = thisSigma # transpose(thisE)
+                        ;this_jP_abp = thisSigma_abp # transpose(thisE_abp)
+
                         this_jP = thisSigma ## thisE
-               
+                        this_jP_abp = thisSigma_abp ## thisE_abp
+              
 						; vvv  MADE NO DIFFERENCE  vvv
    						;; Lets try it in abp THEN rotate back to rtz
 						;; since that operation MAY not commute
@@ -500,6 +451,10 @@ stop
                         jP_t_S[i,s] = this_jP[1]
                         jP_z_S[i,s] = this_jP[2]
 
+        				jP_a_S[i,s] = this_jP_abp[0]
+                        jP_b_S[i,s] = this_jP_abp[1]
+                        jP_p_S[i,s] = this_jP_abp[2]
+
                 endfor
 
         endfor
@@ -508,13 +463,17 @@ stop
         jP_t = Total(jP_t_S,2)
         jP_z = Total(jP_z_S,2)
 
+        jP_a = Total(jP_a_S,2)
+        jP_b = Total(jP_b_S,2)
+        jP_p = Total(jP_p_S,2)
+
     endelse
 
 	; jDotE
 	; -----
 
-    jPDotE_S = fltArr(runData.nR,runData.nSpec+1)
-    for s=0,runData.nSpec do begin
+    jPDotE_S = fltArr(runData.nR,runData.nIonSpec+1)
+    for s=0,runData.nIonSpec do begin
         jPDotE_S[*,s] = 0.5 * real_part ( jP_r_S[*,s] * conj(e_r) $
 				+ jP_t_S[*,s] * conj(e_t) $
 				+ jP_z_S[*,s] * conj(e_z) )
@@ -575,7 +534,7 @@ stop
 	nr_id = nCdf_dimDef ( nc_id, 'nR', runData.nR )
 	nrH_id = nCdf_dimDef ( nc_id, 'nR_', runData.nR-1 )
 	scalar_id = nCdf_dimDef ( nc_id, 'scalar', 1 )
-	nSpec_id = nCdf_dimDef ( nc_id, 'nSpec', runData.nSpec+1 )
+	nIonSpec_id = nCdf_dimDef ( nc_id, 'nIonSpec', runData.nIonSpec+1 )
 
 	freq_id = nCdf_varDef ( nc_id, 'freq', scalar_id, /float )
 	r_id = nCdf_varDef ( nc_id, 'r', nr_id, /float )
@@ -608,12 +567,12 @@ stop
 	jP_z_re_id = nCdf_varDef ( nc_id, 'jP_z_re', nr_id, /float )
 	jP_z_im_id = nCdf_varDef ( nc_id, 'jP_z_im', nr_id, /float )
 
-	jP_r_re_spec_id = nCdf_varDef ( nc_id, 'jP_r_re_spec', [nr_id,nSpec_id], /float )
-	jP_r_im_spec_id = nCdf_varDef ( nc_id, 'jP_r_im_spec', [nr_id,nSpec_id], /float )
-	jP_p_re_spec_id = nCdf_varDef ( nc_id, 'jP_p_re_spec', [nr_id,nSpec_id], /float )
-	jP_p_im_spec_id = nCdf_varDef ( nc_id, 'jP_p_im_spec', [nr_id,nSpec_id], /float )
-	jP_z_re_spec_id = nCdf_varDef ( nc_id, 'jP_z_re_spec', [nr_id,nSpec_id], /float )
-	jP_z_im_spec_id = nCdf_varDef ( nc_id, 'jP_z_im_spec', [nr_id,nSpec_id], /float )
+	jP_r_re_spec_id = nCdf_varDef ( nc_id, 'jP_r_re_spec', [nr_id,nIonSpec_id], /float )
+	jP_r_im_spec_id = nCdf_varDef ( nc_id, 'jP_r_im_spec', [nr_id,nIonSpec_id], /float )
+	jP_p_re_spec_id = nCdf_varDef ( nc_id, 'jP_p_re_spec', [nr_id,nIonSpec_id], /float )
+	jP_p_im_spec_id = nCdf_varDef ( nc_id, 'jP_p_im_spec', [nr_id,nIonSpec_id], /float )
+	jP_z_re_spec_id = nCdf_varDef ( nc_id, 'jP_z_re_spec', [nr_id,nIonSpec_id], /float )
+	jP_z_im_spec_id = nCdf_varDef ( nc_id, 'jP_z_im_spec', [nr_id,nIonSpec_id], /float )
 
 	jA_r_re_id = nCdf_varDef ( nc_id, 'jA_r_re', nr_id, /float )
 	jA_r_im_id = nCdf_varDef ( nc_id, 'jA_r_im', nr_id, /float )
@@ -622,7 +581,7 @@ stop
 	jA_z_re_id = nCdf_varDef ( nc_id, 'jA_z_re', nr_id, /float )
 	jA_z_im_id = nCdf_varDef ( nc_id, 'jA_z_im', nr_id, /float )
 
-	Density_id = nCdf_varDef ( nc_id, 'density_m3', [nr_id,nSpec_id], /float )
+	Density_id = nCdf_varDef ( nc_id, 'density_m3', [nr_id,nIonSpec_id], /float )
 
 	nCdf_control, nc_id, /enDef
 
@@ -673,8 +632,8 @@ stop
 	nCdf_varPut, nc_id, jA_z_re_id, jA_z
 	nCdf_varPut, nc_id, jA_z_im_id, jA_z*0
 
-    TmpDensity = FltArr(RunData.nR,RunData.nSpec+1)
-    for s=0,RunData.nSpec do begin
+    TmpDensity = FltArr(RunData.nR,RunData.nIonSpec+1)
+    for s=0,RunData.nIonSpec do begin
         TmpDensity[*,s] = SpecData[s].n
     endfor
 
@@ -685,9 +644,9 @@ stop
 
 	if plotJp then begin
 
-        nS = n_elements(SpecData)
+        nS = runData.nIonSpec+1
 		jpRange = max(abs([abs(jp_r),abs(jp_t),abs(jp_z)]))
-		yRange = [-1,1];[-jPRange,jPRange]*0.5
+		;yRange = [-1,1];[-jPRange,jPRange]*0.5
 
         p=plot([0,0],[0,0],/noData, layout=[nS,3,1],window_title='rsfwc_1d',dimensions=[1200,800])
 
@@ -732,6 +691,53 @@ stop
 
 	endif
 
+    plotJp_abp = 1
+	if plotJp_abp then begin
+
+        nS = runData.nIonSpec+1
+		jpRange = max(abs([abs(jp_r),abs(jp_t),abs(jp_z)]))
+
+        p=plot([0,0],[0,0],/noData, layout=[nS,3,1],window_title='rsfwc_1d - Jp_abp',dimensions=[1200,800])
+
+        for s=0,nS-1 do begin
+            This_amu_str = ', amu: '+string(SpecData[s].m/mi,format='(i1.1)')
+            This_Z_str = ', Z: '+string(SpecData[s].q/e,format='(i+2.1)')
+
+		    p_re = plot (r,jP_a_s[*,s],thick=2,$
+		    		title='jP_a'+This_amu_str+This_Z_str,name='Jp_re',font_size=10,$
+		    		layout=[nS,3,1+s],yRange=yRange,transparency=50,/current)
+		    p_im = plot (r,imaginary(jP_a_s[*,s]),color='r',thick=2,transparency=50,$
+		    		name='Ja_re',font_size=10,/over)
+
+		    p_re = plot (r,jP_b_s[*,s],thick=2,$
+		    		title='jP_b',name='Jp_re',font_size=10,$
+		    		layout=[nS,3,1+1*nS+s],/current,yRange=yRange,transparency=50)
+		    p_im = plot (r,imaginary(jP_b_s[*,s]),color='r',thick=2,transparency=50,$
+		    		name='Jp_re',font_size=10,/over)
+
+		    p_re = plot (r,jP_p_s[*,s],thick=2,$
+		    		title='jP_p',name='Jp_re',font_size=10,$
+		    		layout=[nS,3,1+2*nS+s],/current,yRange=yRange,transparency=50)
+		    p_im = plot (r,imaginary(jP_p_s[*,s]),color='r',thick=2,transparency=50,$
+		    		name='Jp_re',font_size=10,/over)
+        endfor
+
+        p=plot(r,jP_a,layout=[1,3,1], title='jP_abp (summed over species)')
+        p=plot(r,imaginary(jP_r),color='r',/over)
+        if kjInput then begin
+                p=plot(r_,kjIn.jPr_,/over)
+                p=plot(r_,imaginary(kjIn.jPr_),/over,color='r')
+        endif
+
+        p=plot(r,jP_b,layout=[1,3,2], /current)
+        p=plot(r,imaginary(jP_t),color='r',/over)
+
+        p=plot(r,jP_p,layout=[1,3,3], /current)
+        p=plot(r,imaginary(jP_z),color='r',/over)
+
+	endif
+
+
 
 	if plotMovie then begin
 
@@ -756,5 +762,5 @@ stop
 		endfor
 
 	endif
-
+stop
 end

@@ -51,19 +51,19 @@
 		nMax		= [ 1.0 ] * 0
 		damping = 0.00
 		freq	= 42.0e6
-		nPhi = 0.0
+		nPhi = 13.0
 		kz = 0.0
-		nR	= 512L
+		nR	= 2048L
 		antLoc	= 1.6
 		AntennaJ_r = 0
 		AntennaJ_t = 0
 		AntennaJ_z = 1
 
-		antSig_r = 0.01
-		antSig_t = 0.01
-		antSig_z = 0.01
+		antSig_r = 0.02
+		antSig_t = 0.02
+		antSig_z = 0.02
 
-		jAmp = 1.0
+		jAmp = -1.0 ; This seems to be a sign difference to AORSA jA
 
 		useEqdsk = 0
 		useProfiles = 0

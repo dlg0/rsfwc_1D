@@ -75,8 +75,8 @@ pro run_setup, $
    	b0	= 0.53
 	bR_frac	= 0.1
 	bz_frac	= 0.0	
-	ionSpecZ	= [ 2 ]
-	ionSpecAmu	= [ 4 ]
+	ionIonSpecZ	= [ 2 ]
+	ionIonSpecAmu	= [ 4 ]
 	if not keyword_set ( nMax ) then nMax = [ 2.0 ] * 1d18
 	if not keyword_set ( nLim ) then nLim = !NULL 
 	if not keyword_set ( nFac ) then nFac = 1.0 
@@ -93,7 +93,7 @@ pro run_setup, $
 	useEqdsk = 1
 	useProfiles = 1
 	if not keyword_set ( poloidalScale ) then poloidalScale = 1.0
-	zSlice	= 1.06 
+	zSlice	= 0.00 
 	sliceSlope = 0.0
 	profile1 = 0
 	profile2 = 0
@@ -112,9 +112,10 @@ pro run_setup, $
 	;@klepper
     ;@ar2_vorpal_right_simple
     ;@ar2_vorpal_left_simple
-    ;@ar2_vorpal_simple_full
-    @colestock-kashuba
-	@rsfwc_input
+    @ar2_vorpal_simple_full
+    ;@colestock-kashuba
+
+	@rsfwc_input ; DO NOT REMOVE THIS
 
 ;		Grid
 
@@ -239,11 +240,11 @@ pro run_setup, $
 		bMag_	= sqrt ( bR_^2 + bPhi_^2 + bz_^2 )
 
         if ar2Input then begin
-            ionSpecZ = ar2.AtomicZ[1:-1]
-            ionSpecAmu = ar2.amu[1:-1]
+            ionIonSpecZ = ar2.AtomicZ[1:-1]
+            ionIonSpecAmu = ar2.amu[1:-1]
         endif
 
-		nSpec	= n_elements ( ionSpecZ )
+		nIonSpec	= n_elements ( ionIonSpecZ )
 
 		specData	= replicate ( $
 				{ 	q : 0d0, $
@@ -257,15 +258,15 @@ pro run_setup, $
 					wLH : dblArr ( nR ), $
 					wUH : dblArr ( nR ), $
                     nuOmg: dblArr(nR), $
-                    nuOmg_ : dblArr(nR) }, nSpec + 1 )
+                    nuOmg_ : dblArr(nR) }, nIonSpec + 1 )
 
         if not ar2Input then begin
-		for i=0,nSpec do begin
+		for i=0,nIonSpec do begin
 
 			nProfile	= r * 0 + 1
 			nProfile_	= r_* 0 + 1
 
-			if profile1 and i lt nSpec then begin
+			if profile1 and i lt nIonSpec then begin
 
 				;nProfile	= 1.0 - ( abs ( r - r0 ) / aWall )^2 
 				;nProfile_	= 1.0 - ( abs ( r_ - r0 ) / aWall )^2
@@ -278,7 +279,7 @@ pro run_setup, $
 
 			endif
 
-			if profile2 and i lt nSpec then begin
+			if profile2 and i lt nIonSpec then begin
 
 				nProfile = (exp(-70*((r-max(r)))))
 				nProfile_ = (exp(-70*((r_-max(r)))))
@@ -286,10 +287,10 @@ pro run_setup, $
 			endif
 
 			; ions
-			if i lt nSpec then begin
+			if i lt nIonSpec then begin
 
-				specData[i].q 		= ionSpecZ[i] * e
-				specData[i].m 		= ionSpecAmu[i] * mi
+				specData[i].q 		= ionIonSpecZ[i] * e
+				specData[i].m 		= ionIonSpecAmu[i] * mi
 				specData[i].n 		= nMax[i] * nProfile
 				specData[i].n_		= nMax[i] * nProfile_
 
@@ -298,16 +299,16 @@ pro run_setup, $
 
 				specData[i].q 		= -e
 				specData[i].m 		= me
-				if nSpec gt 1 then begin
-					specData[i].n 		= total ( specData[0:nSpec-1].n $
-											* transpose(rebin(ionSpecZ,nSpec,nR)), 2 ) 
-					specData[i].n_		= total ( specData[0:nSpec-1].n_ $
-											* transpose(rebin(ionSpecZ,nSpec,nR-1)), 2 ) 
+				if nIonSpec gt 1 then begin
+					specData[i].n 		= total ( specData[0:nIonSpec-1].n $
+											* transpose(rebin(ionIonSpecZ,nIonSpec,nR)), 2 ) 
+					specData[i].n_		= total ( specData[0:nIonSpec-1].n_ $
+											* transpose(rebin(ionIonSpecZ,nIonSpec,nR-1)), 2 ) 
 				endif else begin
-					specData[i].n 		= specData[0:nSpec-1].n $
-											* transpose(rebin(ionSpecZ,nSpec,nR)) 
-					specData[i].n_		= specData[0:nSpec-1].n_ $
-											* transpose(rebin(ionSpecZ,nSpec,nR-1)) 
+					specData[i].n 		= specData[0:nIonSpec-1].n $
+											* transpose(rebin(ionIonSpecZ,nIonSpec,nR)) 
+					specData[i].n_		= specData[0:nIonSpec-1].n_ $
+											* transpose(rebin(ionIonSpecZ,nIonSpec,nR-1)) 
 				endelse
 
 			endelse
@@ -351,17 +352,17 @@ pro run_setup, $
 			specData[1].n	= ne_
 			specData[1].n_	= ne__
     
-			specData[0].n	= ne_ / ionSpecZ[0]
-			specData[0].n_	= ne__ / ionSpecZ[0]
+			specData[0].n	= ne_ / ionIonSpecZ[0]
+			specData[0].n_	= ne__ / ionIonSpecZ[0]
 
 		endif
         
         if ar2Input then begin
 
-            for s=0,nSpec do begin
+            for s=0,nIonSpec do begin
 
                 index = s+1
-                if s eq nSpec then index = 0
+                if s eq nIonSpec then index = 0
 
 			    this_n  = interpolate ( ar2.Density_m3[*,*,index], $
 			    		( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
@@ -388,15 +389,15 @@ pro run_setup, $
                 specData[s].nuOmg_ = this_nuOmg_
  
                 specData[s].m = ar2.amu[index]*mi
-                if s eq nSpec then specData[s].m = me
+                if s eq nIonSpec then specData[s].m = me
                 specData[s].q = ar2.AtomicZ[index]*e
-                ;if s eq nSpec then specData[s].q = -e
+                ;if s eq nIonSpec then specData[s].q = -e
 
             endfor 
         endif
 
 
-		for i = 0, nSpec do begin
+		for i = 0, nIonSpec do begin
 
 			specData[i].wp	= sqrt ( specData[i].n * specData[i].q^2 $
     	                        / ( specData[i].m*e0 ))
@@ -408,16 +409,16 @@ pro run_setup, $
 		
 		endfor
 
-		for i = 0, nSpec - 1 do begin
+		for i = 0, nIonSpec - 1 do begin
 
 			specData[i].wLH	= sqrt ( specData[i].wc^2 $
-				+ specData[i].wp^2 / ( 1.0 + specData[nSpec].wp^2 / specData[nSpec].wc^2 ) )
-			;specData[i].wLH	= sqrt ( specData[i].wc * abs(specData[nSpec].wc) $
-			;	* ( specData[nSpec].wp^2 + specData[nSpec].wc * specData[i].wc) $
-			;	/ ( specData[nSpec].wp^2 + specData[nSpec].wc^2 ) )
-			;specData[i].wLH	= ( 1d0 / (specData[i].wc * abs(specData[nSpec].wc)) $
+				+ specData[i].wp^2 / ( 1.0 + specData[nIonSpec].wp^2 / specData[nIonSpec].wc^2 ) )
+			;specData[i].wLH	= sqrt ( specData[i].wc * abs(specData[nIonSpec].wc) $
+			;	* ( specData[nIonSpec].wp^2 + specData[nIonSpec].wc * specData[i].wc) $
+			;	/ ( specData[nIonSpec].wp^2 + specData[nIonSpec].wc^2 ) )
+			;specData[i].wLH	= ( 1d0 / (specData[i].wc * abs(specData[nIonSpec].wc)) $
 			;					+ 1d0/(specData[i].wp^2) )^(-0.5)
-			specData[i].wUH	= sqrt ( specData[nSpec].wp^2 + specData[nSpec].wc^2 ) 
+			specData[i].wUH	= sqrt ( specData[nIonSpec].wp^2 + specData[nIonSpec].wc^2 ) 
 	
 		endfor
 
@@ -428,7 +429,6 @@ pro run_setup, $
 			iplot, abs(specData[0].wc), /over, lineStyle = 2, insert_legend = 1, name = 'wci'
 		endif
 
-        
 		runData = { bField : [ [bR], [bPhi], [bz] ], $
 					bField_ : [ [bR_], [bPhi_], [bz_] ], $
 					bMag : bMag, $
@@ -449,10 +449,8 @@ pro run_setup, $
 					freq : freq, $
 					nPhi : nPhi, $
 					kz : kz, $
-					nSpec : nSpec, $
+					nIonSpec : nIonSpec, $
 					antLoc : antLoc }
-
-
 
     	if plotRunData then begin 
 		    p=Plot( r, runData.bField[*,1], $
@@ -464,12 +462,14 @@ pro run_setup, $
 		    p=plot( r, runData.bField[*,2], $
 				/over, $
 				color = blue)
-		    p=plot( r, specData[nSpec].n, $
+		    p=plot( r, specData[nIonSpec].n, $
     	        layout=[2,1,2],/current, $
     	        title = 'density 0', yRange=[1e10,1e22],/ylog)
-			for i=0,nSpec-1 do $
-		    p=plot( r, specData[i].n, $
-    	        /over )
+
+			for i=0,nIonSpec-1 do p=plot( r, specData[i].n, /over )
+
+            p=plot(r,specData[0].nuOmg, title='nuOmg')
+            for s=1,nIonSpec-1 do p=plot(r,specData[s].nuOmg, /over)
     	endif
 
 

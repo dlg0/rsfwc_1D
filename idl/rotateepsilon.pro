@@ -1,6 +1,10 @@
-function rotateEpsilon, epsilonIn, bu_rtz, w, debug = debug
+function rotateEpsilon, epsilonIn, bu_rtz, w, debug = debug, i = i
 
     rot_abp_to_rtz = get_RotMat_abp_to_rtz(bu_rtz)
+
+    if keyword_set(i) then begin
+            if i eq 256 then print, rot_abp_to_rtz
+    endif
 
     epsilonOut  = rot_abp_to_rtz ## epsilonIn ## transpose(rot_abp_to_rtz)
 

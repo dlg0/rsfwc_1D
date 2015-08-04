@@ -20,7 +20,9 @@ function dot, v1,v2
 
 end 
 
-function get_RotMat_abp_to_rtz, bu_rtz
+function get_RotMat_abp_to_rtz, _bu_rtz, debug=debug
+
+    if abs(mag(_bu_rtz)-1) gt 1e-5 then stop
 
 ;   Try a different rotation approach - COPY OF THE AORSA CODE
 ;   ---------------------------------
@@ -31,7 +33,7 @@ function get_RotMat_abp_to_rtz, bu_rtz
     tu_rtz = [[0],[1],[0]]
     zu_rtz = [[0],[0],[1]]
 
-    pu_rtz = transpose(bu_rtz[*])
+    pu_rtz = transpose(_bu_rtz[*])
 
     a_rtz = cross(zu_rtz,pu_rtz)
     au_rtz = a_rtz/mag(a_rtz)
@@ -49,8 +51,6 @@ if keyword_set(debug) then begin
         print, 'bu_rtz:', bu_rtz
         print, 'pu_rtz:', pu_rtz
 
-        epsilon0 = epsilonIn
-
 endif
 
     ; Rotation 1
@@ -58,7 +58,7 @@ endif
     theta = acos( dot(ru_rtz,au_rtz) )
 
 if keyword_set(debug) then begin
-        print, 'theta: ', theta*!radeg
+        print, 'theta 1: ', theta*!radeg
 endif
 
     q0  = cos ( theta / 2.0 )
@@ -73,21 +73,16 @@ endif
                 [ 2*(q3*q1-q0*q2), 2*(q3*q2+q0*q1), q0^2-q1^2-q2^2+q3^2 ] ]
 
 if keyword_set(debug) then begin
+
     print, rot1
-endif
 
-    au_rtz = rot1 ## au_rtz
-    bu_rtz = rot1 ## bu_rtz
-    pu_rtz = rot1 ## pu_rtz
+    __au_rtz = rot1 ## au_rtz
+    __bu_rtz = rot1 ## bu_rtz
+    __pu_rtz = rot1 ## pu_rtz
 
-if keyword_set(debug) then begin
-    print, 'au_rtz 1: ', au_rtz[*]
-    print, 'bu_rtz 1: ', bu_rtz[*]
-    print, 'pu_rtz 1: ', pu_rtz[*]
-
-    epsilon1 = rot1 ## epsilon0 ## transpose(rot1)
-    print, 'epsilon1: '
-    print, epsilon1
+    print, 'au_rtz 1: ', __au_rtz[*]
+    print, 'bu_rtz 1: ', __bu_rtz[*]
+    print, 'pu_rtz 1: ', __pu_rtz[*]
 endif
 
     ; Rotation 2
@@ -95,8 +90,9 @@ endif
     theta = acos( dot(zu_rtz,pu_rtz) )
 
 if keyword_set(debug) then begin
-    print, 'theta: ', theta * !radeg
+    print, 'theta 2: ', theta * !radeg
 endif
+
     q0  = cos ( theta / 2.0 )
     q1  = sin ( theta / 2.0 ) * (-ru_rtz[0]) 
     q2  = sin ( theta / 2.0 ) * (-ru_rtz[1])  
@@ -109,24 +105,20 @@ endif
                 [ 2*(q3*q1-q0*q2), 2*(q3*q2+q0*q1), q0^2-q1^2-q2^2+q3^2 ] ]
 
 if keyword_set(debug) then begin
+
     print, rot2
-endif
 
-    au_rtz = rot2 ## au_rtz
-    bu_rtz = rot2 ## bu_rtz
-    pu_rtz = rot2 ## pu_rtz
+    __au_rtz = rot2 ## __au_rtz
+    __bu_rtz = rot2 ## __bu_rtz
+    __pu_rtz = rot2 ## __pu_rtz
 
-if keyword_set(debug) then begin
-    print, 'au_rtz 2: ', au_rtz[*]
-    print, 'bu_rtz 2: ', bu_rtz[*]
-    print, 'pu_rtz 2: ', pu_rtz[*]
-    epsilon2 = rot2 ## epsilon1 ## transpose(rot2)
-    print, 'epsilon2: '
-    print, epsilon2
+    print, 'au_rtz 2: ', __au_rtz[*]
+    print, 'bu_rtz 2: ', __bu_rtz[*]
+    print, 'pu_rtz 2: ', __pu_rtz[*]
+
 endif
 
     rot_ = rot2 ## rot1
-    ;rot_ = transpose(rot_)
 
 if keyword_set(debug) then begin
     print, rot_
@@ -138,6 +130,7 @@ if keyword_set(debug) then begin
     print, 'rot_ ## au_rtz2: ', (rot_ ## au_rtz2)[*]
     print, 'rot_ ## bu_rtz2: ', (rot_ ## bu_rtz2)[*]
     print, 'rot_ ## pu_rtz2: ', (rot_ ## pu_rtz2)[*]
+    stop
 endif
 
     rot_abp_to_rtz = transpose(rot_)

@@ -1,3 +1,31 @@
+function epsilon_cold, S, D, P
+
+    @constants
+
+    epsilon_stix = dComplexArr(3,3)
+    
+    ; Recal that IDL is indexed as [col,row] but Fortran is [row,col]
+    
+    ; Row 0
+    epsilon_stix[0,0] = S
+    epsilon_stix[1,0] = II * D
+    epsilon_stix[2,0] = 0d0 
+    
+    ; Row 1
+    epsilon_stix[0,1] = -II * D
+    epsilon_stix[1,1] = S
+    epsilon_stix[2,1] = 0d0 
+    
+    ; Row 2
+    epsilon_stix[0,2] = 0d0
+    epsilon_stix[1,2] = 0d0
+    epsilon_stix[2,2] = P
+    
+    return, epsilon_stix
+
+end
+
+
 pro dielectric, runData, stixVars, $
 	epsilonFull_ = epsilon, $
 	epsilonHalf_ = epsilon_, $
@@ -56,9 +84,6 @@ pro dielectric, runData, stixVars, $
 	    epsilon_[2,2,*,*]	= stixVars.stixS_
         endif
 
-		;epsilonNoPol	= epsilon
-		;epsilonNoPol_	= epsilon_
-
     endif else begin
 
 		;	Generic dielectric for arbitrary magnetic field direction
@@ -73,73 +98,41 @@ pro dielectric, runData, stixVars, $
 						[ runData.bField_[*,2] / runData.bMag_ ] ]
         endif
 	
-		;	rotate to cartesian
-	
 		phi	= 0d0
         if not keyword_set(noHalfGrid) then $
 
 		for i = 0L, runData.nR - 1L do begin
         for s = 0, nSpec-1 do begin
 
-			;	Here the rotation from cylindrical to cartesian and
-			;	its inverse is not used since for phi = 0, the 
-			;	rotation is simply the identity matrix.
-	
-			;cyl2car	= [ [ cos ( phi ), -sin ( phi ), 0 ], $
-			;			[ sin ( phi ), cos ( phi ), 0 ], $
-			;			[ 0, 0, 1 ] ]
-	
-			;car2cyl	= invert ( cyl2car )
-	
-	
-	
-			epsilon_stix	= [ [ stixVars.stixS[i,s], II * stixVars.stixD[i,s], 0d0 ], $
-								[ -II * stixVars.stixD[i,s], stixVars.stixS[i,s], 0d0 ], $
-								[ 0d0, 0d0, stixVars.stixP[i,s] ] ]
+			;epsilon_stix	= [ [ stixVars.stixS[i,s], II * stixVars.stixD[i,s], 0d0 ], $
+			;					[ -II * stixVars.stixD[i,s], stixVars.stixS[i,s], 0d0 ], $
+			;					[ 0d0, 0d0, stixVars.stixP[i,s] ] ]
 
-			sigma_stix	    = [ [ stixVars.sig1[i,s], stixVars.sig2[i,s], 0d0 ], $
-								[ -stixVars.sig2[i,s], stixVars.sig1[i,s], 0d0 ], $
-								[ 0d0, 0d0, stixVars.sig3[i,s] ] ]
+            epsilon_stix = epsilon_cold(stixVars.stixS[i,s],stixVars.stixD[i,s],stixVars.stixP[i,s])
+            thisSigma = (epsilon_stix-identity(3))*w[i,s]*e0/II
+ 
+			;sigma_stix	    = [ [ stixVars.sig1[i,s], stixVars.sig2[i,s], 0d0 ], $
+			;					[ -stixVars.sig2[i,s], stixVars.sig1[i,s], 0d0 ], $
+			;					[ 0d0, 0d0, stixVars.sig3[i,s] ] ]
 
+            ;thisEpsilon = identity(3) + II / (w[i,s]*e0) * sigma_stix
+            ;epsilon_stix = thisEpsilon
 
-	        thisSigma = (epsilon_stix-identity(3))*w[i,s]*e0/II
-            thisEpsilon = identity(3) + II / (w[i,s]*e0) * sigma_stix
+            sigma_stix = thisSigma
 
-            epsilon_stix = thisEpsilon
-
-            ;print, 'r: ', runData.r[i]
-            ;print, ''
-            ;print, 'sigma_abp: '
-            ;print, thisSigma
-
-			epsilon[*,*,s,i]	= rotateEpsilon ( epsilon_stix, bUnit_cyl[i,*], w[i] )
+			epsilon[*,*,s,i]	= rotateEpsilon ( epsilon_stix, bUnit_cyl[i,*], w[i], i=i )
     		sigma[*,*,s,i]	= rotateEpsilon ( sigma_stix, bUnit_cyl[i,*], w[i] )
 			sigma_abp[*,*,s,i] = sigma_stix
         
-            ;print, 'r: ', runData.r[i]
-            ;print, 'bu: ', bUnit_cyl[i,*]
-            ;print, 'rot: ', rot_
-            ;stop    
 			;	same for 1/2 grid
 
             if not keyword_set(noHalfGrid) then begin    
 			if i lt runData.nR - 1 then begin
 	
-		
-				epsilon_stix_	= [ [ stixVars.stixS_[i,s], II * stixVars.stixD_[i,s], 0d0 ], $
-									[ -II * stixVars.stixD_[i,s], stixVars.stixS_[i,s], 0d0 ], $
-									[ 0d0, 0d0, stixVars.stixP_[i,s] ] ]
-
-				sigma_stix_	    = [ [ stixVars.sig1_[i,s], stixVars.sig2_[i,s], 0d0 ], $
-								[ -stixVars.sig2_[i,s], stixVars.sig1_[i,s], 0d0 ], $
-								[ 0d0, 0d0, stixVars.sig3_[i,s] ] ]
-
-	            thisSigma_ = (epsilon_stix_-identity(3))*w[i,s]*e0/II
-                thisEpsilon_ = identity(3) + II / (w[i,s]*e0) * sigma_stix_
-
-                epsilon_stix_ = thisEpsilon_
-
-
+                epsilon_stix_ = epsilon_cold(stixVars.stixS_[i,s],stixVars.stixD_[i,s],stixVars.stixP_[i,s])
+                thisSigma_ = (epsilon_stix_-identity(3))*w[i,s]*e0/II
+                sigma_stix_ = thisSigma_
+               
 				epsilon_[*,*,s,i]	= rotateEpsilon ( epsilon_stix_, bUnit_cyl_[i,*], w[i] )
 				sigma_[*,*,s,i]	= rotateEpsilon ( sigma_stix_, bUnit_cyl_[i,*], w[i] )
 				sigma_abp_[*,*,s,i] = sigma_stix_

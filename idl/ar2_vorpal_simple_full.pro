@@ -51,7 +51,7 @@
 		nMax		= [ 1.0 ] * 0
 		damping = 0.00
 		freq	= 53.0e6
-		nPhi = 2.0
+		nPhi = 0.0
 		kz = 0.0
 		nR	= 512L
 		antLoc	= 2.5
@@ -63,12 +63,12 @@
 		antSig_t = 0.02
 		antSig_z = 0.02
 
-		jAmp = 1.0
+		jAmp = -1.0
 
 		useEqdsk = 0
 		useProfiles = 0
 		poloidalScale = 1.0
-		zSlice	= 0.3
+		zSlice	= 0.0
 		profile1 = 0
 
 ;		-----------------------------
