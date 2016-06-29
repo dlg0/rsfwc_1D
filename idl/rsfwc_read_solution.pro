@@ -1,6 +1,6 @@
 function rsfwc_read_solution, runFolderName
 
-    SolutionFile = file_search(runFolderName+'/rsfwc_1d_r0.nc')
+    SolutionFile = file_search(runFolderName+'/rsfwc_1d.nc')
 
     cdfId = nCdf_open(SolutionFile)
 
@@ -33,9 +33,21 @@ function rsfwc_read_solution, runFolderName
         nCdf_varGet, cdfId, 'jP_p_im', jP_t_im 
         nCdf_varGet, cdfId, 'jP_z_im', jP_z_im 
 
+        nCdf_varGet, cdfId, 'jP_r_re_spec', jP_r_re_spec 
+        nCdf_varGet, cdfId, 'jP_p_re_spec', jP_t_re_spec 
+        nCdf_varGet, cdfId, 'jP_z_re_spec', jP_z_re_spec 
+        nCdf_varGet, cdfId, 'jP_r_im_spec', jP_r_im_spec 
+        nCdf_varGet, cdfId, 'jP_p_im_spec', jP_t_im_spec 
+        nCdf_varGet, cdfId, 'jP_z_im_spec', jP_z_im_spec 
+
         jP_r = complex(jP_r_re,jP_r_im)
         jP_t = complex(jP_t_re,jP_t_im)
         jP_z = complex(jP_z_re,jP_z_im)
+
+        jP_r_spec = complex(jP_r_re_spec,jP_r_im_spec)
+        jP_t_spec = complex(jP_t_re_spec,jP_t_im_spec)
+        jP_z_spec = complex(jP_z_re_spec,jP_z_im_spec)
+
 
         ;nCdf_varGet, cdfId, 'jA_r_re', jA_r_re 
         ;nCdf_varGet, cdfId, 'jA_p_re', jA_t_re 
@@ -59,7 +71,10 @@ function rsfwc_read_solution, runFolderName
                 y: z, $
                 jP_r: jP_r, $
                 jP_t: jP_t, $
-                jP_z: jP_z }
+                jP_z: jP_z, $
+                jP_r_spec: jP_r_spec, $
+                jP_t_spec: jP_t_spec, $
+                jP_z_spec: jP_z_spec  }
                 
         return, solution
 end

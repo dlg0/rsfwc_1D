@@ -112,8 +112,9 @@ pro run_setup, $
 	;@klepper
     ;@ar2_vorpal_right_simple
     ;@ar2_vorpal_left_simple
-    @ar2_vorpal_simple_full
-    ;@colestock-kashuba
+    ;@ar2_vorpal_simple_full
+    @colestock-kashuba
+    ;@proto-mpex-ech
 
 	@rsfwc_input ; DO NOT REMOVE THIS
 

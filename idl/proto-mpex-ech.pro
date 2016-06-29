@@ -14,7 +14,7 @@
 	kj_jP_fileName = 'kj_jP.nc'
     ar2Input = 1
     ar2InFileName = 'ar2Input.nc'
-    ar2RunDataFileName = 'runData_001_+002_000001.nc'
+    ar2RunDataFileName = 'runData_001_+013_000001.nc'
 
 ;	Plotting switches
 
@@ -41,29 +41,29 @@
 		;r0	= 100d0
 		;aWall	= 5d0
 
-		rMin	= 1.05
-		rMax	= 2.65
+		rMin	= 99.856
+		rMax	= 100.20
    		b0	= 0.0
 		bR_frac	= 0.0
 		bz_frac	= 0.0	
-		ionSpecZ	= [ 2 ]
-		ionSpecAmu	= [ 4 ]
+		ionSpecZ	= [ 1 ]
+		ionSpecAmu	= [ 2 ]
 		nMax		= [ 1.0 ] * 0
 		damping = 0.00
-		freq	= 53.0e6
+		freq	= 28.0e9
 		nPhi = 0.0
 		kz = 0.0
-		nR	= 513L
-		antLoc	= 2.5
-		AntennaJ_r = 1
+		nR	= 256L
+		antLoc	= 100.0
+		AntennaJ_r = 0
 		AntennaJ_t = 0
-		AntennaJ_z = 0
+		AntennaJ_z = 1
 
-		antSig_r = 0.02
-		antSig_t = 0.02
-		antSig_z = 0.02
+		antSig_r = 0.005
+		antSig_t = 0.005
+		antSig_z = 0.005
 
-		jAmp = 1.0
+		jAmp = -1.0 ; This seems to be a sign difference to AORSA jA
 
 		useEqdsk = 0
 		useProfiles = 0

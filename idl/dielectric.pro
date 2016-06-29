@@ -104,26 +104,25 @@ pro dielectric, runData, stixVars, $
 		for i = 0L, runData.nR - 1L do begin
         for s = 0, nSpec-1 do begin
 
-			;epsilon_stix	= [ [ stixVars.stixS[i,s], II * stixVars.stixD[i,s], 0d0 ], $
-			;					[ -II * stixVars.stixD[i,s], stixVars.stixS[i,s], 0d0 ], $
-			;					[ 0d0, 0d0, stixVars.stixP[i,s] ] ]
 
             epsilon_stix = epsilon_cold(stixVars.stixS[i,s],stixVars.stixD[i,s],stixVars.stixP[i,s])
             thisSigma = (epsilon_stix-identity(3))*w[i,s]*e0/II
  
-			;sigma_stix	    = [ [ stixVars.sig1[i,s], stixVars.sig2[i,s], 0d0 ], $
-			;					[ -stixVars.sig2[i,s], stixVars.sig1[i,s], 0d0 ], $
-			;					[ 0d0, 0d0, stixVars.sig3[i,s] ] ]
-
-            ;thisEpsilon = identity(3) + II / (w[i,s]*e0) * sigma_stix
-            ;epsilon_stix = thisEpsilon
-
             sigma_stix = thisSigma
 
 			epsilon[*,*,s,i]	= rotateEpsilon ( epsilon_stix, bUnit_cyl[i,*], w[i], i=i )
     		sigma[*,*,s,i]	= rotateEpsilon ( sigma_stix, bUnit_cyl[i,*], w[i] )
 			sigma_abp[*,*,s,i] = sigma_stix
-        
+          
+            if i eq 256 then begin
+                    print, s
+                    print, 'abp : '
+                    print, sigma_stix
+                    print, 'rtz : '
+                    print, sigma[*,*,s,i]
+            endif
+
+    
 			;	same for 1/2 grid
 
             if not keyword_set(noHalfGrid) then begin    
@@ -150,12 +149,10 @@ pro dielectric, runData, stixVars, $
 	iiNaN	= where ( epsilon ne epsilon, iiNaNCnt )
 	if iiNaNCnt gt 0 then begin
 
-		print, '______________________________'
 		print, 'ERROR: NaN detected in epsilon'
 		iiNeg	= where ( runData.specData.n le 0, iiNegCnt )
 		if iiNegCnt gt 0 then begin
 			
-			print, '_____________________________'	
 			print, 'NEGATIVE DENSITY DETECTED :-('
 
 		endif

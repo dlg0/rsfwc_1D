@@ -195,6 +195,7 @@ pro rsfwc_1d, $
 	ii_ez	= temporary(ii_eP+1)
 	ez_	= eField[ii_ez]
 
+
 	if keyword_set ( divD ) then begin
 
 	;  	Calculate the Div of D @ the z,phi grid pts
@@ -422,31 +423,13 @@ pro rsfwc_1d, $
                 if total(transpose(Rot_abp_to_rtz)) ne total(transpose(Rot_abp_to_rtz)) then stop
 
                 for s=0,runData.nIonSpec do begin
-                        ;ThisSigma = (epsilonS[*,*,s,i]-identity(3,/double))*wReal*e0/II
+
                         ThisSigma = sigma[*,*,s,i]
                         ThisSigma_abp = sigma_abp[*,*,s,i]
  
-                        ; Changing this now matches the AORSA
-                        ; jP, BUT is it the right one, or are they BOTH 
-                        ; wrong now?
-        
-                        ;this_jP = thisSigma # transpose(thisE)
-                        ;this_jP_abp = thisSigma_abp # transpose(thisE_abp)
-
                         this_jP = thisSigma ## thisE
                         this_jP_abp = thisSigma_abp ## thisE_abp
               
-						; vvv  MADE NO DIFFERENCE  vvv
-   						;; Lets try it in abp THEN rotate back to rtz
-						;; since that operation MAY not commute
-						;ThisSigma_abp = Sigma_abp[*,*,s,i]
-						;B_rtz = RunData.bField[i,*]
-						;Rot_abp_to_rtz = Get_RotMat_abp_to_rtz(B_rtz)
-						;E_abp = transpose(Rot_abp_to_rtz)##ThisE
-						;this_jP_abp = ThisSigma_abp ## E_abp
-						;this_jP_rtz = Rot_abp_to_rtz ## this_jP_abp		
-						;this_jP = this_jP_rtz
-
         				jP_r_S[i,s] = this_jP[0]
                         jP_t_S[i,s] = this_jP[1]
                         jP_z_S[i,s] = this_jP[2]
@@ -534,7 +517,7 @@ pro rsfwc_1d, $
 	nr_id = nCdf_dimDef ( nc_id, 'nR', runData.nR )
 	nrH_id = nCdf_dimDef ( nc_id, 'nR_', runData.nR-1 )
 	scalar_id = nCdf_dimDef ( nc_id, 'scalar', 1 )
-	nIonSpec_id = nCdf_dimDef ( nc_id, 'nIonSpec', runData.nIonSpec+1 )
+	nIonSpec_id = nCdf_dimDef ( nc_id, 'nSpec', runData.nIonSpec+1 )
 
 	freq_id = nCdf_varDef ( nc_id, 'freq', scalar_id, /float )
 	r_id = nCdf_varDef ( nc_id, 'r', nr_id, /float )
@@ -659,21 +642,18 @@ pro rsfwc_1d, $
 		    		layout=[nS,3,1+s],yRange=yRange,transparency=50,/current)
 		    p_im = plot (r,imaginary(jP_r_s[*,s]),color='r',thick=2,transparency=50,$
 		    		name='Jp_re',font_size=10,/over)
-	   	    ;l = legend(target=[p_re,p_im],position=[0.99,0.95],/norm,font_size=10,horizontal_alignment='RIGHT')
 
 		    p_re = plot (r,jP_t_s[*,s],thick=2,$
 		    		title='jP_t',name='Jp_re',font_size=10,$
 		    		layout=[nS,3,1+1*nS+s],/current,yRange=yRange,transparency=50)
 		    p_im = plot (r,imaginary(jP_t_s[*,s]),color='r',thick=2,transparency=50,$
 		    		name='Jp_re',font_size=10,/over)
-	   	    ;l = legend(target=[p_re,p_im],position=[0.99,0.63],/norm,font_size=10,horizontal_alignment='RIGHT')
 
 		    p_re = plot (r,jP_z_s[*,s],thick=2,$
 		    		title='jP_z',name='Jp_re',font_size=10,$
 		    		layout=[nS,3,1+2*nS+s],/current,yRange=yRange,transparency=50)
 		    p_im = plot (r,imaginary(jP_z_s[*,s]),color='r',thick=2,transparency=50,$
 		    		name='Jp_re',font_size=10,/over)
-	   	    ;l = legend(target=[p_re,p_im],position=[0.99,0.25],/norm,font_size=10,horizontal_alignment='RIGHT')
         endfor
 
         p=plot(r,jP_r,layout=[1,3,1], title='jP (summed over species)')
