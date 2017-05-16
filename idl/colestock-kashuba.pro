@@ -54,7 +54,7 @@
 		nPhi = 13.0
 		kz = 0.0
 		nR	= 2048L
-		antLoc	= 1.6
+		antLoc	= 101.6
 		AntennaJ_r = 0
 		AntennaJ_t = 0
 		AntennaJ_z = 1

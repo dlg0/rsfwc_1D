@@ -633,8 +633,8 @@ pro rsfwc_1d, $
         p=plot([0,0],[0,0],/noData, layout=[nS,3,1],window_title='rsfwc_1d',dimensions=[1200,800])
 
         for s=0,nS-1 do begin
-            This_amu_str = ', amu: '+string(SpecData[s].m/mi,format='(i1.1)')
-            This_Z_str = ', Z: '+string(SpecData[s].q/e,format='(i+2.1)')
+            This_amu_str = ', amu: '+string(SpecData[s].m/_mi,format='(i1.1)')
+            This_Z_str = ', Z: '+string(SpecData[s].q/_e,format='(i+2.1)')
 
 		    p_re = plot (r,jP_r_s[*,s],thick=2,$
 		    		title='jP_r'+This_amu_str+This_Z_str,name='Jp_re',font_size=10,$
