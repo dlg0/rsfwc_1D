@@ -8,11 +8,11 @@ function epsilon_cold, S, D, P
     
     ; Row 0
     epsilon_stix[0,0] = S
-    epsilon_stix[1,0] = II * D
+    epsilon_stix[1,0] = _II * D
     epsilon_stix[2,0] = 0d0 
     
     ; Row 1
-    epsilon_stix[0,1] = -II * D
+    epsilon_stix[0,1] = -_II * D
     epsilon_stix[1,1] = S
     epsilon_stix[2,1] = 0d0 
     
@@ -38,7 +38,7 @@ pro dielectric, runData, stixVars, $
 	sigmaHalfSpec_abp = sigma_abp_
 
 	common switches
-	common constants
+	@constants
 
 ;	Calculate dielectric tensor
 
@@ -71,16 +71,16 @@ pro dielectric, runData, stixVars, $
     endif else if dielectric_noPoloidal then begin
 
 	    epsilon[0,0,*,*]	= stixVars.stixS
-	    epsilon[0,2,*,*]	= -II * stixVars.stixD
+	    epsilon[0,2,*,*]	= -_II * stixVars.stixD
 	    epsilon[1,1,*,*]	= stixVars.stixP
-	    epsilon[2,0,*,*]	= II * stixVars.stixD
+	    epsilon[2,0,*,*]	= _II * stixVars.stixD
 	    epsilon[2,2,*,*]	= stixVars.stixS
 
         if not keyword_set(noHalfGrid) then begin
 	    epsilon_[0,0,*,*]	= stixVars.stixS_
-	    epsilon_[0,2,*,*]	= -II * stixVars.stixD_
+	    epsilon_[0,2,*,*]	= -_II * stixVars.stixD_
 	    epsilon_[1,1,*,*]	= stixVars.stixP_
-	    epsilon_[2,0,*,*]	= II * stixVars.stixD_
+	    epsilon_[2,0,*,*]	= _II * stixVars.stixD_
 	    epsilon_[2,2,*,*]	= stixVars.stixS_
         endif
 
@@ -106,7 +106,7 @@ pro dielectric, runData, stixVars, $
 
 
             epsilon_stix = epsilon_cold(stixVars.stixS[i,s],stixVars.stixD[i,s],stixVars.stixP[i,s])
-            thisSigma = (epsilon_stix-identity(3))*w[i,s]*e0/II
+            thisSigma = (epsilon_stix-identity(3))*w[i,s]*_e0/_II
  
             sigma_stix = thisSigma
 
@@ -129,7 +129,7 @@ pro dielectric, runData, stixVars, $
 			if i lt runData.nR - 1 then begin
 	
                 epsilon_stix_ = epsilon_cold(stixVars.stixS_[i,s],stixVars.stixD_[i,s],stixVars.stixP_[i,s])
-                thisSigma_ = (epsilon_stix_-identity(3))*w[i,s]*e0/II
+                thisSigma_ = (epsilon_stix_-identity(3))*w[i,s]*_e0/_II
                 sigma_stix_ = thisSigma_
                
 				epsilon_[*,*,s,i]	= rotateEpsilon ( epsilon_stix_, bUnit_cyl_[i,*], w[i] )

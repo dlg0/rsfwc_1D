@@ -7,7 +7,6 @@ pro rsfwc_1d, $
 	ez = ez, $
 	divD = divD, $
 	r = r, r_ = r_, $
-	;jA_r = jA_r, jA_t = jA_t, jA_z = jA_z, $
 	in_kz = in_kz, $
 	nMax = nMax, $
 	nFac = nFac, $
@@ -143,17 +142,17 @@ pro rsfwc_1d, $
 
    	for i=0,runData.nR-1 do begin
 
-		rhs[i*3]	= II * wReal * u0 * jA_r[i]
+		rhs[i*3]	= _II * wReal * _u0 * jA_r[i]
         if i lt nR-1 then begin
-		rhs[i*3+1]	= II * wReal * u0 * jA_t_[i]
-		rhs[i*3+2]	= II * wReal * u0 * jA_z_[i]
+		rhs[i*3+1]	= _II * wReal * _u0 * jA_t_[i]
+		rhs[i*3+2]	= _II * wReal * _u0 * jA_z_[i]
         endif
 
 		if kjInput then begin
-			rhs[i*3]	+= II * wReal * u0 * kjIn.jpR[i]
+			rhs[i*3]	+= _II * wReal * _u0 * kjIn.jpR[i]
             if i lt nR-1 then begin
-			rhs[i*3+1]	+= II * wReal * u0 * kjIn.jpT_[i]
-			rhs[i*3+2]	+= II * wReal * u0 * kjIn.jpZ_[i]
+			rhs[i*3+1]	+= _II * wReal * _u0 * kjIn.jpT_[i]
+			rhs[i*3+2]	+= _II * wReal * _u0 * kjIn.jpZ_[i]
             endif
 		endif
 
@@ -244,12 +243,12 @@ pro rsfwc_1d, $
 	for i=0,runData.nR-1 do begin
 
 		if i lt runData.nR-1 then $
-			hR_[i]	= -II * runData.kz * eP_[i] + II * runData.nPhi * ez_[i] / runData.r_[i]
+			hR_[i]	= -_II * runData.kz * eP_[i] + _II * runData.nPhi * ez_[i] / runData.r_[i]
 
 		if i gt 0 and i lt runData.nR-1 then begin
 		
-			hP[i]	= II * runData.kz * eR[i] - ( ez_[i] - ez_[i-1] ) / runData.dR 
-			hz[i]	= ( -II * runData.nPhi * eR[i] $
+			hP[i]	= _II * runData.kz * eR[i] - ( ez_[i] - ez_[i-1] ) / runData.dR 
+			hz[i]	= ( -_II * runData.nPhi * eR[i] $
 						+ ( runData.r_[i]*eP_[i] $
 							- runData.r_[i-1]*eP_[i-1] ) / runData.dR ) $
 					 	/ runData.r[i]
@@ -258,9 +257,9 @@ pro rsfwc_1d, $
 
 	endfor
 
-	hR_	= hR_ / ( II * w[*,0] * u0 )
-	hP	= hP / ( II * w[*,0] * u0 )
-	hz	= hz / ( II * w[*,0] * u0 )
+	hR_	= hR_ / ( _II * w[*,0] * _u0 )
+	hP	= hP / ( _II * w[*,0] * _u0 )
+	hz	= hz / ( _II * w[*,0] * _u0 )
 
 	eP	= complexArr ( runData.nR )
 	eZ	= complexArr ( runData.nR )
@@ -385,9 +384,9 @@ pro rsfwc_1d, $
     h_t = hP
     h_z = hZ
 
-    b_r = u0 * h_r 
-    b_t = u0 * h_t 
-    b_z = u0 * h_z 
+    b_r = _u0 * h_r 
+    b_t = _u0 * h_t 
+    b_z = _u0 * h_z 
 
 	; Calculate plasma current
 	; ------------------------
@@ -671,7 +670,7 @@ pro rsfwc_1d, $
 
 	endif
 
-    plotJp_abp = 1
+    plotJp_abp = 0
 	if plotJp_abp then begin
 
         nS = runData.nIonSpec+1
@@ -742,5 +741,5 @@ pro rsfwc_1d, $
 		endfor
 
 	endif
-stop
+
 end

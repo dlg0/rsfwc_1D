@@ -2,7 +2,7 @@ pro dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 	kR = kR__, kPhi = kPhi, kz = kz__
 
 	common switches
-	common constants
+	@constants
 	common plotSwitches
 	common dlg_colors
 	common writeSwitches
@@ -10,8 +10,8 @@ pro dispersionAll, wReal, epsilon, stixVars, runData, specData, $
     if dispersion_freeSpace then begin
 
         kPar	= runData.nPhi / runData.r
-	    nPar	= kPar * c / wReal
-        k   = wReal / c
+	    nPar	= kPar * _c / wReal
+        k   = wReal / _c
         kPer1   = sqrt ( k^2 - kPar^2 )
         kPer2   = kPer1 * 0
         iPlot, r, kPer1, $
@@ -24,7 +24,7 @@ pro dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 
         kR__	= complexArr ( runData.nR, 4 )
         kPar	= runData.nPhi / runData.r
-	    nPar	= kPar * c / wReal
+	    nPar	= kPar * _c / wReal
 
 		kPerp0	= complexArr ( runData.nR, 4 )
 		for i=0L,runData.nR-1L do begin
@@ -106,36 +106,36 @@ pro dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 	;print, 'Running generalised dispersion calculation ...'
 	for i=0L,runData.nR-1L do begin
 		
-		k4	= wReal^2/c^2 * epsilon[0,0,i]
-		k3	= wReal^2/c^2 $
+		k4	= wReal^2/_c^2 * epsilon[0,0,i]
+		k3	= wReal^2/_c^2 $
 				* ( kPhi[i] * ( epsilon[0,1,i] + epsilon[1,0,i] ) $
 						+ runData.kz * ( epsilon[0,2,i] + epsilon[2,0,i] ) )
-		k2	= wReal^2/c^4 * ( c^2 * kPhi[i]^2 * ( epsilon[0,0,i] + epsilon[1,1,i] ) $
-						+ c^2 * runData.kz * kPhi[i] * ( epsilon[1,2,i] + epsilon[2,1,i] ) $
-						+ c^2 * runData.kz^2 * ( epsilon[0,0,i] + epsilon[2,2,i] ) $
+		k2	= wReal^2/_c^4 * ( _c^2 * kPhi[i]^2 * ( epsilon[0,0,i] + epsilon[1,1,i] ) $
+						+ _c^2 * runData.kz * kPhi[i] * ( epsilon[1,2,i] + epsilon[2,1,i] ) $
+						+ _c^2 * runData.kz^2 * ( epsilon[0,0,i] + epsilon[2,2,i] ) $
 						+ wReal^2 * ( epsilon[0,1,i] * epsilon[1,0,i] $
 										+ epsilon[0,2,i] * epsilon[2,0,i] $
 										- epsilon[0,0,i] * ( epsilon[1,1,i] + epsilon[2,2,i] ) ) )
-		k1	= wReal^2/c^4 * ( c^2 * runData.kz^2 * kPhi[i] * ( epsilon[0,1,i] + epsilon[1,0,i] ) $
-						+ c^2 * runData.kz^3 * ( epsilon[0,2,i] + epsilon[2,0,i] ) $
-						+ runData.kz * ( c^2 * kPhi[i]^2 * ( epsilon[0,2,i] + epsilon[2,0,i] ) $
+		k1	= wReal^2/_c^4 * ( _c^2 * runData.kz^2 * kPhi[i] * ( epsilon[0,1,i] + epsilon[1,0,i] ) $
+						+ _c^2 * runData.kz^3 * ( epsilon[0,2,i] + epsilon[2,0,i] ) $
+						+ runData.kz * ( _c^2 * kPhi[i]^2 * ( epsilon[0,2,i] + epsilon[2,0,i] ) $
 							+ wReal^2 * ( epsilon[0,1,i] * epsilon[1,2,i] $
 										- epsilon[1,1,i] * ( epsilon[0,2,i] + epsilon[2,0,i] ) $
 										+ epsilon[1,0,i] * epsilon[2,1,i] ) ) $
 						+ kPhi[i] * ( wReal^2 * ( epsilon[1,2,i] * epsilon[2,0,i] $
 												+ epsilon[0,2,i] * epsilon[2,1,i] ) $
 									+ ( epsilon[0,1,i] + epsilon[1,0,i] ) $
-										* ( c^2 * kPhi[i]^2 - wReal^2 * epsilon[2,2,i] ) ) )
-		k0	= wReal^2/c^6 * ( c^4 * kPhi[i]^4 * epsilon[1,1,i] $
-							+ c^4 * runData.kz * kPhi[i]^3 * ( epsilon[1,2,i] + epsilon[2,1,i] ) $
-							+ c^2 * runData.kz * kPhi[i] $
-                                * ( c^2 * runData.kz^2 * ( epsilon[1,2,i] + epsilon[2,1,i] ) $
+										* ( _c^2 * kPhi[i]^2 - wReal^2 * epsilon[2,2,i] ) ) )
+		k0	= wReal^2/_c^6 * ( _c^4 * kPhi[i]^4 * epsilon[1,1,i] $
+							+ _c^4 * runData.kz * kPhi[i]^3 * ( epsilon[1,2,i] + epsilon[2,1,i] ) $
+							+ _c^2 * runData.kz * kPhi[i] $
+                                * ( _c^2 * runData.kz^2 * ( epsilon[1,2,i] + epsilon[2,1,i] ) $
 									+ wReal^2 * ( epsilon[0,2,i] * epsilon[1,0,i] $
 													+ epsilon[0,1,i] * epsilon[2,0,i] $
 													- epsilon[0,0,i] * $
 														( epsilon[1,2,i] + epsilon[2,1,i] ) ) ) $
-							+ c^4 * runData.kz^4 * epsilon[2,2,i] $
-							+ c^2 * wReal^2 * runData.kz^2 $
+							+ _c^4 * runData.kz^4 * epsilon[2,2,i] $
+							+ _c^2 * wReal^2 * runData.kz^2 $
 								* ( epsilon[0,2,i] * epsilon[2,0,i] $
 									+ epsilon[1,2,i] * epsilon[2,1,i] $
 									- ( epsilon[0,0,i] + epsilon[1,1,i] ) * epsilon[2,2,i] ) $
@@ -145,7 +145,7 @@ pro dispersionAll, wReal, epsilon, stixVars, runData, specData, $
 													- epsilon[1,0,i] * epsilon[2,2,i] ) $
 								+ epsilon[0,0,i] * ( -epsilon[1,2,i] * epsilon[2,1,i] $
 													+ epsilon[1,1,i] * epsilon[2,2,i] ) ) $ 
-							+ c^2 * kPhi[i]^2 * ( c^2 * runData.kz^2 * $
+							+ _c^2 * kPhi[i]^2 * ( _c^2 * runData.kz^2 * $
 								( epsilon[1,1,i] + epsilon[2,2,i] ) $
 								+ wReal^2 * ( epsilon[0,1,i] * epsilon[1,0,i] $
 											+ epsilon[1,2,i] * epsilon[2,1,i] $

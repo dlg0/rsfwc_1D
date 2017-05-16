@@ -2,7 +2,7 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 	aMat = aMat, nAll = nAll, nuca = nuca, nlca = nlca, $
     replaceFull = replace, replaceHalf = replace_, rhs=rhs
 
-	common constants
+	@constants
 	common switches
 
 	;	Build matrix
@@ -135,11 +135,11 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
                     t8 = 0
                     t9 = 0
 
-                    t2 = II*nPhi*(1-(2*r[i]/dr))/(2*r[i]^2) - w^2/(2*c^2)*r_[i-1]/r[i]*epsilon_[1,0,i-1]
-                    t3 = -II*kz/dr - w^2/(2*c^2)*r_[i-1]/r[i] * epsilon_[2,0,i-1]
-                    t4 = kz^2 + nPhi^2/r[i]^2 - w^2/c^2 * epsilon[0,0,i]
-                    t5 = II*nPhi*(2*r[i]+dr)/(2*r[i]^2*dr) - w^2/(2*c^2)*r_[i]/r[i] * epsilon_[1,0,i]
-                    t6 = II*kz/dr - w^2/(2*c^2)*r_[i]/r[i] * epsilon_[2,0,i]
+                    t2 = _II*nPhi*(1-(2*r[i]/dr))/(2*r[i]^2) - w^2/(2*_c^2)*r_[i-1]/r[i]*epsilon_[1,0,i-1]
+                    t3 = -_II*kz/dr - w^2/(2*_c^2)*r_[i-1]/r[i] * epsilon_[2,0,i-1]
+                    t4 = kz^2 + nPhi^2/r[i]^2 - w^2/_c^2 * epsilon[0,0,i]
+                    t5 = _II*nPhi*(2*r[i]+dr)/(2*r[i]^2*dr) - w^2/(2*_c^2)*r_[i]/r[i] * epsilon_[1,0,i]
+                    t6 = _II*kz/dr - w^2/(2*_c^2)*r_[i]/r[i] * epsilon_[2,0,i]
 
                     aMat[jj-3,jj+0] = t1
 				    aMat[jj-2,jj+0] = t2
@@ -197,10 +197,10 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
                         t9 = 0
 
                         t2 = (-2*r_[i]+dr)/(2*r_[i]*dr^2)
-                        t4 = -II*nPhi*(2*r_[i]+dr)/(2*r_[i]^2*dr) - w^2/(2*c^2)*r[i]/r_[i]*epsilon[0,1,i]
-                        t5 = kz^2 + 1/r_[i]^2 + 2/dr^2 - w^2/c^2 * epsilon_[1,1,i]
-                        t6 = -kz*nPhi/r_[i] - w^2/c^2 * epsilon_[2,1,i]
-                        t7 = -II*nPhi/(2*r_[i]^2) + II*nPhi/(r_[i]*dr) - w^2/(2*c^2)*r[i+1]/r_[i]*epsilon[0,1,i+1]
+                        t4 = -_II*nPhi*(2*r_[i]+dr)/(2*r_[i]^2*dr) - w^2/(2*_c^2)*r[i]/r_[i]*epsilon[0,1,i]
+                        t5 = kz^2 + 1/r_[i]^2 + 2/dr^2 - w^2/_c^2 * epsilon_[1,1,i]
+                        t6 = -kz*nPhi/r_[i] - w^2/_c^2 * epsilon_[2,1,i]
+                        t7 = -_II*nPhi/(2*r_[i]^2) + _II*nPhi/(r_[i]*dr) - w^2/(2*_c^2)*r[i+1]/r_[i]*epsilon[0,1,i+1]
                         t8 = -(2+dr/r_[i])/(2*dr^2)
                         
                         aMat[jj-3,jj+1] = t1
@@ -260,10 +260,10 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 
                         t3 = (-2*r_[i]+dr)/(2*r_[i]*dr^2)
                         t9 = -(2+dr/r_[i])/(2*dr^2)
-                        t7 = 0.5*II*kz*(1/r_[i]+2/dr) - w^2*r[i+1]*epsilon[0,2,i+1] / (2*c^2*r_[i])
-                        t6 = nPhi^2/r_[i]^2 + 2/dr^2 - w^2/c^2*epsilon_[2,2,i]
-                        t5 = -kz*nPhi/r_[i] - w^2/c^2 * epsilon_[1,2,i]
-                        t4 = 0.5*II*kz*(1/r_[i]-2/dr) - w^2*r[i]*epsilon[0,2,i]/(2*c^2*r_[i])
+                        t7 = 0.5*_II*kz*(1/r_[i]+2/dr) - w^2*r[i+1]*epsilon[0,2,i+1] / (2*_c^2*r_[i])
+                        t6 = nPhi^2/r_[i]^2 + 2/dr^2 - w^2/_c^2*epsilon_[2,2,i]
+                        t5 = -kz*nPhi/r_[i] - w^2/_c^2 * epsilon_[1,2,i]
+                        t4 = 0.5*_II*kz*(1/r_[i]-2/dr) - w^2*r[i]*epsilon[0,2,i]/(2*_c^2*r_[i])
 
                         aMat[jj-3,jj+2] = t1
 				        aMat[jj-2,jj+2] = t2

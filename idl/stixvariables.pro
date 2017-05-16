@@ -19,9 +19,9 @@ pro stixVariables, w, w_, wc, wc_, specData, $
         ; of epsilon due to some confusion with the imaginary part of 
         ; the frequency.
 
-        sig1 = II * e0 * wc * specData.wp^2 / (wc^2 - specData.wc^2 ) ; Stix S 
-        sig2 = e0 * specData.wc * specData.wp^2 / (specData.wc^2 - wc^2 ) ; Stix D
-        sig3 = II * e0 * specData.wp^2 / wc ; Stix P
+        sig1 = _II * _e0 * wc * specData.wp^2 / (wc^2 - specData.wc^2 ) ; Stix S 
+        sig2 = _e0 * specData.wc * specData.wp^2 / (specData.wc^2 - wc^2 ) ; Stix D
+        sig3 = _II * _e0 * specData.wp^2 / wc ; Stix P
 	endelse
     
 	stixS	= 0.5d0 * ( stixR + stixL )
@@ -42,9 +42,9 @@ pro stixVariables, w, w_, wc, wc_, specData, $
 			stixR_	= 1d0 - specData.wp_^2 / ( w_ * ( wc_ + specData.wc_ ) )
 			stixL_	= 1d0 - specData.wp_^2 / ( w_ * ( wc_ - specData.wc_ ) )
 
-            sig1_ = II * e0 * wc_ * specData.wp_^2 / (wc_^2 - specData.wc_^2 ) ; Stix S 
-            sig2_ = e0 * specData.wc_ * specData.wp_^2 / (specData.wc_^2 - wc_^2 ) ; Stix D
-            sig3_ = II * e0 * specData.wp_^2 / wc_ ; Stix P
+            sig1_ = _II * _e0 * wc_ * specData.wp_^2 / (wc_^2 - specData.wc_^2 ) ; Stix S 
+            sig2_ = _e0 * specData.wc_ * specData.wp_^2 / (specData.wc_^2 - wc_^2 ) ; Stix D
+            sig3_ = _II * _e0 * specData.wp_^2 / wc_ ; Stix P
 	
 		endelse
 

@@ -17,7 +17,7 @@ pro run_setup, $
 	jAmp = jAmp
 
 
-	common constants
+	@constants
 	common switches
 	common plotSwitches
 	common writeSwitches
@@ -47,7 +47,7 @@ pro run_setup, $
 ;	Plotting switches
 
  	plotRunData	= 0
- 	plotDispersionGeneral 	= 1
+ 	plotDispersionGeneral 	= 0
  	plotDispersionJaeger	= 0
  	plotDispersionNoPol		= 0
 	plotSolution = 0
@@ -389,9 +389,9 @@ pro run_setup, $
                 specData[s].nuOmg = this_nuOmg
                 specData[s].nuOmg_ = this_nuOmg_
  
-                specData[s].m = ar2.amu[index]*mi
-                if s eq nIonSpec then specData[s].m = me
-                specData[s].q = ar2.AtomicZ[index]*e
+                specData[s].m = ar2.amu[index]*_amu
+                if s eq nIonSpec then specData[s].m = _me
+                specData[s].q = ar2.AtomicZ[index]*_e
                 ;if s eq nIonSpec then specData[s].q = -e
 
             endfor 
@@ -401,10 +401,10 @@ pro run_setup, $
 		for i = 0, nIonSpec do begin
 
 			specData[i].wp	= sqrt ( specData[i].n * specData[i].q^2 $
-    	                        / ( specData[i].m*e0 ))
+    	                        / ( specData[i].m*_e0 ))
 			specData[i].wc	= specData[i].q * bMag / specData[i].m
 			specData[i].wp_	= sqrt ( specData[i].n_ * specData[i].q^2 $
-    	                        / ( specData[i].m*e0 ))
+    	                        / ( specData[i].m*_e0 ))
 			specData[i].wc_	= specData[i].q * bMag_ / specData[i].m
 
 		

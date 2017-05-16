@@ -18,17 +18,17 @@
 
 ;	Plotting switches
 
- 	plotRunData	= 1
+ 	plotRunData	= 0
  	plotDispersionGeneral 	= 0
  	plotDispersionJaeger	= 0
  	plotDispersionNoPol		= 0
-	plotESolution = 1
-	plotHSolution = 1
+	plotESolution = 0
+	plotHSolution = 0
 	plotKdotB = 0
 	plotEdotB = 0
-	plotJp = 1
+	plotJp = 0
 	plotFFTSolution = 0
-	plotJdotE = 1
+	plotJdotE = 0
 
 ;	File write switches
 
@@ -41,8 +41,8 @@
 		;r0	= 100d0
 		;aWall	= 5d0
 
-		rMin	= 0.92
-		rMax	= 1.72
+		rMin	= 0.92+100
+		rMax	= 1.72+100
    		b0	= 0.0
 		bR_frac	= 0.0
 		bz_frac	= 0.0	
