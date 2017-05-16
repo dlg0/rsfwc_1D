@@ -47,9 +47,9 @@ if keyword_set(debug) then begin
         bu_rtz2 = bu_rtz
         pu_rtz2 = pu_rtz
 
-        print, 'au_rtz:', au_rtz
-        print, 'bu_rtz:', bu_rtz
-        print, 'pu_rtz:', pu_rtz
+        ;print, 'au_rtz:', au_rtz
+        ;print, 'bu_rtz:', bu_rtz
+        ;print, 'pu_rtz:', pu_rtz
 
 endif
 
@@ -80,9 +80,9 @@ if keyword_set(debug) then begin
     __bu_rtz = rot1 ## bu_rtz
     __pu_rtz = rot1 ## pu_rtz
 
-    print, 'au_rtz 1: ', __au_rtz[*]
-    print, 'bu_rtz 1: ', __bu_rtz[*]
-    print, 'pu_rtz 1: ', __pu_rtz[*]
+    ;print, 'au_rtz 1: ', __au_rtz[*]
+    ;print, 'bu_rtz 1: ', __bu_rtz[*]
+    ;print, 'pu_rtz 1: ', __pu_rtz[*]
 endif
 
     ; Rotation 2
@@ -112,9 +112,9 @@ if keyword_set(debug) then begin
     __bu_rtz = rot2 ## __bu_rtz
     __pu_rtz = rot2 ## __pu_rtz
 
-    print, 'au_rtz 2: ', __au_rtz[*]
-    print, 'bu_rtz 2: ', __bu_rtz[*]
-    print, 'pu_rtz 2: ', __pu_rtz[*]
+    ;print, 'au_rtz 2: ', __au_rtz[*]
+    ;print, 'bu_rtz 2: ', __bu_rtz[*]
+    ;print, 'pu_rtz 2: ', __pu_rtz[*]
 
 endif
 

@@ -23,7 +23,10 @@ pro rsfwc_1d, $
 	runData = runData, $
 	poloidalScale = poloidalScale, $
 	nPhi = nPhi, $
-    plot_Jp_spec = plot_Jp_spec
+    plot_Jp_spec = plot_Jp_spec, $
+    cartesian_offset = _cartesian_offset
+  
+    if keyword_set(_cartesian_offset) then cartesian_offset = _cartesian_offset else cartesian_offset = 0
 
 ;	Parameters
 
@@ -85,8 +88,8 @@ pro rsfwc_1d, $
 	if keyword_set ( dispersionOnly ) then return
 
 	if kjInput then begin
-        kjIn = kj_read_kj_jP(kj_jP_fileName, r, rH=r_)
-        runData.nIonSpec = n_elements(kjIn.jPr_spec[0,*])-1
+        kjIn = kj_read_kj_jP(kj_jP_fileName)
+        ;runData.nIonSpec = n_elements(kjIn.jPr_spec[0,*])-1
     endif else if ar2EField then begin
         replace = intArr(runData.nR)*0+1
         replace_ = intArr(runData.nR-1)*0+1
@@ -397,9 +400,9 @@ pro rsfwc_1d, $
     	jP_t	= kjIn.jpT
     	jP_z	= kjIn.jpZ
 
-    	jP_r_S	= kjIn.jpR_spec
-    	jP_t_S	= kjIn.jpT_spec
-    	jP_z_S	= kjIn.jpZ_spec
+    	;jP_r_S	= kjIn.jpR_spec
+    	;jP_t_S	= kjIn.jpT_spec
+    	;jP_z_S	= kjIn.jpZ_spec
 
     endif else begin
 
@@ -454,12 +457,16 @@ pro rsfwc_1d, $
 	; jDotE
 	; -----
 
+if not kjInput then begin
+
     jPDotE_S = fltArr(runData.nR,runData.nIonSpec+1)
     for s=0,runData.nIonSpec do begin
         jPDotE_S[*,s] = 0.5 * real_part ( jP_r_S[*,s] * conj(e_r) $
 				+ jP_t_S[*,s] * conj(e_t) $
 				+ jP_z_S[*,s] * conj(e_z) )
     endfor
+
+endif
 
 	jPDotE	= 0.5 * real_part ( jP_r * conj(e_r) $
 				+ jP_t * conj(e_t) $
@@ -569,8 +576,8 @@ pro rsfwc_1d, $
 
 	nCdf_varPut, nc_id, freq_id, runData.freq
 
-	nCdf_varPut, nc_id, r_id, runData.r
-	nCdf_varPut, nc_id, rH_id, runData.r_
+	nCdf_varPut, nc_id, r_id, runData.r - cartesian_offset
+	nCdf_varPut, nc_id, rH_id, runData.r_ - cartesian_offset
 
 	nCdf_varPut, nc_id, z_id, runData.z
 	nCdf_varPut, nc_id, zH_id, runData.z_
@@ -600,12 +607,14 @@ pro rsfwc_1d, $
 	nCdf_varPut, nc_id, jP_z_re_id, real_part(jP_z) 
 	nCdf_varPut, nc_id, jP_z_im_id, imaginary(jP_z) 
 
+if not kjInput then begin 
 	nCdf_varPut, nc_id, jP_r_re_spec_id, real_part(jP_r_S)
 	nCdf_varPut, nc_id, jP_r_im_spec_id, imaginary(jP_r_S) 
 	nCdf_varPut, nc_id, jP_p_re_spec_id, real_part(jP_t_S)
 	nCdf_varPut, nc_id, jP_p_im_spec_id, imaginary(jP_t_S) 
 	nCdf_varPut, nc_id, jP_z_re_spec_id, real_part(jP_z_S)
 	nCdf_varPut, nc_id, jP_z_im_spec_id, imaginary(jP_z_S) 
+endif
 
 	nCdf_varPut, nc_id, jA_r_re_id, jA_r 
 	nCdf_varPut, nc_id, jA_r_im_id, jA_r*0 
@@ -632,6 +641,7 @@ pro rsfwc_1d, $
 
         p=plot([0,0],[0,0],/noData, layout=[nS,3,1],window_title='rsfwc_1d',dimensions=[1200,800])
 
+        if not kjInput then begin
         for s=0,nS-1 do begin
             This_amu_str = ', amu: '+string(SpecData[s].m/_mi,format='(i1.1)')
             This_Z_str = ', Z: '+string(SpecData[s].q/_e,format='(i+2.1)')
@@ -654,6 +664,7 @@ pro rsfwc_1d, $
 		    p_im = plot (r,imaginary(jP_z_s[*,s]),color='r',thick=2,transparency=50,$
 		    		name='Jp_re',font_size=10,/over)
         endfor
+        endif
 
         p=plot(r,jP_r,layout=[1,3,1], title='jP (summed over species)')
         p=plot(r,imaginary(jP_r),color='r',/over)
