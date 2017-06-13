@@ -27,21 +27,21 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 
     endelse
 
-    if kjInput then begin
-    
-            epsilonCopy = epsilon
-            epsilonCopy_ = epsilon_
+    ;if kjInput then begin
+    ;
+    ;        epsilonCopy = epsilon
+    ;        epsilonCopy_ = epsilon_
 
-            epsilon = IntArr(3,3,nR)
-            epsilon_ = IntArr(3,3,nR-1)
+    ;        epsilon = IntArr(3,3,nR)
+    ;        epsilon_ = IntArr(3,3,nR-1)
 
-            for i=0,nR-1 do begin
-                epsilon[*,*,i] = identity(3)
-            endfor  
-            for i=0,nR-2 do begin
-                epsilon_[*,*,i] = identity(3)
-            endfor
-    endif
+    ;        for i=0,nR-1 do begin
+    ;            epsilon[*,*,i] = identity(3)
+    ;        endfor  
+    ;        for i=0,nR-2 do begin
+    ;            epsilon_[*,*,i] = identity(3)
+    ;        endfor
+    ;endif
 
     conservative_form = 0
 
@@ -92,12 +92,6 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 
             jj = 3*(i-SpatialOffSet)+AOffSet
 
-            ;if ar2EField and i gt 0 and i lt nR-2 then begin
-            ;   this_kjE = [$
-            ;       kjIn.eR[i-1],kjIn.eT_[i-1],kjIn.eZ_[i-1], $
-            ;       kjIn.eR[i],  kjIn.eT_[i],  kjIn.eZ_[i], $
-            ;       kjIn.eR[i+1],kjIn.eT_[i+1],kjIn.eZ_[i+1]]
-            ;endif
 		    ;	r component
        
                 if conservative_form then begin 
