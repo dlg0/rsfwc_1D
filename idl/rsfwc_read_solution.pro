@@ -48,7 +48,6 @@ function rsfwc_read_solution, runFolderName
         jP_t_spec = complex(jP_t_re_spec,jP_t_im_spec)
         jP_z_spec = complex(jP_z_re_spec,jP_z_im_spec)
 
-
         ;nCdf_varGet, cdfId, 'jA_r_re', jA_r_re 
         ;nCdf_varGet, cdfId, 'jA_p_re', jA_t_re 
         ;nCdf_varGet, cdfId, 'jA_z_re', jA_z_re 

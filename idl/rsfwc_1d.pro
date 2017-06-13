@@ -608,12 +608,22 @@ endif
 	nCdf_varPut, nc_id, jP_z_re_id, real_part(jP_z) 
 	nCdf_varPut, nc_id, jP_z_im_id, imaginary(jP_z) 
 
-	nCdf_varPut, nc_id, jP_r_re_spec_id, real_part(jP_r_S)
-	nCdf_varPut, nc_id, jP_r_im_spec_id, imaginary(jP_r_S) 
-	nCdf_varPut, nc_id, jP_p_re_spec_id, real_part(jP_t_S)
-	nCdf_varPut, nc_id, jP_p_im_spec_id, imaginary(jP_t_S) 
-	nCdf_varPut, nc_id, jP_z_re_spec_id, real_part(jP_z_S)
-	nCdf_varPut, nc_id, jP_z_im_spec_id, imaginary(jP_z_S) 
+    _jP_r_S = complexArr(runData.nR,1,runData.nIonSpec+1)
+    _jP_t_S = complexArr(runData.nR,1,runData.nIonSpec+1)
+    _jP_z_S = complexArr(runData.nR,1,runData.nIonSpec+1)
+
+    for s=0,runData.nIonSpec do begin
+        _jP_r_S[*,0,s] = jP_r_S[*,s]
+        _jP_t_S[*,0,s] = jP_t_S[*,s]
+        _jP_z_S[*,0,s] = jP_z_S[*,s]
+    endfor
+
+	nCdf_varPut, nc_id, jP_r_re_spec_id, real_part(_jP_r_S)
+	nCdf_varPut, nc_id, jP_r_im_spec_id, imaginary(_jP_r_S) 
+	nCdf_varPut, nc_id, jP_p_re_spec_id, real_part(_jP_t_S)
+	nCdf_varPut, nc_id, jP_p_im_spec_id, imaginary(_jP_t_S) 
+	nCdf_varPut, nc_id, jP_z_re_spec_id, real_part(_jP_z_S)
+	nCdf_varPut, nc_id, jP_z_im_spec_id, imaginary(_jP_z_S) 
 
 	nCdf_varPut, nc_id, jA_r_re_id, jA_r 
 	nCdf_varPut, nc_id, jA_r_im_id, jA_r*0 
@@ -751,5 +761,5 @@ endif
 		endfor
 
 	endif
-
+stop
 end
