@@ -41,8 +41,8 @@
 		;r0	= 100d0
 		;aWall	= 5d0
 
-		rMin	= 0.92+100
-		rMax	= 1.72+100
+		rMin	= 0.92
+		rMax	= 1.72
    		b0	= 0.0
 		bR_frac	= 0.0
 		bz_frac	= 0.0	
@@ -53,8 +53,8 @@
 		freq	= 42.0e6
 		nPhi = 13.0
 		kz = 0.0
-		nR	= 2048L
-		antLoc	= 101.6
+		nR	= 512L
+		antLoc	= 1.6
 		AntennaJ_r = 0
 		AntennaJ_t = 0
 		AntennaJ_z = 1

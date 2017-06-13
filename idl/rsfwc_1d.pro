@@ -89,7 +89,6 @@ pro rsfwc_1d, $
 
 	if kjInput then begin
         kjIn = kj_read_kj_jP(kj_jP_fileName)
-        ;runData.nIonSpec = n_elements(kjIn.jPr_spec[0,*])-1
     endif else if ar2EField then begin
         replace = intArr(runData.nR)*0+1
         replace_ = intArr(runData.nR-1)*0+1
@@ -152,10 +151,10 @@ pro rsfwc_1d, $
         endif
 
 		if kjInput then begin
-			rhs[i*3]	+= _II * wReal * _u0 * kjIn.jpR[i]
+			rhs[i*3]	+= _II * wReal * _u0 * total(kjIn.jpR[i,0,*],3)
             if i lt nR-1 then begin
-			rhs[i*3+1]	+= _II * wReal * _u0 * kjIn.jpT_[i]
-			rhs[i*3+2]	+= _II * wReal * _u0 * kjIn.jpZ_[i]
+			rhs[i*3+1]	+= _II * wReal * _u0 * total(kjIn.jpT_[i,0,*],3)
+			rhs[i*3+2]	+= _II * wReal * _u0 * total(kjIn.jpZ_[i,0,*],3)
             endif
 		endif
 
@@ -396,13 +395,13 @@ pro rsfwc_1d, $
 
     if kjInput then begin
     
-    	jP_r	= kjIn.jpR
-    	jP_t	= kjIn.jpT
-    	jP_z	= kjIn.jpZ
+    	jP_r	= (total(kjIn.jpR,3))[*]
+    	jP_t	= (total(kjIn.jpT,3))[*]
+    	jP_z	= (total(kjIn.jpZ,3))[*]
 
-    	;jP_r_S	= kjIn.jpR_spec
-    	;jP_t_S	= kjIn.jpT_spec
-    	;jP_z_S	= kjIn.jpZ_spec
+    	jP_r_S	= kjIn.jpR
+    	jP_t_S	= kjIn.jpT
+    	jP_z_S	= kjIn.jpZ
 
     endif else begin
 
@@ -521,6 +520,8 @@ endif
 	nCdf_control, nc_id, /fill
 	
 	nr_id = nCdf_dimDef ( nc_id, 'nR', runData.nR )
+    nZ_id = nCdf_dimDef ( nc_id, 'nZ', 1 )
+
 	nrH_id = nCdf_dimDef ( nc_id, 'nR_', runData.nR-1 )
 	scalar_id = nCdf_dimDef ( nc_id, 'scalar', 1 )
 	nIonSpec_id = nCdf_dimDef ( nc_id, 'nSpec', runData.nIonSpec+1 )
@@ -556,12 +557,12 @@ endif
 	jP_z_re_id = nCdf_varDef ( nc_id, 'jP_z_re', nr_id, /float )
 	jP_z_im_id = nCdf_varDef ( nc_id, 'jP_z_im', nr_id, /float )
 
-	jP_r_re_spec_id = nCdf_varDef ( nc_id, 'jP_r_re_spec', [nr_id,nIonSpec_id], /float )
-	jP_r_im_spec_id = nCdf_varDef ( nc_id, 'jP_r_im_spec', [nr_id,nIonSpec_id], /float )
-	jP_p_re_spec_id = nCdf_varDef ( nc_id, 'jP_p_re_spec', [nr_id,nIonSpec_id], /float )
-	jP_p_im_spec_id = nCdf_varDef ( nc_id, 'jP_p_im_spec', [nr_id,nIonSpec_id], /float )
-	jP_z_re_spec_id = nCdf_varDef ( nc_id, 'jP_z_re_spec', [nr_id,nIonSpec_id], /float )
-	jP_z_im_spec_id = nCdf_varDef ( nc_id, 'jP_z_im_spec', [nr_id,nIonSpec_id], /float )
+	jP_r_re_spec_id = nCdf_varDef ( nc_id, 'jP_r_re_spec', [nr_id,nZ_id,nIonSpec_id], /float )
+	jP_r_im_spec_id = nCdf_varDef ( nc_id, 'jP_r_im_spec', [nr_id,nZ_id,nIonSpec_id], /float )
+	jP_p_re_spec_id = nCdf_varDef ( nc_id, 'jP_p_re_spec', [nr_id,nZ_id,nIonSpec_id], /float )
+	jP_p_im_spec_id = nCdf_varDef ( nc_id, 'jP_p_im_spec', [nr_id,nZ_id,nIonSpec_id], /float )
+	jP_z_re_spec_id = nCdf_varDef ( nc_id, 'jP_z_re_spec', [nr_id,nZ_id,nIonSpec_id], /float )
+	jP_z_im_spec_id = nCdf_varDef ( nc_id, 'jP_z_im_spec', [nr_id,nZ_id,nIonSpec_id], /float )
 
 	jA_r_re_id = nCdf_varDef ( nc_id, 'jA_r_re', nr_id, /float )
 	jA_r_im_id = nCdf_varDef ( nc_id, 'jA_r_im', nr_id, /float )
@@ -607,14 +608,12 @@ endif
 	nCdf_varPut, nc_id, jP_z_re_id, real_part(jP_z) 
 	nCdf_varPut, nc_id, jP_z_im_id, imaginary(jP_z) 
 
-if not kjInput then begin 
 	nCdf_varPut, nc_id, jP_r_re_spec_id, real_part(jP_r_S)
 	nCdf_varPut, nc_id, jP_r_im_spec_id, imaginary(jP_r_S) 
 	nCdf_varPut, nc_id, jP_p_re_spec_id, real_part(jP_t_S)
 	nCdf_varPut, nc_id, jP_p_im_spec_id, imaginary(jP_t_S) 
 	nCdf_varPut, nc_id, jP_z_re_spec_id, real_part(jP_z_S)
 	nCdf_varPut, nc_id, jP_z_im_spec_id, imaginary(jP_z_S) 
-endif
 
 	nCdf_varPut, nc_id, jA_r_re_id, jA_r 
 	nCdf_varPut, nc_id, jA_r_im_id, jA_r*0 
