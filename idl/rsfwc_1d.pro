@@ -160,6 +160,31 @@ pro rsfwc_1d, $
 
 	endfor
 
+    if plotRHS then begin
+
+        p=plot(r,jA_r,layout=[1,3,1], title='RHS (jA and delta from kJ)')
+        p=plot(r,imaginary(jA_r),color='r',/over)
+        if kjInput then begin
+            p=plot(r,kjIn.jPr,/over,thick=2)
+            p=plot(r,imaginary(kjIn.jPr),/over,color='r',thick=2)
+        endif
+
+        p=plot(r,jA_t,layout=[1,3,2], /current)
+        p=plot(r,imaginary(jA_t),color='r',/over)
+        if kjInput then begin
+            p=plot(r,kjIn.jPt,/over,thick=2)
+            p=plot(r,imaginary(kjIn.jPt),/over,color='r',thick=2)
+        endif
+
+        p=plot(r,jA_z,layout=[1,3,3], /current)
+        p=plot(r,imaginary(jA_z),color='r',/over)
+        if kjInput then begin
+            p=plot(r,kjIn.jPz,/over,thick=2)
+            p=plot(r,imaginary(kjIn.jPz),/over,color='r',thick=2)
+        endif
+
+    endif
+
 	matFill, runData.nR, runData.nPhi, runData.kz, $
 		runData.r, runData.r_, epsilon, epsilon_, wReal, runData.dR, $
 		aMat = aMat, nAll = nAll, nuca = nuca, nlca = nlca, $
@@ -393,17 +418,17 @@ pro rsfwc_1d, $
 	; Calculate plasma current
 	; ------------------------
 
-    if kjInput then begin
-    
-    	jP_r	= (total(kjIn.jpR,3))[*]
-    	jP_t	= (total(kjIn.jpT,3))[*]
-    	jP_z	= (total(kjIn.jpZ,3))[*]
+    ;if kjInput then begin
+    ;
+    ;	jP_r	= (total(kjIn.jpR,3))[*]
+    ;	jP_t	= (total(kjIn.jpT,3))[*]
+    ;	jP_z	= (total(kjIn.jpZ,3))[*]
 
-    	jP_r_S	= kjIn.jpR
-    	jP_t_S	= kjIn.jpT
-    	jP_z_S	= kjIn.jpZ
+    ;	jP_r_S	= kjIn.jpR
+    ;	jP_t_S	= kjIn.jpT
+    ;	jP_z_S	= kjIn.jpZ
 
-    endif else begin
+    ;endif else begin
 
         jP_r_S = complexArr(runData.nR,runData.nIonSpec+1)
         jP_t_S = complexArr(runData.nR,runData.nIonSpec+1)
@@ -451,12 +476,10 @@ pro rsfwc_1d, $
         jP_b = Total(jP_b_S,2)
         jP_p = Total(jP_p_S,2)
 
-    endelse
+    ;endelse
 
 	; jDotE
 	; -----
-
-if not kjInput then begin
 
     jPDotE_S = fltArr(runData.nR,runData.nIonSpec+1)
     for s=0,runData.nIonSpec do begin
@@ -464,8 +487,6 @@ if not kjInput then begin
 				+ jP_t_S[*,s] * conj(e_t) $
 				+ jP_z_S[*,s] * conj(e_z) )
     endfor
-
-endif
 
 	jPDotE	= 0.5 * real_part ( jP_r * conj(e_r) $
 				+ jP_t * conj(e_t) $
@@ -648,16 +669,20 @@ endif
 		jpRange = max(abs([abs(jp_r),abs(jp_t),abs(jp_z)]))
 		;yRange = [-1,1];[-jPRange,jPRange]*0.5
 
-        p=plot([0,0],[0,0],/noData, layout=[nS,3,1],window_title='rsfwc_1d',dimensions=[1200,800])
+        ;p=plot([0,0],[0,0],/noData, $
+        ;        layout=[nS,3,1],$
+        ;        window_title='rsfwc_1d',dimensions=[1200,800], $
+        ;        hide = 1)
 
-        if not kjInput then begin
+        ;if not kjInput then begin
+        cnt = 0
         for s=0,nS-1 do begin
-            This_amu_str = ', amu: '+string(SpecData[s].m/_mi,format='(i1.1)')
-            This_Z_str = ', Z: '+string(SpecData[s].q/_e,format='(i+2.1)')
-
+            This_amu_str = ', amu: '+string(round(SpecData[s].m/_mi),format='(i1.1)')
+            This_Z_str = ', Z: '+string(round(SpecData[s].q/_e),format='(i+2.1)')
+            if cnt eq 0 then current = 0 else current = 1
 		    p_re = plot (r,jP_r_s[*,s],thick=2,$
 		    		title='jP_r'+This_amu_str+This_Z_str,name='Jp_re',font_size=10,$
-		    		layout=[nS,3,1+s],yRange=yRange,transparency=50,/current)
+		    		layout=[nS,3,1+s],yRange=yRange,transparency=50,current=current )
 		    p_im = plot (r,imaginary(jP_r_s[*,s]),color='r',thick=2,transparency=50,$
 		    		name='Jp_re',font_size=10,/over)
 
@@ -672,21 +697,31 @@ endif
 		    		layout=[nS,3,1+2*nS+s],/current,yRange=yRange,transparency=50)
 		    p_im = plot (r,imaginary(jP_z_s[*,s]),color='r',thick=2,transparency=50,$
 		    		name='Jp_re',font_size=10,/over)
+            cnt++
+
         endfor
-        endif
+        ;endif
 
         p=plot(r,jP_r,layout=[1,3,1], title='jP (summed over species)')
         p=plot(r,imaginary(jP_r),color='r',/over)
         if kjInput then begin
-                p=plot(r_,kjIn.jPr_,/over)
-                p=plot(r_,imaginary(kjIn.jPr_),/over,color='r')
+            p=plot(r_,kjIn.jPr_,/over, thick=2)
+            p=plot(r_,imaginary(kjIn.jPr_),/over,color='r',thick=2)
         endif
 
         p=plot(r,jP_t,layout=[1,3,2], /current)
         p=plot(r,imaginary(jP_t),color='r',/over)
+        if kjInput then begin
+            p=plot(r_,kjIn.jPt_,/over, thick=2)
+            p=plot(r_,imaginary(kjIn.jPt_),/over,color='r',thick=2)
+        endif
 
         p=plot(r,jP_z,layout=[1,3,3], /current)
         p=plot(r,imaginary(jP_z),color='r',/over)
+        if kjInput then begin
+            p=plot(r_,kjIn.jPz_,/over, thick=2)
+            p=plot(r_,imaginary(kjIn.jPz_),/over,color='r',thick=2)
+        endif
 
 	endif
 
@@ -724,8 +759,8 @@ endif
         p=plot(r,jP_a,layout=[1,3,1], title='jP_abp (summed over species)')
         p=plot(r,imaginary(jP_r),color='r',/over)
         if kjInput then begin
-                p=plot(r_,kjIn.jPr_,/over)
-                p=plot(r_,imaginary(kjIn.jPr_),/over,color='r')
+                p=plot(r_,kjIn.jPr_,/over,thick=2)
+                p=plot(r_,imaginary(kjIn.jPr_),/over,color='r',thick=2)
         endif
 
         p=plot(r,jP_b,layout=[1,3,2], /current)

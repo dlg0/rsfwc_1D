@@ -28,7 +28,8 @@
 		plotEdotB, $
 		plotJp, $
 		plotFFTSolution, $
-		plotJdotE
+		plotJdotE, $
+        plotRHS
 
 	common writeSwitches, $
 		writeDispersionTxt
@@ -54,6 +55,7 @@
 		plotEdotB = 0
 		plotJp = 0
 		plotFFTSolution = 0
+        plotRHS = 0
 
 		writeDispersionTxt = 0
 
