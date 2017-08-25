@@ -639,6 +639,22 @@ pro rsfwc_1d, $
         _jP_z_S[*,0,s] = jP_z_S[*,s]
     endfor
 
+    ; Cycle species to be non-stupid (and consistent with AR2)
+
+    __jP_r_S = _jP_r_S
+    __jP_t_S = _jP_t_S
+    __jP_z_S = _jP_z_S
+
+    ; Move electrons to spec 0
+
+    _jP_r_S[*,*,0] = __jP_r_S[*,*,-1]
+    _jP_t_S[*,*,0] = __jP_t_S[*,*,-1]
+    _jP_z_S[*,*,0] = __jP_z_S[*,*,-1]
+
+    _jP_r_S[*,*,1:-1] = __jP_r_S[*,*,0:-2]
+    _jP_t_S[*,*,1:-1] = __jP_t_S[*,*,0:-2]
+    _jP_z_S[*,*,1:-1] = __jP_z_S[*,*,0:-2]
+
 	nCdf_varPut, nc_id, jP_r_re_spec_id, real_part(_jP_r_S)
 	nCdf_varPut, nc_id, jP_r_im_spec_id, imaginary(_jP_r_S) 
 	nCdf_varPut, nc_id, jP_p_re_spec_id, real_part(_jP_t_S)

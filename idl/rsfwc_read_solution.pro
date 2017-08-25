@@ -15,16 +15,16 @@ function rsfwc_read_solution, runFolderName
         ;nCdf_varGet, cdfId, 'B0_p', b_t 
         ;nCdf_varGet, cdfId, 'B0_z', b_z 
 
-        ;nCdf_varGet, cdfId, 'e_r_re', e_r_re 
-        ;nCdf_varGet, cdfId, 'e_p_re', e_t_re 
-        ;nCdf_varGet, cdfId, 'e_z_re', e_z_re 
-        ;nCdf_varGet, cdfId, 'e_r_im', e_r_im 
-        ;nCdf_varGet, cdfId, 'e_p_im', e_t_im 
-        ;nCdf_varGet, cdfId, 'e_z_im', e_z_im 
+        nCdf_varGet, cdfId, 'e_r_re', e_r_re 
+        nCdf_varGet, cdfId, 'e_p_re', e_t_re 
+        nCdf_varGet, cdfId, 'e_z_re', e_z_re 
+        nCdf_varGet, cdfId, 'e_r_im', e_r_im 
+        nCdf_varGet, cdfId, 'e_p_im', e_t_im 
+        nCdf_varGet, cdfId, 'e_z_im', e_z_im 
 
-        ;e_r = complex(e_r_re,e_r_im)
-        ;e_t = complex(e_t_re,e_t_im)
-        ;e_z = complex(e_z_re,e_z_im)
+        e_r = complex(e_r_re,e_r_im)
+        e_t = complex(e_t_re,e_t_im)
+        e_z = complex(e_z_re,e_z_im)
 
         nCdf_varGet, cdfId, 'jP_r_re', jP_r_re 
         nCdf_varGet, cdfId, 'jP_p_re', jP_t_re 
@@ -68,12 +68,15 @@ function rsfwc_read_solution, runFolderName
                 z_: z_, $
                 x: r, $
                 y: z, $
-                jP_r: jP_r, $
-                jP_t: jP_t, $
-                jP_z: jP_z, $
-                jP_r_spec: jP_r_spec, $
-                jP_t_spec: jP_t_spec, $
-                jP_z_spec: jP_z_spec  }
+                E_r: E_r, $
+                E_t: E_t, $
+                E_z: E_z, $
+                jP_r: jP_r_spec, $
+                jP_t: jP_t_spec, $
+                jP_z: jP_z_spec } ;, $
+                ;jP_r_spec: jP_r_spec, $
+                ;jP_t_spec: jP_t_spec, $
+                ;jP_z_spec: jP_z_spec  }
                 
         return, solution
 end

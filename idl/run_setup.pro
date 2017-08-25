@@ -194,7 +194,7 @@ pro run_setup, $
 
         if ar2Input gt 0 then begin 
 
-            ar2_read_ar2Input, ar2InFileName, ar2=ar2
+            ar2 = ar2_read_ar2Input('./', fileName = ar2InFileName)
 
             ar2_nR = n_elements(ar2.r)
             ar2_nz = n_elements(ar2.z)
