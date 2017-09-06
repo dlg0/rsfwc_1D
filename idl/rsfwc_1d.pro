@@ -72,11 +72,11 @@ pro rsfwc_1d, $
 
 	stixVariables, w, w_, wc, wc_, specData, stixVars = stixVars, electronsOnly = 0
 
-	dielectric, runData, stixVars, $
+	dielectric, runData, stixVars, w, specData, $
 		epsilonFull_ = epsilon, $
 		epsilonHalf_ = epsilon_, $
         epsilonFullSpec = epsilonS, $
-        epsilonHalfSpec = epsilonS_, w, specData, $
+        epsilonHalfSpec = epsilonS_, $
         sigmaFull_ = sigma, $
         sigmaHalf_ = sigma_, $
 		sigmaFullSpec_abp = sigma_abp, $

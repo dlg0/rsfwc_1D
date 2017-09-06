@@ -75,8 +75,8 @@ pro run_setup, $
    	b0	= 0.53
 	bR_frac	= 0.1
 	bz_frac	= 0.0	
-	ionIonSpecZ	= [ 2 ]
-	ionIonSpecAmu	= [ 4 ]
+	IonSpecZ	= [ 2 ]
+	IonSpecAmu	= [ 4 ]
 	if not keyword_set ( nMax ) then nMax = [ 2.0 ] * 1d18
 	if not keyword_set ( nLim ) then nLim = !NULL 
 	if not keyword_set ( nFac ) then nFac = 1.0 
@@ -241,15 +241,17 @@ pro run_setup, $
 		bMag_	= sqrt ( bR_^2 + bPhi_^2 + bz_^2 )
 
         if ar2Input then begin
-            ionIonSpecZ = ar2.AtomicZ[1:-1]
-            ionIonSpecAmu = ar2.amu[1:-1]
+            IonSpecZ = ar2.AtomicZ[1:-1]
+            IonSpecAmu = ar2.amu[1:-1]
         endif
 
-		nIonSpec	= n_elements ( ionIonSpecZ )
+		nIonSpec	= n_elements ( IonSpecZ )
 
 		specData	= replicate ( $
 				{ 	q : 0d0, $
 					m : 0d0, $
+                    amu : 0d0, $
+                    Z : 0d0, $
 					wp : dblArr ( nR ), $
 					wp_ : dblArr ( nR - 1 ), $
 					wc : dblArr ( nR ), $
@@ -290,8 +292,10 @@ pro run_setup, $
 			; ions
 			if i lt nIonSpec then begin
 
-				specData[i].q 		= ionIonSpecZ[i] * e
-				specData[i].m 		= ionIonSpecAmu[i] * mi
+				specData[i].q 		= IonSpecZ[i] * e
+				specData[i].m 		= IonSpecAmu[i] * mi
+				specData[i].amu		= IonSpecAmu[i] 
+                specData[i].Z       = IonSpecZ[i] 
 				specData[i].n 		= nMax[i] * nProfile
 				specData[i].n_		= nMax[i] * nProfile_
 
@@ -300,16 +304,19 @@ pro run_setup, $
 
 				specData[i].q 		= -e
 				specData[i].m 		= me
+                specData[i].amu     = _me_amu
+                specData[i].Z       = -1d0
+
 				if nIonSpec gt 1 then begin
 					specData[i].n 		= total ( specData[0:nIonSpec-1].n $
-											* transpose(rebin(ionIonSpecZ,nIonSpec,nR)), 2 ) 
+											* transpose(rebin(IonSpecZ,nIonSpec,nR)), 2 ) 
 					specData[i].n_		= total ( specData[0:nIonSpec-1].n_ $
-											* transpose(rebin(ionIonSpecZ,nIonSpec,nR-1)), 2 ) 
+											* transpose(rebin(IonSpecZ,nIonSpec,nR-1)), 2 ) 
 				endif else begin
 					specData[i].n 		= specData[0:nIonSpec-1].n $
-											* transpose(rebin(ionIonSpecZ,nIonSpec,nR)) 
+											* transpose(rebin(IonSpecZ,nIonSpec,nR)) 
 					specData[i].n_		= specData[0:nIonSpec-1].n_ $
-											* transpose(rebin(ionIonSpecZ,nIonSpec,nR-1)) 
+											* transpose(rebin(IonSpecZ,nIonSpec,nR-1)) 
 				endelse
 
 			endelse
@@ -353,8 +360,8 @@ pro run_setup, $
 			specData[1].n	= ne_
 			specData[1].n_	= ne__
     
-			specData[0].n	= ne_ / ionIonSpecZ[0]
-			specData[0].n_	= ne__ / ionIonSpecZ[0]
+			specData[0].n	= ne_ / IonSpecZ[0]
+			specData[0].n_	= ne__ / IonSpecZ[0]
 
 		endif
         
@@ -390,9 +397,12 @@ pro run_setup, $
                 specData[s].nuOmg_ = this_nuOmg_
  
                 specData[s].m = ar2.amu[index]*_amu
-                if s eq nIonSpec then specData[s].m = _me
+                specData[s].amu = ar2.amu[index]
+                ;if s eq nIonSpec then specData[s].m = _me
                 specData[s].q = ar2.AtomicZ[index]*_e
+
                 ;if s eq nIonSpec then specData[s].q = -e
+                specData[s].Z = ar2.AtomicZ[index]
 
             endfor 
         endif

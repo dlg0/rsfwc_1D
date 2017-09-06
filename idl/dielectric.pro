@@ -1,37 +1,9 @@
-function epsilon_cold, S, D, P
-
-    @constants
-
-    epsilon_stix = dComplexArr(3,3)
-    
-    ; Recal that IDL is indexed as [col,row] but Fortran is [row,col]
-    
-    ; Row 0
-    epsilon_stix[0,0] = S
-    epsilon_stix[1,0] = _II * D
-    epsilon_stix[2,0] = 0d0 
-    
-    ; Row 1
-    epsilon_stix[0,1] = -_II * D
-    epsilon_stix[1,1] = S
-    epsilon_stix[2,1] = 0d0 
-    
-    ; Row 2
-    epsilon_stix[0,2] = 0d0
-    epsilon_stix[1,2] = 0d0
-    epsilon_stix[2,2] = P
-    
-    return, epsilon_stix
-
-end
-
-
-pro dielectric, runData, stixVars, $
+pro dielectric, runData, stixVars, w, specData, $
 	epsilonFull_ = epsilon, $
 	epsilonHalf_ = epsilon_, $
     noHalfGrid = noHalfGrid, $
     epsilonFullSpec = epsilonFullSpec, $
-    epsilonHalfSpec = epsilonHalfSpec, w, specData, $
+    epsilonHalfSpec = epsilonHalfSpec, $
     sigmaFull_ = sigma, $
     sigmaHalf_ = sigma_, $
 	sigmaFullSpec_abp = sigma_abp, $
@@ -104,15 +76,20 @@ pro dielectric, runData, stixVars, $
 		for i = 0L, runData.nR - 1L do begin
         for s = 0, nSpec-1 do begin
 
+            f = runData.freq
+            amu = specData[s].amu 
+            atomicZ = specData[s].Z
+            B = runData.bMag[i]
+            density = (specData[s].n)[i]
+            nu_omg = (specData[s].nuOmg)[i]
 
-            epsilon_stix = epsilon_cold(stixVars.stixS[i,s],stixVars.stixD[i,s],stixVars.stixP[i,s])
-            thisSigma = (epsilon_stix-identity(3))*w[i,s]*_e0/_II
- 
-            sigma_stix = thisSigma
+            epsilon_stix = kj_epsilon_cold(f, amu, atomicZ, B, density, nu_omg, sigma = ThisSigma)
+        
+            sigma_stix = ThisSigma
 
-			epsilon[*,*,s,i]	= rotateEpsilon ( epsilon_stix, bUnit_cyl[i,*], w[i], i=i )
-    		sigma[*,*,s,i]	= rotateEpsilon ( sigma_stix, bUnit_cyl[i,*], w[i] )
-			sigma_abp[*,*,s,i] = sigma_stix
+			epsilon[*,*,s,i]    = rotateEpsilon ( epsilon_stix, bUnit_cyl[i,*] )
+    		sigma[*,*,s,i]	    = rotateEpsilon ( sigma_stix, bUnit_cyl[i,*] )
+			sigma_abp[*,*,s,i]  = sigma_stix
           
             if i eq 256 then begin
                     print, s
@@ -128,12 +105,19 @@ pro dielectric, runData, stixVars, $
             if not keyword_set(noHalfGrid) then begin    
 			if i lt runData.nR - 1 then begin
 	
-                epsilon_stix_ = epsilon_cold(stixVars.stixS_[i,s],stixVars.stixD_[i,s],stixVars.stixP_[i,s])
-                thisSigma_ = (epsilon_stix_-identity(3))*w[i,s]*_e0/_II
-                sigma_stix_ = thisSigma_
+                f = runData.freq
+                amu = specData[s].amu 
+                atomicZ = specData[s].Z
+                B = runData.bMag_[i]
+                density = (specData[s].n_)[i]
+                nu_omg = (specData[s].nuOmg_)[i]
+
+                epsilon_stix_ = kj_epsilon_cold(f, amu, atomicZ, B, density, nu_omg, sigma = ThisSigma_)
+ 
+                sigma_stix_ = ThisSigma_
                
-				epsilon_[*,*,s,i]	= rotateEpsilon ( epsilon_stix_, bUnit_cyl_[i,*], w[i] )
-				sigma_[*,*,s,i]	= rotateEpsilon ( sigma_stix_, bUnit_cyl_[i,*], w[i] )
+				epsilon_[*,*,s,i]	= rotateEpsilon ( epsilon_stix_, bUnit_cyl_[i,*] )
+				sigma_[*,*,s,i]	= rotateEpsilon ( sigma_stix_, bUnit_cyl_[i,*] )
 				sigma_abp_[*,*,s,i] = sigma_stix_
 	
 			endif
