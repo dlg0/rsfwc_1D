@@ -9,7 +9,7 @@
 		noIMSL, $
 		linearDevice, $
 		kjInput, $
-		kj_jP_fileName, $
+        kjDeltaFileName, $
         ar2Input, $
         ar2InFileName, $
         ar2RunDataFileName, $

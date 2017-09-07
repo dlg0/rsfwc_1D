@@ -88,7 +88,7 @@ pro rsfwc_1d, $
 	if keyword_set ( dispersionOnly ) then return
 
 	if kjInput then begin
-        kjIn = kj_read_kj_jP(kj_jP_fileName)
+        kjIn = kj_read_kj_jP(kjDeltaFileName)
     endif else if ar2EField then begin
         replace = intArr(runData.nR)*0+1
         replace_ = intArr(runData.nR-1)*0+1
@@ -536,7 +536,7 @@ pro rsfwc_1d, $
 
 	; Write netCDF file
 
-	nc_id = nCdf_create ('rsfwc_1d.nc', /clobber )
+	nc_id = nCdf_create ('output/rs_solution.nc', /clobber )
 
 	nCdf_control, nc_id, /fill
 	
@@ -812,5 +812,5 @@ pro rsfwc_1d, $
 		endfor
 
 	endif
-stop
+
 end

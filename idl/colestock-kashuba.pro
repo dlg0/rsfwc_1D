@@ -11,10 +11,10 @@
 	noIMSL = 1
 	linearDevice = 0
 	kjInput = 0
-	kj_jP_fileName = 'kj_jP.nc'
+	kj_jP_fileName = 'input/kj_jP.nc'
     ar2Input = 1
-    ar2InFileName = 'ar2Input.nc'
-    ar2RunDataFileName = 'runData_001_+013_000001.nc'
+    ar2InFileName = 'input/ar2Input.nc'
+    ar2RunDataFileName = 'output/runData_001_+013_000001.nc'
 
 ;	Plotting switches
 

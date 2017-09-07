@@ -116,7 +116,7 @@ pro run_setup, $
     @colestock-kashuba
     ;@proto-mpex-ech
 
-	@rsfwc_input ; DO NOT REMOVE THIS
+	@rs_input ; DO NOT REMOVE THIS
 
 ;		Grid
 
