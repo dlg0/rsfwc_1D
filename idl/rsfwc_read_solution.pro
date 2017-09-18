@@ -1,6 +1,6 @@
 function rsfwc_read_solution, runFolderName
 
-    SolutionFile = file_search(runFolderName+'output/rs_solution.nc')
+    SolutionFile = expand_path(runFolderName)+'/output/rs_solution.nc'
 
     cdfId = nCdf_open(SolutionFile)
 
