@@ -34,35 +34,6 @@ pro run_setup, $
 	green	= transpose ( ct12[2*16-1,*] )
 	purple	= transpose ( ct12[9*16-1,*] )
 
-;	Calculation method switches
-
- 	dielectric_freeSpace = 0
- 	dielectric_noPoloidal = 0
- 	dispersion_freeSpace = 0
- 	dispersion_jaegerPRL = 0
-	dispersion_generalised = 1
- 	
- 	bandStorage = 1
-
-;	Plotting switches
-
- 	plotRunData	= 0
- 	plotDispersionGeneral 	= 0
- 	plotDispersionJaeger	= 0
- 	plotDispersionNoPol		= 0
-	plotSolution = 0
-	plotMovie	= 0
-	plotFrequencies = 0
-	plotKdotE = 0
-	plotEdotB = 0
-	plotKdotB = 0
-	plotJp = 0
-	plotJdotE = 0
-
-;	File write switches
-
-	writeDispersionTxt = 0
-
 
 ;	Variables
 ;	----------------------------
@@ -103,20 +74,10 @@ pro run_setup, $
 
 ;	-----------------------------
 
-;	Benchmarking cases
+;	Read input file
 
-	;@smithe
-	;@steffi
-	;@iter
-	;@langmuir
-	;@klepper
-    ;@ar2_vorpal_right_simple
-    ;@ar2_vorpal_left_simple
-    ;@ar2_vorpal_simple_full
-    @colestock-kashuba
-    ;@proto-mpex-ech
+	@rs_input 
 
-	@rs_input ; DO NOT REMOVE THIS
 
 ;		Grid
 
