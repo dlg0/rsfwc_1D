@@ -175,15 +175,23 @@ pro rsfwc_1d, $
 
 ;   Write the run-data to file
 
-    runDataHash = { $
-            freq:runData.freq, $
-            br:runData.bField[*,0], $
-            bt:runData.bField[*,1], $
-            bz:runData.bField[*,2], $
-            r:runData.r, $
-            nPhi:runData.nPhi,$
-            densitySpec:specData.n,$
-            nuOmg:specData.nuOmg }
+    runDataHash = HASH( $
+            "freq",runData.freq, $
+            "br",runData.bField[*,0], $
+            "bt",runData.bField[*,1], $
+            "bz",runData.bField[*,2], $
+            "r",runData.r, $
+            "nPhi",runData.nPhi,$
+            "densitySpec",specData.n,$
+            "nuOmg",specData.nuOmg,$
+            "kz", runData.kz )
+
+    runDataHash = runDataHash + HASH('jA_r_re',real_part(jA_r));
+    runDataHash = runDataHash + HASH('jA_r_im',imaginary(jA_r));
+    runDataHash = runDataHash + HASH('jA_t_re',real_part(jA_t));
+    runDataHash = runDataHash + HASH('jA_t_im',imaginary(jA_t));
+    runDataHash = runDataHash + HASH('jA_z_re',real_part(jA_z));
+    runDataHash = runDataHash + HASH('jA_z_im',imaginary(jA_z));
 
     NCDF_PUT, 'output/rs-rundata.nc', /NEW, VARIABLES=runDataHash
 
@@ -517,99 +525,6 @@ pro rsfwc_1d, $
 
 	; Write netCDF file
 
-	nc_id = nCdf_create ('output/rs_solution.nc', /clobber )
-
-	nCdf_control, nc_id, /fill
-	
-	nr_id = nCdf_dimDef ( nc_id, 'nR', runData.nR )
-    nZ_id = nCdf_dimDef ( nc_id, 'nZ', 1 )
-
-	nrH_id = nCdf_dimDef ( nc_id, 'nR_', runData.nR-1 )
-	scalar_id = nCdf_dimDef ( nc_id, 'scalar', 1 )
-	nSpec_id = nCdf_dimDef ( nc_id, 'nSpec', runData.nSpec )
-
-	freq_id = nCdf_varDef ( nc_id, 'freq', scalar_id, /float )
-	r_id = nCdf_varDef ( nc_id, 'r', nr_id, /float )
-	rH_id = nCdf_varDef ( nc_id, 'r_', nrH_id, /float )
-	z_id = nCdf_varDef ( nc_id, 'z', nr_id, /float )
-	zH_id = nCdf_varDef ( nc_id, 'z_', nrH_id, /float )
-
-	B0_r_id = nCdf_varDef ( nc_id, 'B0_r', nr_id, /float )
-	B0_p_id = nCdf_varDef ( nc_id, 'B0_p', nr_id, /float )
-	B0_z_id = nCdf_varDef ( nc_id, 'B0_z', nr_id, /float )
-
-	e_r_re_id = nCdf_varDef ( nc_id, 'e_r_re', nr_id, /float )
-	e_r_im_id = nCdf_varDef ( nc_id, 'e_r_im', nr_id, /float )
-	e_p_re_id = nCdf_varDef ( nc_id, 'e_p_re', nr_id, /float )
-	e_p_im_id = nCdf_varDef ( nc_id, 'e_p_im', nr_id, /float )
-	e_z_re_id = nCdf_varDef ( nc_id, 'e_z_re', nr_id, /float )
-	e_z_im_id = nCdf_varDef ( nc_id, 'e_z_im', nr_id, /float )
-    
-	b_r_re_id = nCdf_varDef ( nc_id, 'b_r_re', nr_id, /float )
-	b_r_im_id = nCdf_varDef ( nc_id, 'b_r_im', nr_id, /float )
-	b_p_re_id = nCdf_varDef ( nc_id, 'b_p_re', nr_id, /float )
-	b_p_im_id = nCdf_varDef ( nc_id, 'b_p_im', nr_id, /float )
-	b_z_re_id = nCdf_varDef ( nc_id, 'b_z_re', nr_id, /float )
-	b_z_im_id = nCdf_varDef ( nc_id, 'b_z_im', nr_id, /float )
-
-	jP_r_re_id = nCdf_varDef ( nc_id, 'jP_r_re', nr_id, /float )
-	jP_r_im_id = nCdf_varDef ( nc_id, 'jP_r_im', nr_id, /float )
-	jP_p_re_id = nCdf_varDef ( nc_id, 'jP_p_re', nr_id, /float )
-	jP_p_im_id = nCdf_varDef ( nc_id, 'jP_p_im', nr_id, /float )
-	jP_z_re_id = nCdf_varDef ( nc_id, 'jP_z_re', nr_id, /float )
-	jP_z_im_id = nCdf_varDef ( nc_id, 'jP_z_im', nr_id, /float )
-
-	jP_r_re_spec_id = nCdf_varDef ( nc_id, 'jP_r_re_spec', [nr_id,nZ_id,nSpec_id], /float )
-	jP_r_im_spec_id = nCdf_varDef ( nc_id, 'jP_r_im_spec', [nr_id,nZ_id,nSpec_id], /float )
-	jP_p_re_spec_id = nCdf_varDef ( nc_id, 'jP_p_re_spec', [nr_id,nZ_id,nSpec_id], /float )
-	jP_p_im_spec_id = nCdf_varDef ( nc_id, 'jP_p_im_spec', [nr_id,nZ_id,nSpec_id], /float )
-	jP_z_re_spec_id = nCdf_varDef ( nc_id, 'jP_z_re_spec', [nr_id,nZ_id,nSpec_id], /float )
-	jP_z_im_spec_id = nCdf_varDef ( nc_id, 'jP_z_im_spec', [nr_id,nZ_id,nSpec_id], /float )
-
-	jA_r_re_id = nCdf_varDef ( nc_id, 'jA_r_re', nr_id, /float )
-	jA_r_im_id = nCdf_varDef ( nc_id, 'jA_r_im', nr_id, /float )
-	jA_p_re_id = nCdf_varDef ( nc_id, 'jA_p_re', nr_id, /float )
-	jA_p_im_id = nCdf_varDef ( nc_id, 'jA_p_im', nr_id, /float )
-	jA_z_re_id = nCdf_varDef ( nc_id, 'jA_z_re', nr_id, /float )
-	jA_z_im_id = nCdf_varDef ( nc_id, 'jA_z_im', nr_id, /float )
-
-	Density_id = nCdf_varDef ( nc_id, 'density_m3', [nr_id,nSpec_id], /float )
-
-	nCdf_control, nc_id, /enDef
-
-	nCdf_varPut, nc_id, freq_id, runData.freq
-
-	nCdf_varPut, nc_id, r_id, runData.r - cartesian_offset
-	nCdf_varPut, nc_id, rH_id, runData.r_ - cartesian_offset
-
-	nCdf_varPut, nc_id, z_id, runData.z
-	nCdf_varPut, nc_id, zH_id, runData.z_
-
-	nCdf_varPut, nc_id, B0_r_id, runData.BField[*,0]
-	nCdf_varPut, nc_id, B0_p_id, runData.BField[*,1]
-	nCdf_varPut, nc_id, B0_z_id, runData.BField[*,2]
-
-	nCdf_varPut, nc_id, e_r_re_id, real_part(e_r) 
-	nCdf_varPut, nc_id, e_r_im_id, imaginary(e_r) 
-	nCdf_varPut, nc_id, e_p_re_id, real_part(e_t) 
-	nCdf_varPut, nc_id, e_p_im_id, imaginary(e_t) 
-	nCdf_varPut, nc_id, e_z_re_id, real_part(e_z) 
-	nCdf_varPut, nc_id, e_z_im_id, imaginary(e_z) 
-
-	nCdf_varPut, nc_id, b_r_re_id, real_part(b_r) 
-	nCdf_varPut, nc_id, b_r_im_id, imaginary(b_r) 
-	nCdf_varPut, nc_id, b_p_re_id, real_part(b_t) 
-	nCdf_varPut, nc_id, b_p_im_id, imaginary(b_t) 
-	nCdf_varPut, nc_id, b_z_re_id, real_part(b_z) 
-	nCdf_varPut, nc_id, b_z_im_id, imaginary(b_z) 
-
-	nCdf_varPut, nc_id, jP_r_re_id, real_part(jP_r)
-	nCdf_varPut, nc_id, jP_r_im_id, imaginary(jP_r) 
-	nCdf_varPut, nc_id, jP_p_re_id, real_part(jP_t) 
-	nCdf_varPut, nc_id, jP_p_im_id, imaginary(jP_t) 
-	nCdf_varPut, nc_id, jP_z_re_id, real_part(jP_z) 
-	nCdf_varPut, nc_id, jP_z_im_id, imaginary(jP_z) 
-
     _jP_r_S = complexArr(runData.nR,1,runData.nSpec)
     _jP_t_S = complexArr(runData.nR,1,runData.nSpec)
     _jP_z_S = complexArr(runData.nR,1,runData.nSpec)
@@ -620,28 +535,59 @@ pro rsfwc_1d, $
         _jP_z_S[*,0,s] = jP_z_S[*,s]
     endfor
 
-	nCdf_varPut, nc_id, jP_r_re_spec_id, real_part(_jP_r_S)
-	nCdf_varPut, nc_id, jP_r_im_spec_id, imaginary(_jP_r_S) 
-	nCdf_varPut, nc_id, jP_p_re_spec_id, real_part(_jP_t_S)
-	nCdf_varPut, nc_id, jP_p_im_spec_id, imaginary(_jP_t_S) 
-	nCdf_varPut, nc_id, jP_z_re_spec_id, real_part(_jP_z_S)
-	nCdf_varPut, nc_id, jP_z_im_spec_id, imaginary(_jP_z_S) 
-
-	nCdf_varPut, nc_id, jA_r_re_id, jA_r 
-	nCdf_varPut, nc_id, jA_r_im_id, jA_r*0
-	nCdf_varPut, nc_id, jA_p_re_id, jA_t
-	nCdf_varPut, nc_id, jA_p_im_id, jA_t*0
-	nCdf_varPut, nc_id, jA_z_re_id, jA_z
-	nCdf_varPut, nc_id, jA_z_im_id, jA_z*0
-
     TmpDensity = FltArr(RunData.nR,RunData.nSpec)
     for s=0,RunData.nSpec-1 do begin
         TmpDensity[*,s] = SpecData[s].n
     endfor
 
-    nCdf_varPut, nc_id, Density_id, TmpDensity
+    solHash = HASH() 
 
-	nCdf_close, nc_id
+    solHash = solHash + HASH('r', runData.r-cartesian_offset);
+    solHash = solHash + HASH('z', runData.z);
+    solHash = solHash + HASH('freq',runData.freq);
+
+    solHash = solHash + HASH('density_m3', TmpDensity);
+
+    solHash = solHash + HASH('B0_r',runData.BField[*,0]);
+    solHash = solHash + HASH('B0_t',runData.BField[*,1]);
+    solHash = solHash + HASH('B0_z',runData.BField[*,2]);
+
+    solHash = solHash + HASH('E_r_re',real_part(e_r));
+    solHash = solHash + HASH('E_r_im',imaginary(e_r));
+    solHash = solHash + HASH('E_t_re',real_part(e_t));
+    solHash = solHash + HASH('E_t_im',imaginary(e_t));
+    solHash = solHash + HASH('E_z_re',real_part(e_z));
+    solHash = solHash + HASH('E_z_im',imaginary(e_z));
+    
+    solHash = solHash + HASH('jP_r_re',real_part(jP_r));
+    solHash = solHash + HASH('jP_r_im',imaginary(jP_r));
+    solHash = solHash + HASH('jP_t_re',real_part(jP_t));
+    solHash = solHash + HASH('jP_t_im',imaginary(jP_t));
+    solHash = solHash + HASH('jP_z_re',real_part(jP_z));
+    solHash = solHash + HASH('jP_z_im',imaginary(jP_z));
+
+    solHash = solHash + HASH('jP_r_re_spec',real_part(_jP_r_S));
+    solHash = solHash + HASH('jP_r_im_spec',imaginary(_jP_r_S));
+    solHash = solHash + HASH('jP_t_re_spec',real_part(_jP_t_S));
+    solHash = solHash + HASH('jP_t_im_spec',imaginary(_jP_t_S));
+    solHash = solHash + HASH('jP_z_re_spec',real_part(_jP_z_S));
+    solHash = solHash + HASH('jP_z_im_spec',imaginary(_jP_z_S));
+
+    solHash = solHash + HASH('B_r_re',real_part(b_r));
+    solHash = solHash + HASH('B_r_im',imaginary(b_r));
+    solHash = solHash + HASH('B_t_re',real_part(b_t));
+    solHash = solHash + HASH('B_t_im',imaginary(b_t));
+    solHash = solHash + HASH('B_z_re',real_part(b_z));
+    solHash = solHash + HASH('B_z_im',imaginary(b_z));
+
+    solHash = solHash + HASH('jA_r_re',real_part(jA_r));
+    solHash = solHash + HASH('jA_r_im',imaginary(jA_r));
+    solHash = solHash + HASH('jA_t_re',real_part(jA_t));
+    solHash = solHash + HASH('jA_t_im',imaginary(jA_t));
+    solHash = solHash + HASH('jA_z_re',real_part(jA_z));
+    solHash = solHash + HASH('jA_z_im',imaginary(jA_z));
+
+    NCDF_PUT, 'output/rs-solution.nc', /NEW, VARIABLES=solHash
 
 
 	if plotJp then begin
