@@ -2,7 +2,7 @@ pro matfill, nR, nPhi, kz, r, r_, epsilon, epsilon_, w, dr, $
 	aMat = aMat, nAll = nAll, nuca = nuca, nlca = nlca, $
     replaceFull = replace, replaceHalf = replace_, rhs=rhs
 
-	@constants
+	@dlg_constants
 	common switches
 
 	;	Build matrix

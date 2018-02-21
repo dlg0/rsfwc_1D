@@ -10,7 +10,7 @@ pro dielectric, runData, stixVars, w, specData, $
 	sigmaHalfSpec_abp = sigma_abp_
 
 	common switches
-	@constants
+	@dlg_constants
 
 ;	Calculate dielectric tensor
 

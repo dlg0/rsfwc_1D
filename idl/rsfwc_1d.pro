@@ -30,7 +30,7 @@ pro rsfwc_1d, $
 
 ;	Parameters
 
-    @constants
+    @dlg_constants
     @switches
     @load_colors
 
@@ -60,17 +60,17 @@ pro rsfwc_1d, $
 	rOut	= r
 
  	wReal	= runData.freq * 2d0 * !dpi 
-	wc	    = dcomplexArr ( runData.nR, runData.nIonSpec+1 ) 
-	wc_	    = dcomplexArr ( runData.nR_, runData.nIonSpec+1 ) 
+	wc	    = dcomplexArr ( runData.nR, runData.nSpec ) 
+	wc_	    = dcomplexArr ( runData.nR_, runData.nSpec ) 
 
-    for s=0,runData.nIonSpec do begin
-	    wc[*,s]	= wReal * complex ( 1+fltArr(runData.nR), specData[s].nuOmg )
-	    wc_[*,s]	= wReal * complex ( 1+fltArr(runData.nR_), specData[s].nuOmg_)
+    for s=0,runData.nSpec-1 do begin
+	    wc[*,s]	    = wReal 
+	    wc_[*,s]	= wReal 
     endfor
     w = real_part(wc)
     w_ = real_part(wc_)
 
-	stixVariables, w, w_, wc, wc_, specData, stixVars = stixVars, electronsOnly = 0
+	stixVariables, w, w_, wc, wc_, specData, stixVars = stixVars
 
 	dielectric, runData, stixVars, w, specData, $
 		epsilonFull_ = epsilon, $
@@ -110,24 +110,12 @@ pro rsfwc_1d, $
 	nAll	= runData.nR + 2L * ( runData.nR - 1L )
 	rhs		= dcomplexArr ( nAll )
 
-	;if not keyword_set ( jA_r ) then jA_R = 0
-	;if not keyword_set ( jA_t ) then jA_t = 0
-	;if not keyword_set ( jA_z ) then jA_z = 1
-
-	;antSigX = (runData.rMax-runData.rMin)/n_elements(runData.r)*15
-	;if jAmp gt 0 then jAmp = jAmp else jAmp 
-
-	;antk = -2000
-	;AntFluct = cos(runData.r*antk)+ii*sin(runData.r*antk)
-	;AntFluct_ = cos(runData.r_*antk)+ii*sin(runData.r_*antk)
-
-	TmpAntJr = jAmp*exp( -( (runData.r-runData.antLoc)^2/antSig_r^2 ) )
-	TmpAntJr_ = jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSig_r^2 ) )
-	TmpAntJt = jAmp*exp( -( (runData.r-runData.antLoc)^2/antSig_t^2 ) )
-	TmpAntJt_ = jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSig_t^2 ) )
-	TmpAntJz = jAmp*exp( -( (runData.r-runData.antLoc)^2/antSig_z^2 ) )
-	TmpAntJz_ = jAmp*exp( -( (runData.r_-runData.antLoc)^2/antSig_z^2 ) )
-
+	TmpAntJr  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_r^2 ) )
+	TmpAntJr_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_r^2 ) )
+	TmpAntJt  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_t^2 ) )
+	TmpAntJt_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_t^2 ) )
+	TmpAntJz  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_z^2 ) )
+	TmpAntJz_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_z^2 ) )
 
     if AntennaJ_r then jA_r	= TmpAntJr else jA_r = TmpAntJr*0
     if AntennaJ_t then jA_t	= TmpAntJt else jA_t = TmpAntJt*0
@@ -184,6 +172,20 @@ pro rsfwc_1d, $
         endif
 
     endif
+
+;   Write the run-data to file
+
+    runDataHash = { $
+            freq:runData.freq, $
+            br:runData.bField[*,0], $
+            bt:runData.bField[*,1], $
+            bz:runData.bField[*,2], $
+            r:runData.r, $
+            nPhi:runData.nPhi,$
+            densitySpec:specData.n,$
+            nuOmg:specData.nuOmg }
+
+    NCDF_PUT, 'output/rs-rundata.nc', /NEW, VARIABLES=runDataHash
 
 	matFill, runData.nR, runData.nPhi, runData.kz, $
 		runData.r, runData.r_, epsilon, epsilon_, wReal, runData.dR, $
@@ -418,71 +420,57 @@ pro rsfwc_1d, $
 	; Calculate plasma current
 	; ------------------------
 
-    ;if kjInput then begin
-    ;
-    ;	jP_r	= (total(kjIn.jpR,3))[*]
-    ;	jP_t	= (total(kjIn.jpT,3))[*]
-    ;	jP_z	= (total(kjIn.jpZ,3))[*]
+    jP_r_S = complexArr(runData.nR,runData.nSpec)
+    jP_t_S = complexArr(runData.nR,runData.nSpec)
+    jP_z_S = complexArr(runData.nR,runData.nSpec)
+    
+    jP_a_S = complexArr(runData.nR,runData.nSpec)
+    jP_b_S = complexArr(runData.nR,runData.nSpec)
+    jP_p_S = complexArr(runData.nR,runData.nSpec)
+    
+    for i=0,runData.nR-1 do begin
+    
+            thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
+			B_rtz = RunData.bField[i,*]
+            Bu_rtz = B_rtz / sqrt(B_rtz[0]^2+B_rtz[1]^2+B_rtz[2]^2)
+			Rot_abp_to_rtz = Get_RotMat_abp_to_rtz(Bu_rtz)
+			thisE_abp = transpose(Rot_abp_to_rtz)##ThisE
 
-    ;	jP_r_S	= kjIn.jpR
-    ;	jP_t_S	= kjIn.jpT
-    ;	jP_z_S	= kjIn.jpZ
+            if total(transpose(Rot_abp_to_rtz)) ne total(transpose(Rot_abp_to_rtz)) then stop
 
-    ;endif else begin
+            for s=0,runData.nSpec-1 do begin
 
-        jP_r_S = complexArr(runData.nR,runData.nIonSpec+1)
-        jP_t_S = complexArr(runData.nR,runData.nIonSpec+1)
-        jP_z_S = complexArr(runData.nR,runData.nIonSpec+1)
-        
-        jP_a_S = complexArr(runData.nR,runData.nIonSpec+1)
-        jP_b_S = complexArr(runData.nR,runData.nIonSpec+1)
-        jP_p_S = complexArr(runData.nR,runData.nIonSpec+1)
-        
-        for i=0,runData.nR-1 do begin
-        
-                thisE = [[e_r[i]],[e_t[i]],[e_z[i]]]
-				B_rtz = RunData.bField[i,*]
-                Bu_rtz = B_rtz / sqrt(B_rtz[0]^2+B_rtz[1]^2+B_rtz[2]^2)
-				Rot_abp_to_rtz = Get_RotMat_abp_to_rtz(Bu_rtz)
-				thisE_abp = transpose(Rot_abp_to_rtz)##ThisE
-
-                if total(transpose(Rot_abp_to_rtz)) ne total(transpose(Rot_abp_to_rtz)) then stop
-
-                for s=0,runData.nIonSpec do begin
-
-                        ThisSigma = sigma[*,*,s,i]
-                        ThisSigma_abp = sigma_abp[*,*,s,i]
+                    ThisSigma = sigma[*,*,s,i]
+                    ThisSigma_abp = sigma_abp[*,*,s,i]
  
-                        this_jP = thisSigma ## thisE
-                        this_jP_abp = thisSigma_abp ## thisE_abp
-              
-        				jP_r_S[i,s] = this_jP[0]
-                        jP_t_S[i,s] = this_jP[1]
-                        jP_z_S[i,s] = this_jP[2]
+                    this_jP = thisSigma ## thisE
+                    this_jP_abp = thisSigma_abp ## thisE_abp
+          
+    				jP_r_S[i,s] = this_jP[0]
+                    jP_t_S[i,s] = this_jP[1]
+                    jP_z_S[i,s] = this_jP[2]
 
-        				jP_a_S[i,s] = this_jP_abp[0]
-                        jP_b_S[i,s] = this_jP_abp[1]
-                        jP_p_S[i,s] = this_jP_abp[2]
+    				jP_a_S[i,s] = this_jP_abp[0]
+                    jP_b_S[i,s] = this_jP_abp[1]
+                    jP_p_S[i,s] = this_jP_abp[2]
 
-                endfor
+            endfor
 
-        endfor
+    endfor
 
-        jP_r = Total(jP_r_S,2)
-        jP_t = Total(jP_t_S,2)
-        jP_z = Total(jP_z_S,2)
+    jP_r = Total(jP_r_S,2)
+    jP_t = Total(jP_t_S,2)
+    jP_z = Total(jP_z_S,2)
 
-        jP_a = Total(jP_a_S,2)
-        jP_b = Total(jP_b_S,2)
-        jP_p = Total(jP_p_S,2)
-
-    ;endelse
+    jP_a = Total(jP_a_S,2)
+    jP_b = Total(jP_b_S,2)
+    jP_p = Total(jP_p_S,2)
 
 	; jDotE
 	; -----
 
-    jPDotE_S = fltArr(runData.nR,runData.nIonSpec+1)
-    for s=0,runData.nIonSpec do begin
+    jPDotE_S = fltArr(runData.nR,runData.nSpec)
+    for s=0,runData.nSpec-1 do begin
         jPDotE_S[*,s] = 0.5 * real_part ( jP_r_S[*,s] * conj(e_r) $
 				+ jP_t_S[*,s] * conj(e_t) $
 				+ jP_z_S[*,s] * conj(e_z) )
@@ -525,14 +513,7 @@ pro rsfwc_1d, $
             p = plot(runData.r,imaginary(kjIn.jPz)*kjIn.replace,linestyle='-',/over,color='g')
         endif
 
-		;l = legend(target=[pr,pt,pz],position=[0.8,0.4],/norm,font_size=10)
-
 	endif
-
-	;save, $
-	;	jP_r, jP_t, jP_z, $
-	;	e_r, e_t, e_z, $
-	;	fileName = 'solutionVals.sav'
 
 	; Write netCDF file
 
@@ -545,7 +526,7 @@ pro rsfwc_1d, $
 
 	nrH_id = nCdf_dimDef ( nc_id, 'nR_', runData.nR-1 )
 	scalar_id = nCdf_dimDef ( nc_id, 'scalar', 1 )
-	nIonSpec_id = nCdf_dimDef ( nc_id, 'nSpec', runData.nIonSpec+1 )
+	nSpec_id = nCdf_dimDef ( nc_id, 'nSpec', runData.nSpec )
 
 	freq_id = nCdf_varDef ( nc_id, 'freq', scalar_id, /float )
 	r_id = nCdf_varDef ( nc_id, 'r', nr_id, /float )
@@ -578,12 +559,12 @@ pro rsfwc_1d, $
 	jP_z_re_id = nCdf_varDef ( nc_id, 'jP_z_re', nr_id, /float )
 	jP_z_im_id = nCdf_varDef ( nc_id, 'jP_z_im', nr_id, /float )
 
-	jP_r_re_spec_id = nCdf_varDef ( nc_id, 'jP_r_re_spec', [nr_id,nZ_id,nIonSpec_id], /float )
-	jP_r_im_spec_id = nCdf_varDef ( nc_id, 'jP_r_im_spec', [nr_id,nZ_id,nIonSpec_id], /float )
-	jP_p_re_spec_id = nCdf_varDef ( nc_id, 'jP_p_re_spec', [nr_id,nZ_id,nIonSpec_id], /float )
-	jP_p_im_spec_id = nCdf_varDef ( nc_id, 'jP_p_im_spec', [nr_id,nZ_id,nIonSpec_id], /float )
-	jP_z_re_spec_id = nCdf_varDef ( nc_id, 'jP_z_re_spec', [nr_id,nZ_id,nIonSpec_id], /float )
-	jP_z_im_spec_id = nCdf_varDef ( nc_id, 'jP_z_im_spec', [nr_id,nZ_id,nIonSpec_id], /float )
+	jP_r_re_spec_id = nCdf_varDef ( nc_id, 'jP_r_re_spec', [nr_id,nZ_id,nSpec_id], /float )
+	jP_r_im_spec_id = nCdf_varDef ( nc_id, 'jP_r_im_spec', [nr_id,nZ_id,nSpec_id], /float )
+	jP_p_re_spec_id = nCdf_varDef ( nc_id, 'jP_p_re_spec', [nr_id,nZ_id,nSpec_id], /float )
+	jP_p_im_spec_id = nCdf_varDef ( nc_id, 'jP_p_im_spec', [nr_id,nZ_id,nSpec_id], /float )
+	jP_z_re_spec_id = nCdf_varDef ( nc_id, 'jP_z_re_spec', [nr_id,nZ_id,nSpec_id], /float )
+	jP_z_im_spec_id = nCdf_varDef ( nc_id, 'jP_z_im_spec', [nr_id,nZ_id,nSpec_id], /float )
 
 	jA_r_re_id = nCdf_varDef ( nc_id, 'jA_r_re', nr_id, /float )
 	jA_r_im_id = nCdf_varDef ( nc_id, 'jA_r_im', nr_id, /float )
@@ -592,7 +573,7 @@ pro rsfwc_1d, $
 	jA_z_re_id = nCdf_varDef ( nc_id, 'jA_z_re', nr_id, /float )
 	jA_z_im_id = nCdf_varDef ( nc_id, 'jA_z_im', nr_id, /float )
 
-	Density_id = nCdf_varDef ( nc_id, 'density_m3', [nr_id,nIonSpec_id], /float )
+	Density_id = nCdf_varDef ( nc_id, 'density_m3', [nr_id,nSpec_id], /float )
 
 	nCdf_control, nc_id, /enDef
 
@@ -629,31 +610,15 @@ pro rsfwc_1d, $
 	nCdf_varPut, nc_id, jP_z_re_id, real_part(jP_z) 
 	nCdf_varPut, nc_id, jP_z_im_id, imaginary(jP_z) 
 
-    _jP_r_S = complexArr(runData.nR,1,runData.nIonSpec+1)
-    _jP_t_S = complexArr(runData.nR,1,runData.nIonSpec+1)
-    _jP_z_S = complexArr(runData.nR,1,runData.nIonSpec+1)
+    _jP_r_S = complexArr(runData.nR,1,runData.nSpec)
+    _jP_t_S = complexArr(runData.nR,1,runData.nSpec)
+    _jP_z_S = complexArr(runData.nR,1,runData.nSpec)
 
-    for s=0,runData.nIonSpec do begin
+    for s=0,runData.nSpec-1 do begin
         _jP_r_S[*,0,s] = jP_r_S[*,s]
         _jP_t_S[*,0,s] = jP_t_S[*,s]
         _jP_z_S[*,0,s] = jP_z_S[*,s]
     endfor
-
-    ; Cycle species to be non-stupid (and consistent with AR2)
-
-    __jP_r_S = _jP_r_S
-    __jP_t_S = _jP_t_S
-    __jP_z_S = _jP_z_S
-
-    ; Move electrons to spec 0
-
-    _jP_r_S[*,*,0] = __jP_r_S[*,*,-1]
-    _jP_t_S[*,*,0] = __jP_t_S[*,*,-1]
-    _jP_z_S[*,*,0] = __jP_z_S[*,*,-1]
-
-    _jP_r_S[*,*,1:-1] = __jP_r_S[*,*,0:-2]
-    _jP_t_S[*,*,1:-1] = __jP_t_S[*,*,0:-2]
-    _jP_z_S[*,*,1:-1] = __jP_z_S[*,*,0:-2]
 
 	nCdf_varPut, nc_id, jP_r_re_spec_id, real_part(_jP_r_S)
 	nCdf_varPut, nc_id, jP_r_im_spec_id, imaginary(_jP_r_S) 
@@ -663,14 +628,14 @@ pro rsfwc_1d, $
 	nCdf_varPut, nc_id, jP_z_im_spec_id, imaginary(_jP_z_S) 
 
 	nCdf_varPut, nc_id, jA_r_re_id, jA_r 
-	nCdf_varPut, nc_id, jA_r_im_id, jA_r*0 
+	nCdf_varPut, nc_id, jA_r_im_id, jA_r*0
 	nCdf_varPut, nc_id, jA_p_re_id, jA_t
 	nCdf_varPut, nc_id, jA_p_im_id, jA_t*0
 	nCdf_varPut, nc_id, jA_z_re_id, jA_z
 	nCdf_varPut, nc_id, jA_z_im_id, jA_z*0
 
-    TmpDensity = FltArr(RunData.nR,RunData.nIonSpec+1)
-    for s=0,RunData.nIonSpec do begin
+    TmpDensity = FltArr(RunData.nR,RunData.nSpec)
+    for s=0,RunData.nSpec-1 do begin
         TmpDensity[*,s] = SpecData[s].n
     endfor
 
@@ -681,16 +646,9 @@ pro rsfwc_1d, $
 
 	if plotJp then begin
 
-        nS = runData.nIonSpec+1
+        nS = runData.nSpec
 		jpRange = max(abs([abs(jp_r),abs(jp_t),abs(jp_z)]))
-		;yRange = [-1,1];[-jPRange,jPRange]*0.5
 
-        ;p=plot([0,0],[0,0],/noData, $
-        ;        layout=[nS,3,1],$
-        ;        window_title='rsfwc_1d',dimensions=[1200,800], $
-        ;        hide = 1)
-
-        ;if not kjInput then begin
         cnt = 0
         for s=0,nS-1 do begin
             This_amu_str = ', amu: '+string(round(SpecData[s].m/_mi),format='(i1.1)')
@@ -716,7 +674,6 @@ pro rsfwc_1d, $
             cnt++
 
         endfor
-        ;endif
 
         p=plot(r,jP_r,layout=[1,3,1], title='jP (summed over species)')
         p=plot(r,imaginary(jP_r),color='r',/over)
@@ -744,7 +701,7 @@ pro rsfwc_1d, $
     plotJp_abp = 0
 	if plotJp_abp then begin
 
-        nS = runData.nIonSpec+1
+        nS = runData.nSpec
 		jpRange = max(abs([abs(jp_r),abs(jp_t),abs(jp_z)]))
 
         p=plot([0,0],[0,0],/noData, layout=[nS,3,1],window_title='rsfwc_1d - Jp_abp',dimensions=[1200,800])
@@ -812,5 +769,5 @@ pro rsfwc_1d, $
 		endfor
 
 	endif
-
+stop
 end
