@@ -24,8 +24,8 @@ pro dielectric, runData, stixVars, w, specData, $
     if not keyword_set(noHalfGrid) then $
 	sigma_	= dcomplexArr ( 3, 3, nSpec, runData.nR-1 )
 
-			sigma_abp = dComplexArr(3,3,nSpec,RunData.nR)
-			sigma_abp_ = dComplexArr(3,3,nSpec,RunData.nR-1)
+	sigma_abp = dComplexArr(3,3,nSpec,RunData.nR)
+	sigma_abp_ = dComplexArr(3,3,nSpec,RunData.nR-1)
 
 
     if dielectric_freeSpace then begin
@@ -42,20 +42,6 @@ pro dielectric, runData, stixVars, w, specData, $
 
     endif else if dielectric_noPoloidal then begin
 
-	    epsilon[0,0,*,*]	= stixVars.stixS
-	    epsilon[0,2,*,*]	= -_II * stixVars.stixD
-	    epsilon[1,1,*,*]	= stixVars.stixP
-	    epsilon[2,0,*,*]	= _II * stixVars.stixD
-	    epsilon[2,2,*,*]	= stixVars.stixS
-
-        if not keyword_set(noHalfGrid) then begin
-	    epsilon_[0,0,*,*]	= stixVars.stixS_
-	    epsilon_[0,2,*,*]	= -_II * stixVars.stixD_
-	    epsilon_[1,1,*,*]	= stixVars.stixP_
-	    epsilon_[2,0,*,*]	= _II * stixVars.stixD_
-	    epsilon_[2,2,*,*]	= stixVars.stixS_
-        endif
-
     endif else begin
 
 		;	Generic dielectric for arbitrary magnetic field direction
@@ -70,9 +56,6 @@ pro dielectric, runData, stixVars, w, specData, $
 						[ runData.bField_[*,2] / runData.bMag_ ] ]
         endif
 	
-		phi	= 0d0
-        if not keyword_set(noHalfGrid) then $
-
 		for i = 0L, runData.nR - 1L do begin
         for s = 0, nSpec-1 do begin
 
@@ -91,15 +74,6 @@ pro dielectric, runData, stixVars, w, specData, $
     		sigma[*,*,s,i]	    = rotateEpsilon ( sigma_stix, bUnit_cyl[i,*] )
 			sigma_abp[*,*,s,i]  = sigma_stix
           
-            if i eq 256 then begin
-                    print, s
-                    print, 'abp : '
-                    print, sigma_stix
-                    print, 'rtz : '
-                    print, sigma[*,*,s,i]
-            endif
-
-    
 			;	same for 1/2 grid
 
             if not keyword_set(noHalfGrid) then begin    
@@ -134,7 +108,7 @@ pro dielectric, runData, stixVars, w, specData, $
 	if iiNaNCnt gt 0 then begin
 
 		print, 'ERROR: NaN detected in epsilon'
-		iiNeg	= where ( runData.specData.n le 0, iiNegCnt )
+		iiNeg	= where ( specData.n le 0, iiNegCnt )
 		if iiNegCnt gt 0 then begin
 			
 			print, 'NEGATIVE DENSITY DETECTED :-('

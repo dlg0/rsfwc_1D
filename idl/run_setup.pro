@@ -88,6 +88,8 @@ pro run_setup, $
         rMax = ar2.rMax
     endif
 
+    print, 'rMin: ', rMin
+    print, 'rMax: ', rMax
     print, 'nPhi: ', nPhi
     print, 'kz: ', kz
 
@@ -256,7 +258,7 @@ pro run_setup, $
     	if plotRunData then begin 
 		    p=Plot( r, runData.bField[*,1], $
     	        layout = [2,1,1], $
-    	        title = 'bPhi')
+    	        title = 'b Field Components')
 		    p=plot( r, runData.bField[*,0], $
 				/over, $
 				color = red)

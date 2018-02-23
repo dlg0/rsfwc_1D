@@ -27,6 +27,16 @@ function get_RotMat_abp_to_rtz, _bu_rtz, debug=debug
 ;   Try a different rotation approach - COPY OF THE AORSA CODE
 ;   ---------------------------------
 
+; Catch for field aligned with Z coord
+
+if abs(_bu_rtz[2]) eq 1 then begin 
+
+    rot_abp_to_rtz = identity(3)
+	return, rot_abp_to_rtz
+
+endif else begin
+
+
     ;   get vector perp to both z axis and b
 
     ru_rtz = [[1],[0],[0]] ; these are 1 column x 3 row vectors
@@ -134,6 +144,8 @@ if keyword_set(debug) then begin
 endif
 
     rot_abp_to_rtz = transpose(rot_)
+
+endelse
 
 	return, rot_abp_to_rtz
 end
