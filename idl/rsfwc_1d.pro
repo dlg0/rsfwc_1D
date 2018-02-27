@@ -48,8 +48,6 @@ pro rsfwc_1d, $
 		AntennaJ_t = AntennaJ_t, $
 		AntennaJ_z = AntennaJ_z, $
 		antSig_r = antSig_r, $
-		antSig_t = antSig_t, $
-		antSig_z = antSig_z, $
 		jAmp = jAmp
 
 
@@ -112,10 +110,10 @@ pro rsfwc_1d, $
 
 	TmpAntJr  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_r^2 ) )
 	TmpAntJr_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_r^2 ) )
-	TmpAntJt  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_t^2 ) )
-	TmpAntJt_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_t^2 ) )
-	TmpAntJz  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_z^2 ) )
-	TmpAntJz_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_z^2 ) )
+	TmpAntJt  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_r^2 ) )
+	TmpAntJt_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_r^2 ) )
+	TmpAntJz  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_r^2 ) )
+	TmpAntJz_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_r^2 ) )
 
     if AntennaJ_r then jA_r	= TmpAntJr else jA_r = TmpAntJr*0
     if AntennaJ_t then jA_t	= TmpAntJt else jA_t = TmpAntJt*0

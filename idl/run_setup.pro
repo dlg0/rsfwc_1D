@@ -86,12 +86,14 @@ pro run_setup, $
         ar2 = ar2_read_ar2Input('./', fileName = ar2InFileName)
         rMin = ar2.rMin
         rMax = ar2.rMax
+        nR = n_elements(ar2.r)
     endif
 
     print, 'rMin: ', rMin
     print, 'rMax: ', rMax
     print, 'nPhi: ', nPhi
     print, 'kz: ', kz
+    print, 'nR: ', nR
 
 ;		Grid
 
@@ -118,32 +120,46 @@ pro run_setup, $
             ar2_nR = n_elements(ar2.r)
             ar2_nz = n_elements(ar2.z)
 
-			bR  = interpolate ( ar2.br, $
-					( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
-    		    ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
-				cubic = -0.5 )
-    		bPhi  = interpolate ( ar2.bt, $
-					( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
-    		    ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
-				cubic = -0.5 )
-     		bZ  = interpolate ( ar2.bz, $
-					( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
-    		    ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
-				cubic = -0.5 )
+            if ar2_nz gt 1 then begin
 
-    		bR_  = interpolate ( ar2.br, $
-					( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
-    		    ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
-				cubic = -0.5 )
-    		bPhi_  = interpolate ( ar2.bt, $
-					( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
-    		    ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
-				cubic = -0.5 )
-     		bZ_  = interpolate ( ar2.bz, $
-					( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
-    		    ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
-				cubic = -0.5 )
-   
+		    	bR  = interpolate ( ar2.br, $
+		    			( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    	    	    ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+		    		cubic = -0.5 )
+    	    	bPhi  = interpolate ( ar2.bt, $
+		    			( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    	    	    ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+		    		cubic = -0.5 )
+     	    	bZ  = interpolate ( ar2.bz, $
+		    			( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    	    	    ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+		    		cubic = -0.5 )
+
+    	    	bR_  = interpolate ( ar2.br, $
+		    			( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    	    	    ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+		    		cubic = -0.5 )
+    	    	bPhi_  = interpolate ( ar2.bt, $
+		    			( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    	    	    ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+		    		cubic = -0.5 )
+     	    	bZ_  = interpolate ( ar2.bz, $
+		    			( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    	    	    ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+		    		cubic = -0.5 )
+ 
+            endif else begin
+
+		    	bR  = ar2.br
+    	    	bPhi  = ar2.bt
+     	    	bZ  = ar2.bz
+
+    	    	bR_  = interpol ( ar2.br, ar2.r, r_, /spline )
+    	    	bPhi_  = interpol ( ar2.bt, ar2.r, r_, /spline )
+     	    	bZ_  = interpol ( ar2.bz, ar2.r, r_, /spline )
+
+            endelse
+
         endif else begin
             print, 'ERROR: You must have an ar2Input.nc file now'                    
             stop
@@ -182,23 +198,35 @@ pro run_setup, $
 
             for s=0,nSpec-1 do begin
 
-			    this_n  = interpolate ( ar2.Density_m3[*,*,s], $
-			    		( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
-    		        ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
-			    	cubic = -0.5 )
-			    this_n_  = interpolate ( ar2.Density_m3[*,*,s], $
-			    		( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
-    		        ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
-			    	cubic = -0.5 )
+                if ar2_nz gt 1 then begin
 
-			    this_nuOmg  = interpolate ( ar2.nuOmg[*,*,s], $
-			    		( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
-    		        ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
-			    	cubic = -0.5 )
-			    this_nuOmg_  = interpolate ( ar2.nuOmg[*,*,s], $
-			    		( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
-    		        ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
-			    	cubic = -0.5 )
+			        this_n  = interpolate ( ar2.Density_m3[*,*,s], $
+			        		( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		            ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+			        	cubic = -0.5 )
+			        this_n_  = interpolate ( ar2.Density_m3[*,*,s], $
+			        		( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		            ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+			        	cubic = -0.5 )
+
+			        this_nuOmg  = interpolate ( ar2.nuOmg[*,*,s], $
+			        		( r - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		            ( z - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+			        	cubic = -0.5 )
+			        this_nuOmg_  = interpolate ( ar2.nuOmg[*,*,s], $
+			        		( r_ - ar2.rMin ) / (ar2.rMax-ar2.rMin) * (ar2_nR-1), $
+    		            ( z_ - ar2.zMin ) / (ar2.zMax-ar2.zMin) * (ar2_nZ-1), $
+			        	cubic = -0.5 )
+
+                endif else begin
+
+			        this_n  = ar2.Density_m3[*,*,s]
+			        this_n_  = interpol ( reform(ar2.Density_m3[*,*,s]), ar2.r, r_, /spline)
+
+                    this_nuOmg  = ar2.nuOmg[*,*,s]
+			        this_nuOmg_  = interpol ( reform(ar2.nuOmg[*,*,s]), ar2.r, r_, /spline)
+
+                endelse
 
                 specData[s].n = this_n
                 specData[s].n_ = this_n_
