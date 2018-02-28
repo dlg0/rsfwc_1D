@@ -14,7 +14,8 @@ pro run_setup, $
 	antSig_r = antSig_r, $
 	antSig_t = antSig_t, $
 	antSig_z = antSig_z, $
-	jAmp = jAmp
+	jAmp = jAmp, $
+    ar2 = ar2
 
 
 	@dlg_constants

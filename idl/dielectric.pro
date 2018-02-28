@@ -66,8 +66,20 @@ pro dielectric, runData, stixVars, w, specData, $
             density = (specData[s].n)[i]
             nu_omg = (specData[s].nuOmg)[i]
 
-            epsilon_stix = kj_epsilon_cold(f, amu, atomicZ, B, density, nu_omg, sigma = ThisSigma)
-        
+            ; Using the hot dielectric tensor with a cold temperature instead of the 
+            ; cold dielectric, simply because I've been unable to get the sigmas to 
+            ; match for nu_omg != 0. Simpler just to use the hot one for both.
+            ; Need to revisit this though. 
+
+            ;epsilon_stix = kj_epsilon_cold(f, amu, atomicZ, B, density, nu_omg, sigma = ThisSigma)
+
+            harmonicNumber=3
+            kPar = 10
+            kPer = 10
+            T_eV = 1e-5
+            epsilon_stix = kj_epsilon_hot (f, amu, atomicZ, B, density, harmonicNumber, $
+                kPar, kPer, T_eV, nuOmg = nu_omg, sigma = ThisSigma )
+       
             sigma_stix = ThisSigma
 
 			epsilon[*,*,s,i]    = rotateEpsilon ( epsilon_stix, bUnit_cyl[i,*] )

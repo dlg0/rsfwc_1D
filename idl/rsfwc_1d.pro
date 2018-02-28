@@ -48,7 +48,7 @@ pro rsfwc_1d, $
 		AntennaJ_t = AntennaJ_t, $
 		AntennaJ_z = AntennaJ_z, $
 		antSig_r = antSig_r, $
-		jAmp = jAmp
+		jAmp = jAmp, ar2 = ar2
 
 
 	r 	= runData.r
@@ -95,34 +95,18 @@ pro rsfwc_1d, $
         replace_ = intArr(runData.nR-1)
     endelse
 
-	if runData.antLoc gt runData.rMax or runData.antLoc lt runData.rMin then begin
-		print, 'ADJUSTING: Antenna location was ', runData.antLoc
-		if runData.antLoc lt min ( runData.r_ ) then runData.antLoc = min ( runData.r_ )
-		if runData.antLoc gt max ( runData.r_ ) then runData.antLoc = max ( runData.r_ )
-		print, 'ADJUSTING: Antenna location is now ', runData.antLoc
-	endif
-
-    iiAnt   = where ( abs ( runData.r_ - runData.antLoc ) $
-						eq min ( abs ( runData.r_ - runData.antLoc ) ) )
 
 	nAll	= runData.nR + 2L * ( runData.nR - 1L )
 	rhs		= dcomplexArr ( nAll )
 
-	TmpAntJr  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_r^2 ) )
-	TmpAntJr_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_r^2 ) )
-	TmpAntJt  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_r^2 ) )
-	TmpAntJt_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_r^2 ) )
-	TmpAntJz  = runData.jAmp*exp( -( (runData.r -runData.antLoc)^2/runData.antSig_r^2 ) )
-	TmpAntJz_ = runData.jAmp*exp( -( (runData.r_-runData.antLoc)^2/runData.antSig_r^2 ) )
 
-    if AntennaJ_r then jA_r	= TmpAntJr else jA_r = TmpAntJr*0
-    if AntennaJ_t then jA_t	= TmpAntJt else jA_t = TmpAntJt*0
-    if AntennaJ_z then jA_z	= TmpAntJz else jA_z = TmpAntJz*0
+    jA_r = ar2('jAnt_r')
+    jA_t = ar2('jAnt_t')
+    jA_z = ar2('jAnt_z')
 
-	if AntennaJ_r then jA_r_ = TmpAntJr_ else jA_r_ = TmpAntJr_*0
-    if AntennaJ_t then jA_t_ = TmpAntJt_ else jA_t_ = TmpAntJt_*0
-    if AntennaJ_z then jA_z_ = TmpAntJz_ else jA_z_ = TmpAntJz_*0
-
+    jA_r_ = interpol(jA_r,r,r_,/spline) 
+    jA_t_ = interpol(jA_t,r,r_,/spline) 
+    jA_z_ = interpol(jA_z,r,r_,/spline) 
 
    	; NOTE: the equations were derived as +curlcurlE - k0edotE = +iwuJa
 	; and as such, the sign in the below is +ve, NOT -ve as in the aorsa
@@ -213,6 +197,16 @@ pro rsfwc_1d, $
 
     endelse
 
+;   Calculate residual
+
+    lhs = aMat ## eField
+    res = lhs - rhs
+    resNorm = norm(res)
+
+    save, aMat, r, r_, eField, fileName = 'rs-amat.sav'
+
+    print, 'Residual: ', resNorm
+
     eP_LeftBoundary_ = eField[0]
     eZ_LeftBoundary_ = eField[1]
     eP_RightBoundary_ = eField[-2]
@@ -224,9 +218,9 @@ pro rsfwc_1d, $
   
 	ii_eR	= lIndGen(runData.nR)*3
 	eR	= eField[ii_eR]
-	ii_eP	= temporary(ii_eR[0:runData.nR-2]+1)
+	ii_eP	= ii_eR[0:runData.nR-2]+1
 	eP_	= eField[ii_eP]
-	ii_ez	= temporary(ii_eP+1)
+	ii_ez	= ii_eP+1
 	ez_	= eField[ii_ez]
 
 
@@ -564,12 +558,12 @@ pro rsfwc_1d, $
     solHash = solHash + HASH('jP_z_re',real_part(jP_z));
     solHash = solHash + HASH('jP_z_im',imaginary(jP_z));
 
-    solHash = solHash + HASH('jP_r_re_spec',real_part(_jP_r_S));
-    solHash = solHash + HASH('jP_r_im_spec',imaginary(_jP_r_S));
-    solHash = solHash + HASH('jP_t_re_spec',real_part(_jP_t_S));
-    solHash = solHash + HASH('jP_t_im_spec',imaginary(_jP_t_S));
-    solHash = solHash + HASH('jP_z_re_spec',real_part(_jP_z_S));
-    solHash = solHash + HASH('jP_z_im_spec',imaginary(_jP_z_S));
+    solHash = solHash + HASH('jP_r_spec_re',real_part(_jP_r_S));
+    solHash = solHash + HASH('jP_r_spec_im',imaginary(_jP_r_S));
+    solHash = solHash + HASH('jP_t_spec_re',real_part(_jP_t_S));
+    solHash = solHash + HASH('jP_t_spec_im',imaginary(_jP_t_S));
+    solHash = solHash + HASH('jP_z_spec_re',real_part(_jP_z_S));
+    solHash = solHash + HASH('jP_z_spec_im',imaginary(_jP_z_S));
 
     solHash = solHash + HASH('B_r_re',real_part(b_r));
     solHash = solHash + HASH('B_r_im',imaginary(b_r));
