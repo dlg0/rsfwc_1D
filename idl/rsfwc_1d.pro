@@ -203,7 +203,7 @@ pro rsfwc_1d, $
     res = lhs - rhs
     resNorm = norm(res)
 
-    save, aMat, r, r_, eField, fileName = 'rs-amat.sav'
+    save, aMat, r, r_, eField, rhs, fileName = 'rs-amat.sav'
 
     print, 'Residual: ', resNorm
 

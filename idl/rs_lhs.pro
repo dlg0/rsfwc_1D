@@ -23,12 +23,13 @@ function rs_lhs
     E_z_ = complex(E_z_re_,E_z_im_)
 
     ; Reconstruct the E column vector
+    ; This is complicated by the half grid and BCs used in RS.
 
     nR = n_elements(rs('r'))
 
     E = complexArr(nR*3+2)
 
-	ii_eR	= lIndGen(nR)*3
+	ii_eR	= 2 + lIndGen(nR)*3
 	ii_eT	= ii_eR[0:nR-2]+1
 	ii_eZ	= ii_eT+1
 
@@ -43,10 +44,9 @@ function rs_lhs
 
     ; Apply A
 
+    ;LHS = Amat ## Efield
     LHS = Amat ## E
 
-    ; Write LHS to file 
-
-    stop
+    return, reform(LHS)
 
 end
