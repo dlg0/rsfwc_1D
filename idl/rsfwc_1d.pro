@@ -203,9 +203,22 @@ pro rsfwc_1d, $
     res = lhs - rhs
     resNorm = norm(res)
 
-    save, aMat, r, r_, eField, rhs, fileName = 'rs-amat.sav'
-
     print, 'Residual: ', resNorm
+
+
+; Store A in sparse storage (re and im parts seperately - stupid IDL)
+
+    a_re = real_part(aMat)
+    a_im = imaginary(aMat)
+
+    aSparse_re = sprsIn(a_re,/double)
+    aSparse_im = sprsIn(a_im,/double)
+
+    aFull_re = fulstr(aSparse_re)
+    aFull_im = fulstr(aSparse_im)
+
+    save, aSparse_re, aSparse_im, r, r_, eField, rhs, fileName = 'rs-amat.sav'
+
 
     eP_LeftBoundary_ = eField[0]
     eZ_LeftBoundary_ = eField[1]

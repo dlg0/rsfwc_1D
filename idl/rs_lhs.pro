@@ -44,6 +44,8 @@ function rs_lhs
 
     ; Apply A
 
+    aMat = dcomplex(fulstr(aSparse_re),fulstr(aSparse_im))
+
     ;LHS = Amat ## Efield
     LHS = Amat ## E
 
