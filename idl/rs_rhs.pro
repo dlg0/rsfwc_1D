@@ -40,15 +40,15 @@ function rs_rhs
     delta_jP_t_im_ = interpol(imaginary(delta_jP_t), r, r_, /spline)
     delta_jP_z_im_ = interpol(imaginary(delta_jP_z), r, r_, /spline)
  
-    delta_jP_t_ = complex(delta_jP_t_re_,delta_jP_t_im_)
-    delta_jP_z_ = complex(delta_jP_z_re_,delta_jP_z_im_)
+    delta_jP_t_ = dcomplex(delta_jP_t_re_,delta_jP_t_im_)
+    delta_jP_z_ = dcomplex(delta_jP_z_re_,delta_jP_z_im_)
 
     ; Reconstruct the jP column vector
     ; This is complicated by the half grid and BCs used in RS.
 
     nR = n_elements(rs('r'))
 
-    delta_jP = complexArr(nR*3+2)
+    delta_jP = dcomplexArr(nR*3+2)
 
 	ii_R	= 2 + lIndGen(nR)*3
 	ii_T	= ii_R[0:nR-2]+1

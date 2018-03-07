@@ -19,15 +19,15 @@ function rs_lhs
     E_t_im_ = interpol(imaginary(E_t), r, r_, /spline)
     E_z_im_ = interpol(imaginary(E_z), r, r_, /spline)
  
-    E_t_ = complex(E_t_re_,E_t_im_)
-    E_z_ = complex(E_z_re_,E_z_im_)
+    E_t_ = dcomplex(E_t_re_,E_t_im_)
+    E_z_ = dcomplex(E_z_re_,E_z_im_)
 
     ; Reconstruct the E column vector
     ; This is complicated by the half grid and BCs used in RS.
 
     nR = n_elements(rs('r'))
 
-    E = complexArr(nR*3+2)
+    E = dcomplexArr(nR*3+2)
 
 	ii_eR	= 2 + lIndGen(nR)*3
 	ii_eT	= ii_eR[0:nR-2]+1
