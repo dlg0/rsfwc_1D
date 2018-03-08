@@ -15,8 +15,9 @@ function rs_lhs
     E_z = rs('E_z')
 
     E_t_re_ = interpol(real_part(E_t), r, r_, /spline)
-    E_z_re_ = interpol(real_part(E_z), r, r_, /spline)
     E_t_im_ = interpol(imaginary(E_t), r, r_, /spline)
+
+    E_z_re_ = interpol(real_part(E_z), r, r_, /spline)
     E_z_im_ = interpol(imaginary(E_z), r, r_, /spline)
  
     E_t_ = dcomplex(E_t_re_,E_t_im_)

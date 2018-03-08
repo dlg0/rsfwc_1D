@@ -219,7 +219,6 @@ pro rsfwc_1d, $
 
     save, aSparse_re, aSparse_im, r, r_, eField, rhs, fileName = 'rs-amat.sav'
 
-
     eP_LeftBoundary_ = eField[0]
     eZ_LeftBoundary_ = eField[1]
     eP_RightBoundary_ = eField[-2]
